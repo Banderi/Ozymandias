@@ -20,11 +20,32 @@ config/icon="uid://quq4tv2kwdyf"
 
 Game="*res://scripts/autoload/Game.gd"
 Log="*res://scripts/autoload/Log.gd"
+Assets="*res://scripts/autoload/Assets.gd"
 
 [display]
 
 window/size/viewport_width=1024
 window/size/viewport_height=600
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/texture_fonts/plugin.cfg")
+
+[importer_defaults]
+
+font_data_image={
+"ascent": 0,
+"character_margin": Rect2i(0, 0, 0, 0),
+"character_ranges": PackedStringArray("\'a\'-\'z\'", "\'A\'-\'Z\'"),
+"columns": 13,
+"compress": true,
+"descent": 0,
+"fallbacks": [],
+"image_margin": Rect2i(0, 0, 0, 0),
+"kerning_pairs": PackedStringArray(),
+"rows": 11,
+"scaling_mode": 2
+}
 
 [physics]
 

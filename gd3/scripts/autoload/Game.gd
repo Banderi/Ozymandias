@@ -25,7 +25,7 @@ func debug_tools_enabled():
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	close_all_menus()
-#	open_menu("Splash")
+	open_menu("Splash")
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

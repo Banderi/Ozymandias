@@ -1,0 +1,74 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00201.png" type="Texture" id=1]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00196.png" type="Texture" id=2]
+[ext_resource path="res://scenes/UI/Panel2.tscn" type="PackedScene" id=3]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00195.png" type="Texture" id=4]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel2.png" type="Texture" id=5]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00197.png" type="Texture" id=6]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00199.png" type="Texture" id=7]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00200.png" type="Texture" id=8]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/scroll_grabber.png" type="Texture" id=9]
+[ext_resource path="res://scripts/UI/OzyVScrollBar.gd" type="Script" id=10]
+
+[sub_resource type="StyleBoxTexture" id=1]
+texture = ExtResource( 5 )
+region_rect = Rect2( 0, 0, 112, 112 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="OzyScrollBar" type="Control"]
+margin_right = 37.0
+margin_bottom = 282.0
+rect_min_size = Vector2( 37, 83 )
+script = ExtResource( 10 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Bar" parent="." instance=ExtResource( 3 )]
+show_behind_parent = true
+anchor_bottom = 1.0
+margin_left = 3.0
+margin_top = 26.0
+margin_right = 34.0
+margin_bottom = -26.0
+mouse_filter = 2
+custom_styles/panel = SubResource( 1 )
+snap = 1
+
+[node name="BtnUp" type="TextureButton" parent="."]
+margin_right = 39.0
+margin_bottom = 26.0
+action_mode = 0
+texture_normal = ExtResource( 4 )
+texture_pressed = ExtResource( 6 )
+texture_hover = ExtResource( 2 )
+
+[node name="BtnDown" type="TextureButton" parent="."]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_top = -26.0
+margin_right = 39.0
+action_mode = 0
+texture_normal = ExtResource( 7 )
+texture_pressed = ExtResource( 1 )
+texture_hover = ExtResource( 8 )
+
+[node name="BtnGrabber" type="TextureButton" parent="."]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = 5.5
+margin_top = 26.0
+margin_right = 31.5
+margin_bottom = 52.0002
+action_mode = 0
+keep_pressed_outside = true
+texture_normal = ExtResource( 9 )
+
+[connection signal="gui_input" from="BtnGrabber" to="." method="_on_BtnGrabber_gui_input"]
+[connection signal="pressed" from="BtnGrabber" to="." method="_on_BtnGrabber_pressed"]

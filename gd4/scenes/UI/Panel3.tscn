@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=2]
+
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel3.png" type="Texture" id=1]
+[ext_resource path="res://scenes/UI/PanelSnapGrid.gd" type="Script" id=2]
+
+[sub_resource type="StyleBoxTexture" id=1]
+texture = ExtResource( 1 )
+region_rect = Rect2( 0, 0, 48, 48 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="Panel" type="Panel"]
+margin_right = 48.0
+margin_bottom = 48.0
+custom_styles/panel = SubResource( 1 )
+script = ExtResource( 2 )
+
+[connection signal="resized" from="." to="." method="_on_TextureRect_resized"]

@@ -69,10 +69,10 @@ resource_name = "ASSET_TEST"
 script/source = "extends TextureRect
 
 # Called when the node enters the scene tree for the first time.
-func _ready():
+#func _ready():
 #	printerr(1)
-	texture = Assets.load_texture()
-	show()
+#	texture = Assets.load_texture()
+#	show()
 "
 
 [node name="Root" type="ColorRect"]
@@ -84,7 +84,6 @@ __meta__ = {
 }
 
 [node name="Main" type="TextureRect" parent="."]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 1 )
@@ -270,6 +269,7 @@ margin_bottom = 95.0
 text = "No"
 
 [node name="Splash" type="TextureRect" parent="."]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 focus_mode = 1

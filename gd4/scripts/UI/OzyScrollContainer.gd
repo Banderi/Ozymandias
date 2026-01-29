@@ -1,9 +1,9 @@
 extends Control
 
-export var scroll_node_path : NodePath
+@export var scroll_node_path : NodePath
 
 # Called when the node enters the scene tree for the first time.
-onready var scrollbar = $OzyVScrollBar
+@onready var scrollbar = $OzyVScrollBar
 var scroll_node = null
 func _ready():
 	pass
@@ -22,7 +22,7 @@ func _input(event): # redirect scroolwheel inputs to the scrollbar
 		return
 	if event is InputEventMouseButton && event.pressed && scroll_node.get_global_rect().has_point(get_global_mouse_position()):
 		match event.button_index:
-			BUTTON_WHEEL_UP:
+			MOUSE_BUTTON_WHEEL_UP:
 				scrollbar.scroll_delta(-2)
-			BUTTON_WHEEL_DOWN:
+			MOUSE_BUTTON_WHEEL_DOWN:
 				scrollbar.scroll_delta(2)
