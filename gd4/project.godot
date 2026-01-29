@@ -1,0 +1,35 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Ozymandias"
+run/main_scene="uid://clj8gi0sldgwk"
+config/features=PackedStringArray("4.6", "Forward Plus")
+boot_splash/show_image=false
+config/icon="uid://quq4tv2kwdyf"
+
+[autoload]
+
+Game="*res://scripts/autoload/Game.gd"
+Log="*res://scripts/autoload/Log.gd"
+
+[display]
+
+window/size/viewport_width=1024
+window/size/viewport_height=600
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"

@@ -519,7 +519,7 @@ enum MethodFlags {
 	METHOD_FLAG_REVERSE = 16,		# Deprecated method flag, unused.
 	METHOD_FLAG_VIRTUAL = 32,		# Flag for a virtual method.
 	METHOD_FLAG_FROM_SCRIPT = 64,		# Deprecated method flag, unused.
-	METHOD_FLAG_VARARG = 128
+	METHOD_FLAG_VARARG = 128,
 	METHOD_FLAGS_DEFAULT = 1,		# Default method flags.
 }
 
@@ -588,13 +588,13 @@ enum Constants {
 }
 
 enum ConnectionStatus {
-	CONNECTION_DISCONNECTED = 0 # The ongoing connection disconnected.
-	CONNECTION_CONNECTING = 1 # A connection attempt is ongoing.
+	CONNECTION_DISCONNECTED = 0, # The ongoing connection disconnected.
+	CONNECTION_CONNECTING = 1, # A connection attempt is ongoing.
 	CONNECTION_CONNECTED = 2 # The connection attempt succeeded.
 }
 
 enum TransferMode {
-	TRANSFER_MODE_UNRELIABLE = 0 # Packets are not acknowledged, no resend attempts are made for lost packets. Packets may arrive in any order. Potentially faster than TRANSFER_MODE_UNRELIABLE_ORDERED. Use for non-critical data, and always consider whether the order matters.
-	TRANSFER_MODE_UNRELIABLE_ORDERED = 1 # Packets are not acknowledged, no resend attempts are made for lost packets. Packets are received in the order they were sent in. Potentially faster than TRANSFER_MODE_RELIABLE. Use for non-critical data or data that would be outdated if received late due to resend attempt(s) anyway, for example movement and positional data.
+	TRANSFER_MODE_UNRELIABLE = 0, # Packets are not acknowledged, no resend attempts are made for lost packets. Packets may arrive in any order. Potentially faster than TRANSFER_MODE_UNRELIABLE_ORDERED. Use for non-critical data, and always consider whether the order matters.
+	TRANSFER_MODE_UNRELIABLE_ORDERED = 1, # Packets are not acknowledged, no resend attempts are made for lost packets. Packets are received in the order they were sent in. Potentially faster than TRANSFER_MODE_RELIABLE. Use for non-critical data or data that would be outdated if received late due to resend attempt(s) anyway, for example movement and positional data.
 	TRANSFER_MODE_RELIABLE = 2 # Packets must be received and resend attempts should be made until the packets are acknowledged. Packets must be received in the order they were sent in. Most reliable transfer mode, but potentially the slowest due to the overhead. Use for critical data that must be transmitted and arrive in order, for example an ability being triggered or a chat message. Consider carefully if the information really is critical, and use sparingly.
 }

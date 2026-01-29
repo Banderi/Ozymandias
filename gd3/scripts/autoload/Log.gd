@@ -1,5 +1,5 @@
 extends Node
-# ANTIMONY 'Log' by Banderi --- v1.0
+# ANTIMONY 'Log' by Banderi --- v1.3
 
 var LOG_EVERYTHING = []
 var LOG_ENGINE = []
@@ -11,6 +11,7 @@ func get_origin(line : String):
 	return app_name
 
 var LOG_CHANGED = false
+var LAST_MSG = ""
 
 const MAX_LINES_IN_CONSOLE = 200
 func limit_array(arr, limit = MAX_LINES_IN_CONSOLE):
@@ -20,7 +21,7 @@ func limit_array(arr, limit = MAX_LINES_IN_CONSOLE):
 func get_enum_string(enums, value):
 	return enums.keys()[value]
 func get_timestamp():
-	var d = OS.get_datetime()
+	var d = Time.get_datetime_dict_from_system()
 	return "%04d/%02d/%02d %02d:%02d:%02d -- " % [d.year, d.month, d.day, d.hour, d.minute, d.second]
 
 func generic(from, message_text, iserror = false):
@@ -65,20 +66,23 @@ func generic(from, message_text, iserror = false):
 		limit_array(LOG_ENGINE)
 	
 	LOG_CHANGED = true
+	LAST_MSG = str(message_text)
 func error(from, err, message_text):
 	var error_text = "ERROR: "
 	if err != null:
 		error_text += str("(", err, ":", get_enum_string(GlobalScope.Error, err), ") ")
-	error_text += message_text
+	error_text += str(message_text)
 	return generic(from, error_text, true)
 
 func clear_log(from):
 	from.LOG = []
 	LOG_CHANGED = true
+	LAST_MSG = ""
 func clear_all_logs(plus_nodes : Array = []):
 	LOG_EVERYTHING = []
 	LOG_ENGINE = []
 	LOG_ERRORS = []
 	LOG_CHANGED = true
+	LAST_MSG = ""
 	for n in plus_nodes:
 		clear_log(n)
