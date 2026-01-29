@@ -1,0 +1,89 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=4
+
+_global_script_classes=[ {
+"base": "Node",
+"class": "GlobalScope",
+"language": "GDScript",
+"path": "res://scripts/classes/GlobalScope.gd"
+}, {
+"base": "Node",
+"class": "HTTPServer",
+"language": "GDScript",
+"path": "res://scripts/classes/HTTPServer.gd"
+}, {
+"base": "Node",
+"class": "TCPHandler",
+"language": "GDScript",
+"path": "res://scripts/classes/TCPHandler.gd"
+}, {
+"base": "Node",
+"class": "TestNodeType",
+"language": "GDScript",
+"path": "res://scripts/test_class.gd"
+}, {
+"base": "BitmapFont",
+"class": "TextureFont",
+"language": "GDScript",
+"path": "res://addons/texture_fonts/Classes/TextureFont.gd"
+}, {
+"base": "HTTPRequest",
+"class": "XHRHandler",
+"language": "GDScript",
+"path": "res://scripts/classes/XHRHandler.gd"
+} ]
+_global_script_class_icons={
+"GlobalScope": "",
+"HTTPServer": "",
+"TCPHandler": "",
+"TestNodeType": "",
+"TextureFont": "res://addons/texture_fonts/Assets/TextureFont.svg",
+"XHRHandler": ""
+}
+
+[application]
+
+config/name="Ozymandias"
+run/main_scene="res://scenes/Root.tscn"
+config/icon="res://icon.png"
+
+[autoload]
+
+Sounds="*res://scripts/autoload/Sounds.gd"
+Log="*res://scripts/autoload/Log.gd"
+IO="*res://scripts/autoload/IO.gd"
+Debug="*res://scripts/autoload/Debug.gd"
+Keybinds="*res://scripts/autoload/Keybinds.gd"
+Settings="*res://scripts/autoload/Settings.gd"
+Game="*res://scripts/autoload/Game.gd"
+Assets="*res://scripts/autoload/Assets.gd"
+
+[editor_plugins]
+
+enabled=PoolStringArray( "res://addons/texture_fonts/plugin.cfg" )
+
+[gui]
+
+common/drop_mouse_on_gui_input_disabled=true
+
+[importer_defaults]
+
+texture={
+"flags/filter": false
+}
+
+[physics]
+
+common/enable_pause_aware_picking=true
+
+[rendering]
+
+2d/options/ninepatch_mode=0
+environment/default_environment="res://default_env.tres"

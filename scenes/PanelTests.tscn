@@ -1,0 +1,100 @@
+[gd_scene load_steps=11 format=2]
+
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel2.png" type="Texture" id=1]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel1.png" type="Texture" id=2]
+[ext_resource path="res://scripts/UI/OzyScrollContainer.gd" type="Script" id=3]
+[ext_resource path="res://scenes/UI/PanelSnapGrid.gd" type="Script" id=4]
+[ext_resource path="res://scenes/UI/Panel1.tscn" type="PackedScene" id=5]
+[ext_resource path="res://scenes/UI/Panel2.tscn" type="PackedScene" id=6]
+[ext_resource path="res://scenes/UI/OzyScrollContainer.tscn" type="PackedScene" id=7]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Fonts/small_black_on_black.tres" type="BitmapFont" id=18]
+
+[sub_resource type="StyleBoxTexture" id=1]
+texture = ExtResource( 2 )
+region_rect = Rect2( 0, 0, 192, 192 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id=2]
+texture = ExtResource( 1 )
+region_rect = Rect2( 0, 0, 112, 112 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="Control" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="PanelTest" type="Panel" parent="." instance=ExtResource( 5 )]
+margin_left = 153.0
+margin_top = 66.0
+margin_right = 793.0
+margin_bottom = 466.0
+custom_styles/panel = SubResource( 1 )
+script = ExtResource( 4 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" type="Panel" parent="PanelTest" instance=ExtResource( 6 )]
+margin_left = 97.0
+margin_top = 93.0
+margin_right = 433.0
+margin_bottom = 349.0
+custom_styles/panel = SubResource( 2 )
+script = ExtResource( 4 )
+
+[node name="OzyScrollContainer" type="Control" parent="PanelTest/Panel" instance=ExtResource( 7 )]
+anchor_right = 1.0
+anchor_bottom = 1.0
+rect_min_size = Vector2( 37, 83 )
+rect_clip_content = true
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_lock_": true
+}
+scroll_node_path = NodePath("Control/Label2")
+
+[node name="Control" type="Control" parent="PanelTest/Panel/OzyScrollContainer"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 9.0
+margin_top = 5.0
+margin_right = -39.0
+margin_bottom = -5.0
+rect_clip_content = true
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Label2" type="Label" parent="PanelTest/Panel/OzyScrollContainer/Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_bottom = 1981.0
+custom_fonts/font = ExtResource( 18 )
+text = "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...\"
+\"There is no one who loves pain itself, who seeks after it and wants to have it, simply because it is pain...\"
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean aliquam justo tincidunt dui ultricies scelerisque. Praesent felis turpis, ultrices sed mattis malesuada, facilisis eget orci. In accumsan tempor elementum. Fusce non orci lorem. Fusce at massa at diam molestie finibus. Donec convallis luctus eros ut sodales. Phasellus interdum, nunc sed blandit luctus, nisi augue porta nisl, in vestibulum nisi lacus eget sapien. Sed iaculis sit amet erat ac interdum. Sed tempus lacinia est vel condimentum. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Aenean a nisl ut purus ullamcorper feugiat nec eu justo. Nullam placerat elit a tempor commodo.
+
+Donec pellentesque metus eget mi convallis fermentum. Nunc vitae nunc vel lacus tristique lobortis. Quisque et consectetur risus. Phasellus elementum varius tellus, at mollis eros sollicitudin sed. In eget lorem imperdiet, sodales ipsum eu, vehicula dui. Nam a magna non tortor maximus porttitor nec eu odio. Vestibulum sit amet tincidunt libero, ac dignissim neque. Donec elementum tempor mi, ac congue arcu vestibulum quis. Mauris lectus eros, viverra sed metus quis, volutpat malesuada metus. Donec at risus quis nibh convallis pretium sit amet eu sapien.
+
+In tempor mi ut libero egestas hendrerit. Nam commodo rhoncus commodo. Phasellus consectetur sagittis semper. Praesent vel tempor purus. Vestibulum sit amet est eget justo iaculis posuere vitae et arcu. Nam nulla quam, maximus aliquam commodo et, volutpat eget velit. In scelerisque volutpat erat at fermentum. Sed a lobortis justo. Sed finibus felis augue, mattis semper erat ornare et. Phasellus placerat nec nisl et commodo.
+
+Nunc cursus facilisis erat, eget facilisis nisi ornare quis. Quisque a ex ex. Ut sit amet magna eget lacus vestibulum tempor et quis leo. Fusce pellentesque accumsan quam vel tempus. Ut at faucibus erat, sit amet luctus nisl. Fusce dignissim sapien ut hendrerit tempus. Vivamus scelerisque magna nulla, aliquet viverra arcu tristique vitae. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. Aenean at neque porttitor, posuere est a, fermentum turpis.
+
+Vestibulum quis pulvinar purus, cursus dignissim turpis. Aenean rutrum neque eget consequat venenatis. Suspendisse laoreet mauris in cursus blandit. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Suspendisse imperdiet lectus in ligula laoreet pretium. Nam eleifend nulla vulputate sapien"
+autowrap = true
+__meta__ = {
+"_edit_lock_": true
+}
+
+[connection signal="resized" from="PanelTest" to="PanelTest" method="_on_TextureRect_resized"]
+[connection signal="resized" from="PanelTest/Panel" to="PanelTest/Panel" method="_on_TextureRect_resized"]

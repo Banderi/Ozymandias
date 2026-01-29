@@ -1,0 +1,306 @@
+[gd_scene load_steps=18 format=2]
+
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/0_fired_00001.png" type="Texture" id=3]
+[ext_resource path="res://scenes/UI/Button1.tscn" type="PackedScene" id=4]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Fonts/large_on_black.tres" type="BitmapFont" id=5]
+[ext_resource path="res://scenes/UI/Panel1.tscn" type="PackedScene" id=6]
+[ext_resource path="res://scenes/UI/Panel2.tscn" type="PackedScene" id=7]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Fonts/large_on_white.tres" type="BitmapFont" id=8]
+[ext_resource path="res://scenes/UI/Button2.tscn" type="PackedScene" id=9]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Fonts/small_black_on_white.tres" type="BitmapFont" id=10]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Load4_00001.png" type="Texture" id=11]
+[ext_resource path="res://scenes/UI/OzyScrollContainer.tscn" type="PackedScene" id=12]
+
+[sub_resource type="GDScript" id=4]
+resource_name = "MainMenu"
+script/source = "extends TextureRect
+
+func _on_BtnPlay_pressed():
+	Game.open_menu(\"FamilySelection\")
+func _on_BtnWebsite_pressed():
+	pass # Replace with function body.
+func _on_BtnEditor_pressed():
+	pass # Replace with function body.
+func _on_BtnScores_pressed():
+	pass # Replace with function body.
+func _on_BtnQuit_pressed():
+	Game.open_menu(\"QuitGameConfirm\")
+"
+
+[sub_resource type="GDScript" id=7]
+resource_name = "FamilySelection"
+script/source = "extends TextureRect
+
+func _on_BtnCreateFamily_pressed():
+	pass # Replace with function body.
+func _on_BtnDeleteFamily_pressed():
+	pass # Replace with function body.
+func _on_BtnProceed_pressed():
+	pass # Replace with function body.
+func _on_BtnBack_pressed():
+	hide()
+"
+
+[sub_resource type="GDScript" id=6]
+resource_name = "QuitGameConfirm"
+script/source = "extends Control
+
+func _on_BtnYes_pressed():
+	get_tree().quit()
+func _on_BtnNo_pressed():
+	hide()
+
+func _on_Panel_clicked_outside(_panel):
+	hide()
+"
+
+[sub_resource type="GDScript" id=5]
+resource_name = "SplashScreen"
+script/source = "extends TextureRect
+
+func _on_Splash_focus_entered():
+	Game.open_menu(\"Main\")
+	hide()
+"
+
+[sub_resource type="GDScript" id=8]
+resource_name = "ASSET_TEST"
+script/source = "extends TextureRect
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+#	printerr(1)
+	texture = Assets.load_texture()
+	show()
+"
+
+[node name="Root" type="ColorRect"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 1 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Main" type="TextureRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 1 )
+expand = true
+stretch_mode = 6
+script = SubResource( 4 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Main"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -140.0
+margin_top = -153.0
+margin_right = 140.0
+margin_bottom = 36.0
+custom_constants/separation = 16
+
+[node name="BtnPlay" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
+margin_right = 280.0
+text = "Play Pharaoh/Cleopatra"
+
+[node name="BtnWebsite" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
+margin_top = 41.0
+margin_right = 280.0
+margin_bottom = 66.0
+text = "Activision Website"
+
+[node name="BtnEditor" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
+margin_top = 82.0
+margin_right = 280.0
+margin_bottom = 107.0
+text = "Mission Editor"
+
+[node name="BtnScores" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
+margin_top = 123.0
+margin_right = 280.0
+margin_bottom = 148.0
+text = "Greatest Families"
+
+[node name="BtnQuit" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
+margin_top = 164.0
+margin_right = 280.0
+margin_bottom = 189.0
+text = "Quit"
+
+[node name="FamilySelection" type="TextureRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 11 )
+expand = true
+stretch_mode = 6
+script = SubResource( 7 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="FamilySelection" instance=ExtResource( 6 )]
+margin_left = 318.0
+margin_top = 141.0
+margin_right = 686.0
+margin_bottom = 493.0
+
+[node name="Label" type="Label" parent="FamilySelection/Panel"]
+anchor_right = 1.0
+margin_top = 8.0
+margin_bottom = 50.0
+custom_fonts/font = ExtResource( 8 )
+text = "Family Registry"
+align = 1
+valign = 1
+
+[node name="Panel" parent="FamilySelection/Panel" instance=ExtResource( 7 )]
+margin_left = 16.0
+margin_top = 77.0
+margin_right = 320.0
+margin_bottom = 269.0
+
+[node name="OzyScrollContainer" parent="FamilySelection/Panel/Panel" instance=ExtResource( 12 )]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 37.0
+margin_bottom = 0.0
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="BtnCreateFamily" parent="FamilySelection/Panel" instance=ExtResource( 9 )]
+margin_left = 15.0
+margin_top = 274.0
+margin_right = 141.0
+margin_bottom = 300.0
+text = "Create Family"
+
+[node name="BtnDeleteFamily" parent="FamilySelection/Panel" instance=ExtResource( 9 )]
+margin_left = 147.0
+margin_top = 274.0
+margin_right = 272.0
+margin_bottom = 300.0
+text = "Delete Family"
+
+[node name="BtnProceed" parent="FamilySelection/Panel" instance=ExtResource( 9 )]
+margin_left = 278.0
+margin_top = 274.0
+margin_right = 352.0
+margin_bottom = 300.0
+text = "Proceed"
+
+[node name="BtnBack" parent="FamilySelection/Panel" instance=ExtResource( 9 )]
+margin_left = 67.0
+margin_top = 305.0
+margin_right = 298.0
+margin_bottom = 331.0
+text = "Return to main menu"
+
+[node name="QuitGameConfirm" type="Control" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -20.0
+margin_top = -20.0
+margin_right = 20.0
+margin_bottom = 20.0
+script = SubResource( 6 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="QuitGameConfirm" instance=ExtResource( 6 )]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -144.0
+margin_top = -56.0
+margin_right = 144.0
+margin_bottom = 56.0
+exclusive_input = true
+
+[node name="Panel" parent="QuitGameConfirm/Panel" instance=ExtResource( 7 )]
+margin_left = 8.0
+margin_top = 8.0
+margin_right = 280.0
+margin_bottom = 40.0
+
+[node name="Label" type="Label" parent="QuitGameConfirm/Panel/Panel"]
+anchor_right = 1.0
+margin_bottom = 28.0
+custom_fonts/font = ExtResource( 5 )
+text = "Leave the Kingdom?"
+align = 1
+valign = 1
+
+[node name="Label2" type="Label" parent="QuitGameConfirm/Panel"]
+anchor_right = 1.0
+margin_left = 45.0
+margin_top = 40.0
+margin_right = -55.0
+margin_bottom = 68.0
+custom_fonts/font = ExtResource( 10 )
+text = "Quit"
+align = 1
+valign = 1
+
+[node name="BtnYes" parent="QuitGameConfirm/Panel" instance=ExtResource( 9 )]
+margin_left = 48.0
+margin_top = 69.0
+margin_right = 139.0
+margin_bottom = 95.0
+text = "Yes"
+
+[node name="BtnNo" parent="QuitGameConfirm/Panel" instance=ExtResource( 9 )]
+margin_left = 139.0
+margin_top = 69.0
+margin_right = 230.0
+margin_bottom = 95.0
+text = "No"
+
+[node name="Splash" type="TextureRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+focus_mode = 1
+texture = ExtResource( 2 )
+expand = true
+stretch_mode = 6
+script = SubResource( 5 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="ColorRect" type="TextureRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 3 )
+expand = true
+stretch_mode = 6
+script = SubResource( 8 )
+
+[connection signal="pressed" from="Main/VBoxContainer/BtnPlay" to="Main" method="_on_BtnPlay_pressed"]
+[connection signal="pressed" from="Main/VBoxContainer/BtnWebsite" to="Main" method="_on_BtnWebsite_pressed"]
+[connection signal="pressed" from="Main/VBoxContainer/BtnEditor" to="Main" method="_on_BtnEditor_pressed"]
+[connection signal="pressed" from="Main/VBoxContainer/BtnScores" to="Main" method="_on_BtnScores_pressed"]
+[connection signal="pressed" from="Main/VBoxContainer/BtnQuit" to="Main" method="_on_BtnQuit_pressed"]
+[connection signal="pressed" from="FamilySelection/Panel/BtnCreateFamily" to="FamilySelection" method="_on_BtnCreateFamily_pressed"]
+[connection signal="pressed" from="FamilySelection/Panel/BtnDeleteFamily" to="FamilySelection" method="_on_BtnDeleteFamily_pressed"]
+[connection signal="pressed" from="FamilySelection/Panel/BtnProceed" to="FamilySelection" method="_on_BtnProceed_pressed"]
+[connection signal="pressed" from="FamilySelection/Panel/BtnBack" to="FamilySelection" method="_on_BtnBack_pressed"]
+[connection signal="clicked_outside" from="QuitGameConfirm/Panel" to="QuitGameConfirm" method="_on_Panel_clicked_outside"]
+[connection signal="pressed" from="QuitGameConfirm/Panel/BtnYes" to="QuitGameConfirm" method="_on_BtnYes_pressed"]
+[connection signal="pressed" from="QuitGameConfirm/Panel/BtnNo" to="QuitGameConfirm" method="_on_BtnNo_pressed"]
+[connection signal="focus_entered" from="Splash" to="Splash" method="_on_Splash_focus_entered"]
