@@ -137,6 +137,8 @@ func put(key, format, format_extra = null, default = 0) -> bool:
 			_curr_record_ref.push_back(default)
 	
 	if _flags == File.READ:
+		if _handle.eof_reached() || _handle.get_position() >= _handle.get_len():
+			return bail(GlobalScope.Error.ERR_FILE_EOF, "file end reached")
 		match format:
 			ScribeFormat.i8:
 				_curr_record_ref[key] = _handle.get_8()
@@ -186,6 +188,7 @@ func enscribe(path, operation, create_backup, enscriber_proc: FuncRef, enscriber
 	
 	var t = Stopwatch.start()
 	var r = enscriber_proc.call_funcv(enscriber_args)
+	r = _handle == null
 	Scribe.close()
 	Stopwatch.stop(self, t, "time taken:")
 	return r
