@@ -62,9 +62,9 @@ texture_hover = ExtResource( 8 )
 [node name="BtnGrabber" type="TextureButton" parent="."]
 anchor_left = 0.5
 anchor_right = 0.5
-margin_left = 5.5
+margin_left = -13.0
 margin_top = 26.0
-margin_right = 31.5
+margin_right = 13.0
 margin_bottom = 52.0002
 action_mode = 0
 keep_pressed_outside = true

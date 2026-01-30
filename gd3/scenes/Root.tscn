@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=16 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -64,17 +64,6 @@ func _on_Splash_focus_entered():
 	hide()
 "
 
-[sub_resource type="GDScript" id=8]
-resource_name = "ASSET_TEST"
-script/source = "extends TextureRect
-
-# Called when the node enters the scene tree for the first time.
-#func _ready():
-#	printerr(1)
-#	texture = Assets.load_texture()
-#	show()
-"
-
 [node name="Root" type="ColorRect"]
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -134,7 +123,6 @@ margin_bottom = 189.0
 text = "Quit"
 
 [node name="FamilySelection" type="TextureRect" parent="."]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 11 )
@@ -280,14 +268,6 @@ script = SubResource( 5 )
 __meta__ = {
 "_edit_lock_": true
 }
-
-[node name="ColorRect" type="TextureRect" parent="."]
-visible = false
-anchor_right = 1.0
-anchor_bottom = 1.0
-expand = true
-stretch_mode = 6
-script = SubResource( 8 )
 
 [connection signal="pressed" from="Main/VBoxContainer/BtnPlay" to="Main" method="_on_BtnPlay_pressed"]
 [connection signal="pressed" from="Main/VBoxContainer/BtnWebsite" to="Main" method="_on_BtnWebsite_pressed"]

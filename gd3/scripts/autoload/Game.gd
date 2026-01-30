@@ -26,6 +26,9 @@ func debug_tools_enabled():
 func _ready():
 	close_all_menus()
 	open_menu("Splash")
+	
+	Family.JAS_load("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/highscore.jas")
+	Family.JAS_save("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/highscore2.jas")
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

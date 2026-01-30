@@ -6,12 +6,13 @@ export var scroll_node_path : NodePath
 onready var scrollbar = $OzyVScrollBar
 var scroll_node = null
 func _ready():
-	pass
-#	scroll_node = get_node(scroll_node_path)
-#	if scroll_node == null:
-#		scrollbar.max_value = 0
-#	else:
-#		scrollbar.max_value = scroll_node.get_minimum_size().y
+	if scroll_node_path == "":
+		return
+	scroll_node = get_node(scroll_node_path)
+	if scroll_node == null:
+		scrollbar.max_value = 0
+	else:
+		scrollbar.max_value = scroll_node.get_minimum_size().y
 
 func _on_OzyVScrollBar_scrolled(value):
 	if scroll_node != null:

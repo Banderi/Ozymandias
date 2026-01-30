@@ -1,7 +1,14 @@
 extends Node
-# ANTIMONY 'IO' by Banderi --- v1.0
+# ANTIMONY 'IO' by Banderi --- v1.3
+
+# check if running via Godot editor Play/F5 function (NOT in-editor "tool" scripts)
+func is_editor():
+	var exe_filename = naked_filename(OS.get_executable_path())
+	return "Godot" in exe_filename
 
 # directory IO
+func get_runtime_path(trail_slash = true):
+	return naked_folder_path(OS.get_executable_path(), trail_slash)
 func get_folder_split_path(path):
 	# this only legally accepts full paths with a file name at the end!
 	var result = path.rsplit('/', false, 1)
@@ -9,6 +16,19 @@ func get_folder_split_path(path):
 		return ["", result[0]]
 	result[0] += '/'
 	return result
+func naked_folder_path(path, trail_slash = true):
+	var lsl_idx = path.find_last('/')
+	if lsl_idx == -1:
+		return path + ('/' if trail_slash else '')
+	else:
+		return path.substr(0, lsl_idx + (1 if trail_slash else 0))
+func naked_filename(path):
+	var lsl_idx = path.find_last('/')
+	if lsl_idx == -1:
+		return path # different behavior than naked_folder_path -- here we assume it's a trailing name, not a drive name
+	else:
+		var file_name = path.substr(lsl_idx + 1)
+		return null if file_name == "" else file_name
 
 # basic IO
 func write(path, data, create_folder_if_missing = true, password = ""):
@@ -126,8 +146,10 @@ func move_file(path, to, remove_previous = true, overwrite = false):
 			Log.error(null,err,str("could not delete file '",path,"'"))
 			return false
 	return true
+func copy_file(path, to, overwrite = false):
+	return move_file(path, to, false, overwrite)
 
-func dir_contents(path):
+func dir_contents(path, filter_by = ""):
 	var dir = Directory.new()
 	var err = dir.open(path)
 	if err != OK:
@@ -142,11 +164,12 @@ func dir_contents(path):
 		var file_name = dir.get_next()
 		while file_name != "":
 			if file_name != "." && file_name != ".." :
-				var file_data = metadata(str(path,"/",file_name))
-				if dir.current_is_dir():
-					results.folders[file_name] = file_data
-				else:
-					results.files[file_name] = file_data
+				if filter_by == "" || file_name.find(filter_by) != -1:
+					var file_data = metadata(str(path,"/",file_name))
+					if dir.current_is_dir():
+						results.folders[file_name] = file_data
+					else:
+						results.files[file_name] = file_data
 			file_name = dir.get_next()
 		return results
 func find_most_recent_file(path):
