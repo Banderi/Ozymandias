@@ -1,4 +1,4 @@
-class_name Scribe
+class_name ScribeFormat
 enum {
 	i8,
 	i16,

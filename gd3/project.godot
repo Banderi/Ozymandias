@@ -20,9 +20,9 @@ _global_script_classes=[ {
 "path": "res://scripts/classes/HTTPServer.gd"
 }, {
 "base": "Reference",
-"class": "Scribe",
+"class": "ScribeFormat",
 "language": "GDScript",
-"path": "res://scripts/classes/Scribe.gd"
+"path": "res://scripts/classes/ScribeFormat.gd"
 }, {
 "base": "Node",
 "class": "TCPHandler",
@@ -47,7 +47,7 @@ _global_script_classes=[ {
 _global_script_class_icons={
 "GlobalScope": "",
 "HTTPServer": "",
-"Scribe": "",
+"ScribeFormat": "",
 "TCPHandler": "",
 "TestNodeType": "",
 "TextureFont": "res://addons/texture_fonts/Assets/TextureFont.svg",
@@ -72,6 +72,7 @@ Game="*res://scripts/autoload/Game.gd"
 Assets="*res://scripts/autoload/Assets.gd"
 Family="*res://scripts/autoload/game/Family.gd"
 Stopwatch="*res://scripts/autoload/Stopwatch.gd"
+Scribe="*res://scripts/autoload/Scribe.gd"
 
 [editor_plugins]
 
