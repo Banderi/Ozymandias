@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=2]
+
+[ext_resource path="res://scenes/UI/Button3.tscn" type="PackedScene" id=1]
+
+[node name="ListingButton" instance=ExtResource( 1 )]
+toggle_mode = true
+toggled_list_item = true
+
+[connection signal="pressed" from="." to="." method="_on_Button_pressed"]

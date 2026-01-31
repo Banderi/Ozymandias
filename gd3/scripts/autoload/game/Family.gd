@@ -3,6 +3,15 @@ extends Node
 var families_highscores = []
 var families_data = {}
 
+func enumerate_families(): # this will REMOVE CACHED DATA from non-existing families!
+	var f = IO.dir_contents(Assets.SAVES_PATH)
+	
+	families_data = {}
+	for family_name in f.folders:
+		families_data[family_name] = {}
+	
+	Log.generic(self, "enumerated: %s families found in the Save folder" % [families_data.size()])
+
 # family scores chunk
 func enscribe_highscore_chunk():
 	Scribe.put("score", ScribeFormat.u32)

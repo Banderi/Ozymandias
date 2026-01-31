@@ -1,7 +1,8 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
+[ext_resource path="res://scenes/UI/ListItems/ListingButton.tscn" type="PackedScene" id=3]
 [ext_resource path="res://scenes/UI/Button1.tscn" type="PackedScene" id=4]
 [ext_resource path="res://assets/fonts/large_on_black.tres" type="BitmapFont" id=5]
 [ext_resource path="res://scenes/UI/Panel1.tscn" type="PackedScene" id=6]
@@ -40,6 +41,21 @@ func _on_BtnProceed_pressed():
 	pass # Replace with function body.
 func _on_BtnBack_pressed():
 	hide()
+
+onready var family_name_list_item_TSCN = load(\"res://scenes/UI/ListItems/ListingButton.tscn\")
+func _on_FamilySelection_visibility_changed():
+	if visible:
+		
+		Family.enumerate_families()
+		
+		var family_names_list = $Panel/Panel/OzyScrollContainer/Control/VBoxContainer 
+		for n in family_names_list.get_children():
+			n.queue_free()
+		
+		for family_name in Family.families_data:
+			var node = family_name_list_item_TSCN.instance()
+			node.text = family_name
+			family_names_list.add_child(node)
 "
 
 [sub_resource type="GDScript" id=6]
@@ -162,6 +178,39 @@ margin_bottom = 0.0
 __meta__ = {
 "_edit_lock_": true
 }
+scroll_node_path = NodePath("Control/VBoxContainer")
+
+[node name="Control" type="Control" parent="FamilySelection/Panel/Panel/OzyScrollContainer"]
+margin_left = 6.0
+margin_top = 5.0
+margin_right = 298.0
+margin_bottom = 187.0
+rect_clip_content = true
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="FamilySelection/Panel/Panel/OzyScrollContainer/Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_bottom = -150.0
+custom_constants/separation = 0
+
+[node name="ListingButton" parent="FamilySelection/Panel/Panel/OzyScrollContainer/Control/VBoxContainer" instance=ExtResource( 3 )]
+margin_right = 292.0
+text = ":3"
+
+[node name="ListingButton2" parent="FamilySelection/Panel/Panel/OzyScrollContainer/Control/VBoxContainer" instance=ExtResource( 3 )]
+margin_top = 16.0
+margin_right = 292.0
+margin_bottom = 32.0
+text = "jmhmgkjlkjh"
+
+[node name="ListingButton3" parent="FamilySelection/Panel/Panel/OzyScrollContainer/Control/VBoxContainer" instance=ExtResource( 3 )]
+margin_top = 32.0
+margin_right = 292.0
+margin_bottom = 48.0
+text = "test21236"
 
 [node name="BtnCreateFamily" parent="FamilySelection/Panel" instance=ExtResource( 9 )]
 margin_left = 15.0
@@ -274,6 +323,7 @@ __meta__ = {
 [connection signal="pressed" from="Main/VBoxContainer/BtnEditor" to="Main" method="_on_BtnEditor_pressed"]
 [connection signal="pressed" from="Main/VBoxContainer/BtnScores" to="Main" method="_on_BtnScores_pressed"]
 [connection signal="pressed" from="Main/VBoxContainer/BtnQuit" to="Main" method="_on_BtnQuit_pressed"]
+[connection signal="visibility_changed" from="FamilySelection" to="FamilySelection" method="_on_FamilySelection_visibility_changed"]
 [connection signal="pressed" from="FamilySelection/Panel/BtnCreateFamily" to="FamilySelection" method="_on_BtnCreateFamily_pressed"]
 [connection signal="pressed" from="FamilySelection/Panel/BtnDeleteFamily" to="FamilySelection" method="_on_BtnDeleteFamily_pressed"]
 [connection signal="pressed" from="FamilySelection/Panel/BtnProceed" to="FamilySelection" method="_on_BtnProceed_pressed"]

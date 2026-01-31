@@ -12,7 +12,9 @@ func _ready():
 	if scroll_node == null:
 		scrollbar.max_value = 0
 	else:
-		scrollbar.max_value = scroll_node.get_minimum_size().y
+		var s_y = scroll_node.get_minimum_size().y
+		var p_y = scroll_node.get_parent().rect_size.y
+		scrollbar.max_value = max(0, s_y - p_y)
 
 func _on_OzyVScrollBar_scrolled(value):
 	if scroll_node != null:

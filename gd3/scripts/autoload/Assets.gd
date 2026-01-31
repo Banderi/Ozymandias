@@ -1,6 +1,9 @@
 extends Node
 
-const DATA_PATH = "D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Data" # TODO: put this in user setting
+# TODO: put these in user setting
+const INSTALL_PATH = "D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra" 
+const DATA_PATH = INSTALL_PATH + "/Data"
+const SAVES_PATH = INSTALL_PATH + "/Save"
 
 func load_texture(pak = "Pharaoh_Unloaded", data = "0_fired_00001.png"):
 	var path = "res://assets/Pharaoh/" + pak + "/" + data

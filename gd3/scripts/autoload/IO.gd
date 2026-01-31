@@ -1,5 +1,5 @@
 extends Node
-# ANTIMONY 'IO' by Banderi --- v1.3
+# ANTIMONY 'IO' by Banderi --- v1.4
 
 # check if running via Godot editor Play/F5 function (NOT in-editor "tool" scripts)
 func is_editor():
@@ -102,7 +102,7 @@ func read(path, get_as_text = false, password = ""):
 func file_exists(path):
 	var file = File.new()
 	return file.file_exists(path)
-func metadata(path):
+func metadata(path): # TODO: folder metadata
 	var file = File.new()
 	var err = file.open(path, File.READ)
 	if err != OK:
@@ -165,11 +165,10 @@ func dir_contents(path, filter_by = ""):
 		while file_name != "":
 			if file_name != "." && file_name != ".." :
 				if filter_by == "" || file_name.find(filter_by) != -1:
-					var file_data = metadata(str(path,"/",file_name))
 					if dir.current_is_dir():
-						results.folders[file_name] = file_data
+						results.folders[file_name] = null # TODO: folder metadata
 					else:
-						results.files[file_name] = file_data
+						results.files[file_name] = metadata(str(path,"/",file_name))
 			file_name = dir.get_next()
 		return results
 func find_most_recent_file(path):
