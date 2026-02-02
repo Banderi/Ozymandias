@@ -17,6 +17,11 @@ func close_all_menus():
 	for m in ROOT_NODE.get_children():
 		m.hide()
 
+func right_click_pressed(relevant_node, event): # TODO: this doesn't capture perfectly for menus without a stack. ugh.
+	if event is InputEventMouseButton && event.button_index == BUTTON_RIGHT:
+		return true
+	return false
+
 func debug_tools_enabled():
 	return false
 
@@ -24,7 +29,36 @@ func debug_tools_enabled():
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	
+#	TranslationServer.set_locale("en")
+#	TranslationServer.set_locale("it")
+	
+	
+#	var tr = [
+#		"res://assets/locales/test_en.en.translation",
+#		"res://assets/locales/test_en.it.translation"
+#	]
+#	ProjectSettings.set_setting("locale/translations", tr)
+
+	
+	TranslationServer.add_translation(Assets.load_lang(Assets.INSTALL_PATH + "/Pharaoh_Text.eng", "en"))
+	TranslationServer.set_locale("en")
+	
+
+#	var t = load("E:/Godot/Projects/Ozymandias/gd3/assets/locales/a/test.csv")
+#	var t = load("E:/Godot/Projects/Ozymandias/gd3/assets/locales/test_en.it.translation")
+
+#	var a = t.get_message("TEST3")
+
+#	TranslationServer.add_translation(
+	
 	close_all_menus()
+	
+	# TODO:
+	# loading:
+	
+	# bink video: intro
+	
 	open_menu("Splash")
 	
 #	Family.JAS_load("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/highscore.jas")
@@ -35,5 +69,12 @@ func _ready():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta):
-	pass
+var t = 0
+func _process(delta):
+	t += delta
+#	if t > 1:
+#		TranslationServer.set_locale("en")
+#	if t > 2:
+#		t = 0
+#		TranslationServer.set_locale("it")
+		

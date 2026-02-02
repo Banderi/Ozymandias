@@ -1,5 +1,5 @@
 extends Node
-# ANTIMONY 'IO' by Banderi --- v1.4
+# ANTIMONY 'IO' by Banderi --- v1.5
 
 # check if running via Godot editor Play/F5 function (NOT in-editor "tool" scripts)
 func is_editor():
@@ -99,6 +99,18 @@ func read(path, get_as_text = false, password = ""):
 	file.close()
 	Log.generic(null,str("file '",path,"' read successfully!"))
 	return data
+func open(path, get_as_text = false, password = ""):
+	# init stream
+	var file = File.new()
+	var err = -1
+	if password == "":
+		err = file.open(path, File.READ)
+	else:
+		err = file.open_encrypted_with_pass(path, File.READ, password)
+	if err != OK:
+		Log.error(null,err,str("could not read file '",path,"'"))
+		return null
+	return file
 func file_exists(path):
 	var file = File.new()
 	return file.file_exists(path)

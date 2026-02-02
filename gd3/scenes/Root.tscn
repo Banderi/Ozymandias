@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=20 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -12,6 +12,7 @@
 [ext_resource path="res://assets/fonts/small_black_on_white.tres" type="BitmapFont" id=10]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Load4_00001.png" type="Texture" id=11]
 [ext_resource path="res://scenes/UI/OzyScrollContainer.tscn" type="PackedScene" id=12]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/FE_ChooseGame_00001.png" type="Texture" id=13]
 
 [sub_resource type="GDScript" id=4]
 resource_name = "MainMenu"
@@ -38,9 +39,12 @@ func _on_BtnCreateFamily_pressed():
 func _on_BtnDeleteFamily_pressed():
 	pass # Replace with function body.
 func _on_BtnProceed_pressed():
-	pass # Replace with function body.
+	Game.open_menu(\"GameSelection\")
 func _on_BtnBack_pressed():
 	hide()
+
+func _on_BtnFamilyListing_pressed(family_name):
+	Family.current_family = family_name
 
 onready var family_name_list_item_TSCN = load(\"res://scenes/UI/ListItems/ListingButton.tscn\")
 func _on_FamilySelection_visibility_changed():
@@ -55,7 +59,53 @@ func _on_FamilySelection_visibility_changed():
 		for family_name in Family.families_data:
 			var node = family_name_list_item_TSCN.instance()
 			node.text = family_name
+			node.connect(\"pressed\", self, \"_on_BtnFamilyListing_pressed\", [family_name])
 			family_names_list.add_child(node)
+
+func _gui_input(event):
+	if Game.right_click_pressed(self, event):
+		_on_BtnBack_pressed()
+"
+
+[sub_resource type="GDScript" id=8]
+resource_name = "GameSelection"
+script/source = "extends TextureRect
+
+func _on_BtnBegin_pressed():
+	pass # Replace with function body.
+func _on_BtnChooseMission_pressed():
+	Game.open_menu(\"NoMissionWonYet\")
+func _on_BtnSaveGames_pressed():
+	pass # Replace with function body.
+func _on_BtnCustomMissions_pressed():
+	pass # Replace with function body.
+func _on_BtnBack_pressed():
+	hide()
+
+func _on_GameSelection_visibility_changed():
+	if visible:
+		$Panel/FamilyName.text = str(Family.current_family, \" family\")
+
+func _gui_input(event):
+	if Game.right_click_pressed(self, event):
+		_on_BtnBack_pressed()
+"
+
+[sub_resource type="GDScript" id=9]
+resource_name = "NoMissionWonYet"
+script/source = "extends Control
+
+func _on_BtnYes_pressed():
+	pass
+func _on_BtnNo_pressed():
+	hide()
+
+func _on_Panel_clicked_outside(_panel):
+	hide()
+
+func _gui_input(event):
+	if Game.right_click_pressed(self, event):
+		hide()
 "
 
 [sub_resource type="GDScript" id=6]
@@ -69,6 +119,10 @@ func _on_BtnNo_pressed():
 
 func _on_Panel_clicked_outside(_panel):
 	hide()
+
+func _gui_input(event):
+	if Game.right_click_pressed(self, event):
+		hide()
 "
 
 [sub_resource type="GDScript" id=5]
@@ -139,6 +193,7 @@ margin_bottom = 189.0
 text = "Quit"
 
 [node name="FamilySelection" type="TextureRect" parent="."]
+visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 11 )
@@ -240,6 +295,144 @@ margin_right = 298.0
 margin_bottom = 331.0
 text = "Return to main menu"
 
+[node name="GameSelection" type="TextureRect" parent="."]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 13 )
+expand = true
+stretch_mode = 6
+script = SubResource( 8 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="GameSelection" instance=ExtResource( 6 )]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -200.0
+margin_top = -208.0
+margin_right = 200.0
+margin_bottom = 144.0
+
+[node name="FamilyName" type="Label" parent="GameSelection/Panel"]
+anchor_right = 1.0
+margin_top = 13.0
+margin_bottom = 42.0
+custom_fonts/font = ExtResource( 8 )
+text = "test family"
+align = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GameSelection/Panel"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -114.0
+margin_top = -60.0
+margin_right = 116.0
+margin_bottom = 129.0
+custom_constants/separation = 16
+
+[node name="BtnBegin" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
+margin_right = 230.0
+text = "Begin Family History"
+
+[node name="BtnChooseMission" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
+margin_top = 41.0
+margin_right = 230.0
+margin_bottom = 66.0
+text = "Choose a Mission"
+
+[node name="BtnSaveGames" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
+margin_top = 82.0
+margin_right = 230.0
+margin_bottom = 107.0
+text = "Load Saved Game"
+
+[node name="BtnCustomMissions" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
+margin_top = 123.0
+margin_right = 230.0
+margin_bottom = 148.0
+text = "Custom Missions"
+
+[node name="BtnBack" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
+margin_top = 164.0
+margin_right = 230.0
+margin_bottom = 189.0
+text = "Return to Family Registry"
+
+[node name="NoMissionWonYet" type="Control" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -20.0
+margin_top = -20.0
+margin_right = 20.0
+margin_bottom = 20.0
+script = SubResource( 9 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="NoMissionWonYet" instance=ExtResource( 6 )]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -320.0
+margin_top = -56.0
+margin_right = 320.0
+margin_bottom = 56.0
+exclusive_input = true
+
+[node name="Panel" parent="NoMissionWonYet/Panel" instance=ExtResource( 7 )]
+anchor_right = 1.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = -8.0
+margin_bottom = 40.0
+
+[node name="Label" type="Label" parent="NoMissionWonYet/Panel/Panel"]
+anchor_right = 1.0
+margin_bottom = 28.0
+custom_fonts/font = ExtResource( 5 )
+text = "No Missions Won By Family"
+align = 1
+valign = 1
+
+[node name="Label2" type="Label" parent="NoMissionWonYet/Panel"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -303.0
+margin_top = -14.0
+margin_right = 303.0
+margin_bottom = 14.0
+custom_fonts/font = ExtResource( 10 )
+text = "Please 'Begin Family History' if you are new to Pharaoh. Continue to choose mission?"
+align = 1
+valign = 1
+
+[node name="BtnYes" parent="NoMissionWonYet/Panel" instance=ExtResource( 9 )]
+margin_left = 104.0
+margin_top = 69.0
+margin_right = 324.0
+margin_bottom = 95.0
+text = "Yes"
+
+[node name="BtnNo" parent="NoMissionWonYet/Panel" instance=ExtResource( 9 )]
+margin_left = 324.0
+margin_top = 69.0
+margin_right = 544.0
+margin_bottom = 95.0
+text = "No"
+
 [node name="QuitGameConfirm" type="Control" parent="."]
 visible = false
 anchor_left = 0.5
@@ -267,9 +460,10 @@ margin_bottom = 56.0
 exclusive_input = true
 
 [node name="Panel" parent="QuitGameConfirm/Panel" instance=ExtResource( 7 )]
+anchor_right = 1.0
 margin_left = 8.0
 margin_top = 8.0
-margin_right = 280.0
+margin_right = -8.0
 margin_bottom = 40.0
 
 [node name="Label" type="Label" parent="QuitGameConfirm/Panel/Panel"]
@@ -328,6 +522,15 @@ __meta__ = {
 [connection signal="pressed" from="FamilySelection/Panel/BtnDeleteFamily" to="FamilySelection" method="_on_BtnDeleteFamily_pressed"]
 [connection signal="pressed" from="FamilySelection/Panel/BtnProceed" to="FamilySelection" method="_on_BtnProceed_pressed"]
 [connection signal="pressed" from="FamilySelection/Panel/BtnBack" to="FamilySelection" method="_on_BtnBack_pressed"]
+[connection signal="visibility_changed" from="GameSelection" to="GameSelection" method="_on_GameSelection_visibility_changed"]
+[connection signal="pressed" from="GameSelection/Panel/VBoxContainer/BtnBegin" to="GameSelection" method="_on_BtnBegin_pressed"]
+[connection signal="pressed" from="GameSelection/Panel/VBoxContainer/BtnChooseMission" to="GameSelection" method="_on_BtnChooseMission_pressed"]
+[connection signal="pressed" from="GameSelection/Panel/VBoxContainer/BtnSaveGames" to="GameSelection" method="_on_BtnSaveGames_pressed"]
+[connection signal="pressed" from="GameSelection/Panel/VBoxContainer/BtnCustomMissions" to="GameSelection" method="_on_BtnCustomMissions_pressed"]
+[connection signal="pressed" from="GameSelection/Panel/VBoxContainer/BtnBack" to="GameSelection" method="_on_BtnBack_pressed"]
+[connection signal="clicked_outside" from="NoMissionWonYet/Panel" to="NoMissionWonYet" method="_on_Panel_clicked_outside"]
+[connection signal="pressed" from="NoMissionWonYet/Panel/BtnYes" to="NoMissionWonYet" method="_on_BtnYes_pressed"]
+[connection signal="pressed" from="NoMissionWonYet/Panel/BtnNo" to="NoMissionWonYet" method="_on_BtnNo_pressed"]
 [connection signal="clicked_outside" from="QuitGameConfirm/Panel" to="QuitGameConfirm" method="_on_Panel_clicked_outside"]
 [connection signal="pressed" from="QuitGameConfirm/Panel/BtnYes" to="QuitGameConfirm" method="_on_BtnYes_pressed"]
 [connection signal="pressed" from="QuitGameConfirm/Panel/BtnNo" to="QuitGameConfirm" method="_on_BtnNo_pressed"]
