@@ -40,17 +40,21 @@ func _ready():
 #	]
 #	ProjectSettings.set_setting("locale/translations", tr)
 
+#	var text_en = Assets.load_lang(Assets.INSTALL_PATH + "/Pharaoh_Text.eng", "en")
+#	ResourceSaver.save("res://assets/locales/Pharaoh_Text.en.translation", text_en)
+#	IO.write("res://assets/locales/Pharaoh_Text.en.translation", text_en)
+
+#	var text_en = load("res://assets/locales/Pharaoh_Text.en.translation")
+#	TranslationServer.add_translation(text_en)
+#	TranslationServer.set_locale("en")
 	
-	TranslationServer.add_translation(Assets.load_lang(Assets.INSTALL_PATH + "/Pharaoh_Text.eng", "en"))
-	TranslationServer.set_locale("en")
-	
+	var a = TranslationServer.translate("TEXT_30_0")
 
 #	var t = load("E:/Godot/Projects/Ozymandias/gd3/assets/locales/a/test.csv")
 #	var t = load("E:/Godot/Projects/Ozymandias/gd3/assets/locales/test_en.it.translation")
 
 #	var a = t.get_message("TEST3")
 
-#	TranslationServer.add_translation(
 	
 	close_all_menus()
 	

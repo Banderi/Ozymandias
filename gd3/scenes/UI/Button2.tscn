@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=2]
+[gd_scene load_steps=6 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_General/Panel6.tres" type="StyleBox" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_General/Panel5.tres" type="StyleBox" id=2]
 [ext_resource path="res://assets/fonts/small_black_on_white.tres" type="BitmapFont" id=3]
 [ext_resource path="res://scenes/UI/ButtonEx.gd" type="Script" id=4]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/Panel5_disabled.tres" type="StyleBox" id=5]
 
 [node name="Button2" type="Button"]
 margin_right = 62.0
@@ -12,6 +13,8 @@ rect_min_size = Vector2( 32, 25 )
 custom_colors/font_color_pressed = Color( 0, 0, 0, 1 )
 custom_fonts/font = ExtResource( 3 )
 custom_styles/hover = ExtResource( 1 )
+custom_styles/disabled = ExtResource( 5 )
 custom_styles/normal = ExtResource( 2 )
 text = "Test!"
+clip_text = true
 script = ExtResource( 4 )

@@ -29,6 +29,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://scripts/classes/HTTPServer.gd"
 }, {
+"base": "Label",
+"class": "LabelEx",
+"language": "GDScript",
+"path": "res://scripts/classes/LabelEx.gd"
+}, {
 "base": "Reference",
 "class": "ScribeFormat",
 "language": "GDScript",
@@ -59,6 +64,7 @@ _global_script_class_icons={
 "FileEx": "",
 "GlobalScope": "",
 "HTTPServer": "",
+"LabelEx": "",
 "ScribeFormat": "",
 "TCPHandler": "",
 "TestNodeType": "",
@@ -102,7 +108,7 @@ texture={
 
 [locale]
 
-translations=PoolStringArray( "res://assets/locales/test_en.en.translation", "res://assets/locales/test_en.it.translation" )
+translations=PoolStringArray( "res://assets/locales/Pharaoh_Text.en.translation" )
 
 [physics]
 

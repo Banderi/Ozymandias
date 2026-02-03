@@ -1,3 +1,4 @@
+tool
 extends Node
 
 # TODO: put these in user setting
@@ -93,6 +94,22 @@ func load_lang(path: String, locale: String):
 	
 	return tr
 
+func editor_debug_translate_labels(node):
+	if Engine.is_editor_hint():
+		var l_n = node.get_node_or_null("TL_LABEL_DEBUG")
+		if l_n == null:
+			l_n = Label.new()
+			l_n.name = "TL_LABEL_DEBUG"
+			l_n.text = ""
+			l_n.set("custom_colors/font_color_shadow", Color("5f000000"))
+			l_n.set("custom_constants/shadow_as_outline", 1)
+			node.add_child(l_n)
+			l_n.set_meta("l_n", "")
+		if l_n.get_meta("l_n") != node.text:
+			l_n.set_meta("l_n", node.text)
+			var text_en = load("res://assets/locales/Pharaoh_Text.en.translation")
+			l_n.text = text_en.get_message(node.text)
+			print("updated: ", node.text)
 
 func load_mm(path: String):
 	var file = IO.open(path) as File

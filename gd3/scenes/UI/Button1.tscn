@@ -20,7 +20,7 @@ margin_right = 16.0
 axis_stretch_horizontal = 1
 
 [node name="Button1" type="Button"]
-margin_right = 62.0
+margin_right = 76.0
 margin_bottom = 25.0
 rect_min_size = Vector2( 32, 25 )
 custom_colors/font_color_pressed = Color( 0, 0, 0, 1 )
@@ -28,4 +28,5 @@ custom_fonts/font = ExtResource( 2 )
 custom_styles/hover = SubResource( 2 )
 custom_styles/normal = SubResource( 1 )
 text = "Test!"
+clip_text = true
 script = ExtResource( 4 )

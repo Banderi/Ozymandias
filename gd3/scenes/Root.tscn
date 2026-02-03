@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=2]
+[gd_scene load_steps=22 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -13,126 +13,16 @@
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Load4_00001.png" type="Texture" id=11]
 [ext_resource path="res://scenes/UI/OzyScrollContainer.tscn" type="PackedScene" id=12]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/FE_ChooseGame_00001.png" type="Texture" id=13]
+[ext_resource path="res://scripts/classes/LabelEx.gd" type="Script" id=14]
+[ext_resource path="res://scripts/menus/GameSelection.gd" type="Script" id=15]
+[ext_resource path="res://scripts/menus/MainMenu.gd" type="Script" id=16]
+[ext_resource path="res://scripts/menus/FamilySelection.gd" type="Script" id=17]
+[ext_resource path="res://scripts/menus/NoMissionWonYet.gd" type="Script" id=18]
+[ext_resource path="res://scripts/menus/QuitGameConfirm.gd" type="Script" id=19]
+[ext_resource path="res://scripts/menus/Splash.gd" type="Script" id=20]
 
-[sub_resource type="GDScript" id=4]
-resource_name = "MainMenu"
-script/source = "extends TextureRect
-
-func _on_BtnPlay_pressed():
-	Game.open_menu(\"FamilySelection\")
-func _on_BtnWebsite_pressed():
-	pass # Replace with function body.
-func _on_BtnEditor_pressed():
-	pass # Replace with function body.
-func _on_BtnScores_pressed():
-	pass # Replace with function body.
-func _on_BtnQuit_pressed():
-	Game.open_menu(\"QuitGameConfirm\")
-"
-
-[sub_resource type="GDScript" id=7]
-resource_name = "FamilySelection"
-script/source = "extends TextureRect
-
-func _on_BtnCreateFamily_pressed():
-	pass # Replace with function body.
-func _on_BtnDeleteFamily_pressed():
-	pass # Replace with function body.
-func _on_BtnProceed_pressed():
-	Game.open_menu(\"GameSelection\")
-func _on_BtnBack_pressed():
-	hide()
-
-func _on_BtnFamilyListing_pressed(family_name):
-	Family.current_family = family_name
-
-onready var family_name_list_item_TSCN = load(\"res://scenes/UI/ListItems/ListingButton.tscn\")
-func _on_FamilySelection_visibility_changed():
-	if visible:
-		
-		Family.enumerate_families()
-		
-		var family_names_list = $Panel/Panel/OzyScrollContainer/Control/VBoxContainer 
-		for n in family_names_list.get_children():
-			n.queue_free()
-		
-		for family_name in Family.families_data:
-			var node = family_name_list_item_TSCN.instance()
-			node.text = family_name
-			node.connect(\"pressed\", self, \"_on_BtnFamilyListing_pressed\", [family_name])
-			family_names_list.add_child(node)
-
-func _gui_input(event):
-	if Game.right_click_pressed(self, event):
-		_on_BtnBack_pressed()
-"
-
-[sub_resource type="GDScript" id=8]
-resource_name = "GameSelection"
-script/source = "extends TextureRect
-
-func _on_BtnBegin_pressed():
-	pass # Replace with function body.
-func _on_BtnChooseMission_pressed():
-	Game.open_menu(\"NoMissionWonYet\")
-func _on_BtnSaveGames_pressed():
-	pass # Replace with function body.
-func _on_BtnCustomMissions_pressed():
-	pass # Replace with function body.
-func _on_BtnBack_pressed():
-	hide()
-
-func _on_GameSelection_visibility_changed():
-	if visible:
-		$Panel/FamilyName.text = str(Family.current_family, \" family\")
-
-func _gui_input(event):
-	if Game.right_click_pressed(self, event):
-		_on_BtnBack_pressed()
-"
-
-[sub_resource type="GDScript" id=9]
-resource_name = "NoMissionWonYet"
-script/source = "extends Control
-
-func _on_BtnYes_pressed():
-	pass
-func _on_BtnNo_pressed():
-	hide()
-
-func _on_Panel_clicked_outside(_panel):
-	hide()
-
-func _gui_input(event):
-	if Game.right_click_pressed(self, event):
-		hide()
-"
-
-[sub_resource type="GDScript" id=6]
-resource_name = "QuitGameConfirm"
-script/source = "extends Control
-
-func _on_BtnYes_pressed():
-	get_tree().quit()
-func _on_BtnNo_pressed():
-	hide()
-
-func _on_Panel_clicked_outside(_panel):
-	hide()
-
-func _gui_input(event):
-	if Game.right_click_pressed(self, event):
-		hide()
-"
-
-[sub_resource type="GDScript" id=5]
-resource_name = "SplashScreen"
-script/source = "extends TextureRect
-
-func _on_Splash_focus_entered():
-	Game.open_menu(\"Main\")
-	hide()
-"
+[sub_resource type="StyleBoxEmpty" id=1]
+content_margin_left = 10.0
 
 [node name="Root" type="ColorRect"]
 anchor_right = 1.0
@@ -148,7 +38,7 @@ anchor_bottom = 1.0
 texture = ExtResource( 1 )
 expand = true
 stretch_mode = 6
-script = SubResource( 4 )
+script = ExtResource( 16 )
 __meta__ = {
 "_edit_lock_": true
 }
@@ -166,40 +56,39 @@ custom_constants/separation = 16
 
 [node name="BtnPlay" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
 margin_right = 280.0
-text = "Play Pharaoh/Cleopatra"
+text = "TEXT_30_0"
 
 [node name="BtnWebsite" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
 margin_top = 41.0
 margin_right = 280.0
 margin_bottom = 66.0
-text = "Activision Website"
+text = "TEXT_30_2"
 
 [node name="BtnEditor" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
 margin_top = 82.0
 margin_right = 280.0
 margin_bottom = 107.0
-text = "Mission Editor"
+text = "TEXT_30_3"
 
 [node name="BtnScores" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
 margin_top = 123.0
 margin_right = 280.0
 margin_bottom = 148.0
-text = "Greatest Families"
+text = "TEXT_30_5"
 
 [node name="BtnQuit" parent="Main/VBoxContainer" instance=ExtResource( 4 )]
 margin_top = 164.0
 margin_right = 280.0
 margin_bottom = 189.0
-text = "Quit"
+text = "TEXT_30_4"
 
 [node name="FamilySelection" type="TextureRect" parent="."]
-visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
 texture = ExtResource( 11 )
 expand = true
 stretch_mode = 6
-script = SubResource( 7 )
+script = ExtResource( 17 )
 __meta__ = {
 "_edit_lock_": true
 }
@@ -215,9 +104,10 @@ anchor_right = 1.0
 margin_top = 8.0
 margin_bottom = 50.0
 custom_fonts/font = ExtResource( 8 )
-text = "Family Registry"
+text = "TEXT_292_3"
 align = 1
 valign = 1
+script = ExtResource( 14 )
 
 [node name="Panel" parent="FamilySelection/Panel" instance=ExtResource( 7 )]
 margin_left = 16.0
@@ -253,18 +143,30 @@ custom_constants/separation = 0
 
 [node name="ListingButton" parent="FamilySelection/Panel/Panel/OzyScrollContainer/Control/VBoxContainer" instance=ExtResource( 3 )]
 margin_right = 292.0
+custom_styles/hover = SubResource( 1 )
+custom_styles/pressed = SubResource( 1 )
+custom_styles/focus = SubResource( 1 )
+custom_styles/normal = SubResource( 1 )
 text = ":3"
 
 [node name="ListingButton2" parent="FamilySelection/Panel/Panel/OzyScrollContainer/Control/VBoxContainer" instance=ExtResource( 3 )]
 margin_top = 16.0
 margin_right = 292.0
 margin_bottom = 32.0
+custom_styles/hover = SubResource( 1 )
+custom_styles/pressed = SubResource( 1 )
+custom_styles/focus = SubResource( 1 )
+custom_styles/normal = SubResource( 1 )
 text = "jmhmgkjlkjh"
 
 [node name="ListingButton3" parent="FamilySelection/Panel/Panel/OzyScrollContainer/Control/VBoxContainer" instance=ExtResource( 3 )]
 margin_top = 32.0
 margin_right = 292.0
 margin_bottom = 48.0
+custom_styles/hover = SubResource( 1 )
+custom_styles/pressed = SubResource( 1 )
+custom_styles/focus = SubResource( 1 )
+custom_styles/normal = SubResource( 1 )
 text = "test21236"
 
 [node name="BtnCreateFamily" parent="FamilySelection/Panel" instance=ExtResource( 9 )]
@@ -272,28 +174,29 @@ margin_left = 15.0
 margin_top = 274.0
 margin_right = 141.0
 margin_bottom = 300.0
-text = "Create Family"
+text = "TEXT_292_0"
 
 [node name="BtnDeleteFamily" parent="FamilySelection/Panel" instance=ExtResource( 9 )]
 margin_left = 147.0
 margin_top = 274.0
 margin_right = 272.0
 margin_bottom = 300.0
-text = "Delete Family"
+text = "TEXT_292_1"
 
 [node name="BtnProceed" parent="FamilySelection/Panel" instance=ExtResource( 9 )]
 margin_left = 278.0
 margin_top = 274.0
 margin_right = 352.0
 margin_bottom = 300.0
-text = "Proceed"
+disabled = true
+text = "TEXT_292_2"
 
 [node name="BtnBack" parent="FamilySelection/Panel" instance=ExtResource( 9 )]
 margin_left = 67.0
 margin_top = 305.0
 margin_right = 298.0
 margin_bottom = 331.0
-text = "Return to main menu"
+text = "TEXT_292_4"
 
 [node name="GameSelection" type="TextureRect" parent="."]
 visible = false
@@ -302,7 +205,7 @@ anchor_bottom = 1.0
 texture = ExtResource( 13 )
 expand = true
 stretch_mode = 6
-script = SubResource( 8 )
+script = ExtResource( 15 )
 __meta__ = {
 "_edit_lock_": true
 }
@@ -322,8 +225,9 @@ anchor_right = 1.0
 margin_top = 13.0
 margin_bottom = 42.0
 custom_fonts/font = ExtResource( 8 )
-text = "test family"
+text = "TEXT_293_5"
 align = 1
+script = ExtResource( 14 )
 
 [node name="VBoxContainer" type="VBoxContainer" parent="GameSelection/Panel"]
 anchor_left = 0.5
@@ -338,31 +242,31 @@ custom_constants/separation = 16
 
 [node name="BtnBegin" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
 margin_right = 230.0
-text = "Begin Family History"
+text = "TEXT_293_7"
 
 [node name="BtnChooseMission" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
 margin_top = 41.0
 margin_right = 230.0
 margin_bottom = 66.0
-text = "Choose a Mission"
+text = "TEXT_293_1"
 
 [node name="BtnSaveGames" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
 margin_top = 82.0
 margin_right = 230.0
 margin_bottom = 107.0
-text = "Load Saved Game"
+text = "TEXT_293_2"
 
 [node name="BtnCustomMissions" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
 margin_top = 123.0
 margin_right = 230.0
 margin_bottom = 148.0
-text = "Custom Missions"
+text = "TEXT_293_3"
 
 [node name="BtnBack" parent="GameSelection/Panel/VBoxContainer" instance=ExtResource( 9 )]
 margin_top = 164.0
 margin_right = 230.0
 margin_bottom = 189.0
-text = "Return to Family Registry"
+text = "TEXT_293_4"
 
 [node name="NoMissionWonYet" type="Control" parent="."]
 visible = false
@@ -374,7 +278,7 @@ margin_left = -20.0
 margin_top = -20.0
 margin_right = 20.0
 margin_bottom = 20.0
-script = SubResource( 9 )
+script = ExtResource( 18 )
 __meta__ = {
 "_edit_lock_": true
 }
@@ -401,9 +305,10 @@ margin_bottom = 40.0
 anchor_right = 1.0
 margin_bottom = 28.0
 custom_fonts/font = ExtResource( 5 )
-text = "No Missions Won By Family"
+text = "TEXT_5_141"
 align = 1
 valign = 1
+script = ExtResource( 14 )
 
 [node name="Label2" type="Label" parent="NoMissionWonYet/Panel"]
 anchor_left = 0.5
@@ -415,23 +320,24 @@ margin_top = -14.0
 margin_right = 303.0
 margin_bottom = 14.0
 custom_fonts/font = ExtResource( 10 )
-text = "Please 'Begin Family History' if you are new to Pharaoh. Continue to choose mission?"
+text = "TEXT_5_142"
 align = 1
 valign = 1
+script = ExtResource( 14 )
 
 [node name="BtnYes" parent="NoMissionWonYet/Panel" instance=ExtResource( 9 )]
 margin_left = 104.0
 margin_top = 69.0
 margin_right = 324.0
 margin_bottom = 95.0
-text = "Yes"
+text = "TEXT_18_1"
 
 [node name="BtnNo" parent="NoMissionWonYet/Panel" instance=ExtResource( 9 )]
 margin_left = 324.0
 margin_top = 69.0
 margin_right = 544.0
 margin_bottom = 95.0
-text = "No"
+text = "TEXT_18_0"
 
 [node name="QuitGameConfirm" type="Control" parent="."]
 visible = false
@@ -443,7 +349,7 @@ margin_left = -20.0
 margin_top = -20.0
 margin_right = 20.0
 margin_bottom = 20.0
-script = SubResource( 6 )
+script = ExtResource( 19 )
 __meta__ = {
 "_edit_lock_": true
 }
@@ -470,9 +376,10 @@ margin_bottom = 40.0
 anchor_right = 1.0
 margin_bottom = 28.0
 custom_fonts/font = ExtResource( 5 )
-text = "Leave the Kingdom?"
+text = "TEXT_5_1"
 align = 1
 valign = 1
+script = ExtResource( 14 )
 
 [node name="Label2" type="Label" parent="QuitGameConfirm/Panel"]
 anchor_right = 1.0
@@ -481,23 +388,24 @@ margin_top = 40.0
 margin_right = -55.0
 margin_bottom = 68.0
 custom_fonts/font = ExtResource( 10 )
-text = "Quit"
+text = "TEXT_5_0"
 align = 1
 valign = 1
+script = ExtResource( 14 )
 
 [node name="BtnYes" parent="QuitGameConfirm/Panel" instance=ExtResource( 9 )]
 margin_left = 48.0
 margin_top = 69.0
 margin_right = 139.0
 margin_bottom = 95.0
-text = "Yes"
+text = "TEXT_18_1"
 
 [node name="BtnNo" parent="QuitGameConfirm/Panel" instance=ExtResource( 9 )]
 margin_left = 139.0
 margin_top = 69.0
 margin_right = 230.0
 margin_bottom = 95.0
-text = "No"
+text = "TEXT_18_0"
 
 [node name="Splash" type="TextureRect" parent="."]
 visible = false
@@ -507,7 +415,7 @@ focus_mode = 1
 texture = ExtResource( 2 )
 expand = true
 stretch_mode = 6
-script = SubResource( 5 )
+script = ExtResource( 20 )
 __meta__ = {
 "_edit_lock_": true
 }

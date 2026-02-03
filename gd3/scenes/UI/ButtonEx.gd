@@ -1,3 +1,4 @@
+tool
 extends Button
 class_name ButtonEx
 
@@ -38,3 +39,6 @@ func _on_Button_pressed():
 		for n in get_parent().get_children():
 			n.pressed = false
 		pressed = true
+
+func _process(delta):
+	Assets.editor_debug_translate_labels(self)
