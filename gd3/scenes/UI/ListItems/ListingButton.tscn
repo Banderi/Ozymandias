@@ -5,5 +5,3 @@
 [node name="ListingButton" instance=ExtResource( 1 )]
 toggle_mode = true
 toggled_list_item = true
-
-[connection signal="pressed" from="." to="." method="_on_Button_pressed"]

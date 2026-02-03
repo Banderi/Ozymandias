@@ -99,7 +99,7 @@ func read(path, get_as_text = false, password = ""):
 	file.close()
 	Log.generic(null,str("file '",path,"' read successfully!"))
 	return data
-func open(path, get_as_text = false, password = ""):
+func open(path, password = ""):
 	# init stream
 	var file = File.new()
 	var err = -1

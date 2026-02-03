@@ -14,3 +14,7 @@ func _input(event):
 		if event is InputEventMouseButton && event.pressed:
 			emit_signal("clicked_outside", self)
 		get_tree().set_input_as_handled()
+
+
+func _on_OzyLineEdit_clicked_outside(panel):
+	release_focus()

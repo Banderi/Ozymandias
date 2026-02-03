@@ -1,17 +1,21 @@
 extends TextureRect
 
 func _on_BtnCreateFamily_pressed():
-	pass # Replace with function body.
+	Game.go_to_menu("NewFamily")
 func _on_BtnDeleteFamily_pressed():
 	pass # Replace with function body.
 func _on_BtnProceed_pressed():
-	Game.open_menu("GameSelection")
+	Game.go_to_menu("GameSelection")
 func _on_BtnBack_pressed():
-	hide()
+	Game.go_to_menu("Main")
 
 func _on_BtnFamilyListing_pressed(family_name):
 	$Panel/BtnProceed.disabled = false
 	Family.current_family = family_name
+func unselect_all():
+	for n in $Panel/Panel/OzyScrollContainer/Control/VBoxContainer.get_children():
+		n.pressed = false
+	Family.current_family = null
 
 onready var family_name_list_item_TSCN = load("res://scenes/UI/ListItems/ListingButton.tscn")
 func _on_FamilySelection_visibility_changed():

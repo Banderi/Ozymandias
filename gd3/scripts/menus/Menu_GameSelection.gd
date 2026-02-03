@@ -3,13 +3,13 @@ extends TextureRect
 func _on_BtnBegin_pressed():
 	pass # Replace with function body.
 func _on_BtnChooseMission_pressed():
-	Game.open_menu("NoMissionWonYet")
+	Game.open_popup("NoMissionWonYet")
 func _on_BtnSaveGames_pressed():
 	pass # Replace with function body.
 func _on_BtnCustomMissions_pressed():
 	pass # Replace with function body.
 func _on_BtnBack_pressed():
-	hide()
+	Game.go_to_menu("FamilySelection")
 
 func _on_GameSelection_visibility_changed():
 	if visible:

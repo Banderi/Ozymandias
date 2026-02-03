@@ -12,7 +12,7 @@ _global_script_classes=[ {
 "base": "Button",
 "class": "ButtonEx",
 "language": "GDScript",
-"path": "res://scenes/UI/ButtonEx.gd"
+"path": "res://scripts/classes/ButtonEx.gd"
 }, {
 "base": "File",
 "class": "FileEx",
@@ -92,6 +92,12 @@ Family="*res://scripts/autoload/game/Family.gd"
 Stopwatch="*res://scripts/autoload/Stopwatch.gd"
 Scribe="*res://scripts/autoload/Scribe.gd"
 
+[debug]
+
+gdscript/warnings/unused_variable=false
+gdscript/warnings/unused_argument=false
+gdscript/warnings/return_value_discarded=false
+
 [editor_plugins]
 
 enabled=PoolStringArray( "res://addons/texture_fonts/plugin.cfg" )
@@ -108,7 +114,7 @@ texture={
 
 [locale]
 
-translations=PoolStringArray( "res://assets/locales/Pharaoh_Text.en.translation" )
+translations=PoolStringArray(  )
 
 [physics]
 

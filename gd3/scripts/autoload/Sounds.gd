@@ -8,6 +8,7 @@ extends Node
 # - "Master"
 # - "SFX"
 # - "Music"
+# - "Voice"
 
 func get_volume(bus):
 	var bus_index = AudioServer.get_bus_index(bus)
@@ -62,7 +63,6 @@ func change_filter(bus : String, filter : int, param : String, value):
 func activate_filter(bus : String, filter : int, enabled : bool):
 	var bus_index = AudioServer.get_bus_index(bus)
 	AudioServer.set_bus_effect_enabled(bus_index, filter, enabled)
-
 
 func play_ambient(ambient: String, volume : float = 1.0):
 	if ambient == "":
