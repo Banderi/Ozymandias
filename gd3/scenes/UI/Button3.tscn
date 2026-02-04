@@ -23,3 +23,5 @@ script = ExtResource( 2 )
 font_normal = ExtResource( 1 )
 font_pressed = ExtResource( 3 )
 font_hovered = ExtResource( 3 )
+button_texture_path = ""
+button_texture_id = 0

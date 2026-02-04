@@ -1,12 +1,10 @@
 extends Control
 
 func _on_BtnOk_pressed():
-	if selected_item != null:
-		Family.newfamily_textbox_temp = TranslationServer.translate(selected_item.text)
-	hide()
-
-func _on_Panel_clicked_outside(_panel):
-	hide()
+	if selected_item == null:
+		Game.go_to_menu("NewFamily")
+	else:
+		Game.go_to_menu("NewFamily", TranslationServer.translate(selected_item.text))
 
 func _gui_input(event):
 	if Game.right_click_pressed(self, event):
@@ -19,9 +17,8 @@ func unselect_all():
 		n.pressed = false
 	selected_item = null
 
-func _on_FamilyEgyptianName_visibility_changed():
-	if visible:
-		unselect_all()
+func _on_popup_open(data):
+	unselect_all()
 
 var selected_item = null
 func _on_any_pressed(node):

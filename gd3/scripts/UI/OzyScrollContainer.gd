@@ -4,17 +4,24 @@ export var scroll_node_path : NodePath
 
 # Called when the node enters the scene tree for the first time.
 onready var scrollbar = $OzyVScrollBar
-var scroll_node = null
-func _ready():
-	if scroll_node_path == "":
-		return
-	scroll_node = get_node(scroll_node_path)
+var scroll_node = null setget set_scroll_node
+
+#func set_scroll_path(path):
+#	scroll_node_path = path
+func set_scroll_node(node):
+	scroll_node = node
 	if scroll_node == null:
 		scrollbar.max_value = 0
 	else:
 		var s_y = scroll_node.get_minimum_size().y
 		var p_y = scroll_node.get_parent().rect_size.y
 		scrollbar.max_value = max(0, s_y - p_y)
+
+func _ready():
+	if scroll_node_path == "":
+		return
+	set_scroll_node(get_node_or_null(scroll_node_path))
+	
 
 func _on_OzyVScrollBar_scrolled(value):
 	if scroll_node != null:

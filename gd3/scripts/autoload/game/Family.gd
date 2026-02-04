@@ -3,7 +3,17 @@ extends Node
 var families_highscores = []
 var families_data = {}
 var current_family = null
-var newfamily_textbox_temp = null
+
+func get_current_save_path():
+	if current_family == null:
+		return null
+	return Assets.SAVES_PATH + "/" + current_family
+func get_most_recent_family_save():
+	pass
+func get_family_saves():
+	if current_family == null:
+		return null
+	return IO.dir_contents(get_current_save_path(), ".sav").files
 
 func enumerate_families(): # this will REMOVE CACHED DATA from non-existing families!
 	var f = IO.dir_contents(Assets.SAVES_PATH)
@@ -13,6 +23,18 @@ func enumerate_families(): # this will REMOVE CACHED DATA from non-existing fami
 		families_data[family_name] = {}
 	
 	Log.generic(self, "enumerated: %s families found in the Save folder" % [families_data.size()])
+
+func has_beaten_any_mission(og = true): # in OG Pharaoh, the game simply checks if there's any savegame in the player folder
+	if current_family == null:
+		return false
+	if og:
+		var save_path = get_current_save_path()
+		if IO.dir_exists(save_path):
+			var savefiles = IO.dir_contents(save_path, ".sav").files
+			return savefiles.size() != 0
+	else:
+		pass # TODO
+	return false
 
 # family scores chunk
 func enscribe_highscore_chunk():

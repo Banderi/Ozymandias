@@ -161,6 +161,9 @@ func move_file(path, to, remove_previous = true, overwrite = false):
 func copy_file(path, to, overwrite = false):
 	return move_file(path, to, false, overwrite)
 
+func dir_exists(path):
+	var dir = Directory.new()
+	return dir.dir_exists(path)
 func dir_contents(path, filter_by = ""):
 	var dir = Directory.new()
 	var err = dir.open(path)

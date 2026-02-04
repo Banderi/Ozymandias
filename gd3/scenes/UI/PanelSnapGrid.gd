@@ -2,7 +2,7 @@ tool
 extends Panel
 
 export var snap : int = 16
-export var exclusive_input : bool = false
+#export var exclusive_input : bool = false
 
 func _on_TextureRect_resized():
 	rect_size.x = round(rect_size.x / float(snap)) * snap
@@ -10,11 +10,11 @@ func _on_TextureRect_resized():
 
 signal clicked_outside(panel)
 func _input(event):
-	if exclusive_input && is_visible_in_tree() && !get_global_rect().has_point(get_global_mouse_position()):
+#	if exclusive_input && is_visible_in_tree() && !get_global_rect().has_point(get_global_mouse_position()):
+	if is_visible_in_tree() && !get_global_rect().has_point(get_global_mouse_position()):
 		if event is InputEventMouseButton && event.pressed:
 			emit_signal("clicked_outside", self)
-		get_tree().set_input_as_handled()
-
+#		get_tree().set_input_as_handled()
 
 func _on_OzyLineEdit_clicked_outside(panel):
 	release_focus()

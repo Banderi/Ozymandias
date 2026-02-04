@@ -5,8 +5,8 @@ func _on_BtnPlay_pressed():
 func _on_BtnWebsite_pressed():
 	pass # Replace with function body.
 func _on_BtnEditor_pressed():
-	pass # Replace with function body.
+	Game.popup_menu("MissionEditor")
 func _on_BtnScores_pressed():
-	pass # Replace with function body.
+	Game.popup_menu("FamilyHighscores")
 func _on_BtnQuit_pressed():
-	Game.open_popup("QuitGameConfirm")
+	Game.popup_menu("QuitGameConfirm")

@@ -39,7 +39,7 @@ func update_and_emit():
 
 onready var grabber = $BtnGrabber
 var grabber_mouse_click_delta = 0
-func _on_BtnGrabber_gui_input(_event): # continuous grabber dragging event
+func _on_BtnGrabber_gui_input(_event): # continuous grabber dragging event -- TODO: snapping
 	if grabber.pressed:
 		grabber.rect_position.y = clamp(get_local_mouse_position().y + grabber_mouse_click_delta, 26, rect_size.y - 52)
 		update_scrollbar_from_grabber()

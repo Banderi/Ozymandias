@@ -1,15 +1,16 @@
 extends TextureRect
 
 func _on_BtnChooseEgyptian_pressed():
-	Game.open_popup("FamilyEgyptianName")
+	Game.popup_menu("FamilyEgyptianName")
 func _on_BtnContinue_pressed():
-	Game.go_to_menu("FamilySelection")
+	Game.go_to_menu("FamilySelection", $Panel/LineEditFamilyName/LineEdit.text)
 
 func _gui_input(event):
 	if Game.right_click_pressed(self, event):
 		Game.go_to_menu("FamilySelection")
 
-func _process(delta):
-	if Family.newfamily_textbox_temp != null:
-		$Panel/LineEditFamilyName/LineEdit.text = Family.newfamily_textbox_temp
-		Family.newfamily_textbox_temp = null
+func _on_menu_open(data):
+	if data != null:
+		$Panel/LineEditFamilyName/LineEdit.text = data
+	$Panel/LineEditFamilyName/LineEdit.grab_focus()
+	$Panel/LineEditFamilyName/LineEdit.caret_position = $Panel/LineEditFamilyName/LineEdit.text.length()

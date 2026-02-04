@@ -1,0 +1,54 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00123.png" type="Texture" id=1]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00124.png" type="Texture" id=2]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00125.png" type="Texture" id=3]
+[ext_resource path="res://assets/fonts/small_black_on_white.tres" type="BitmapFont" id=4]
+[ext_resource path="res://scripts/classes/ButtonEx.gd" type="Script" id=5]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00126.png" type="Texture" id=6]
+
+[sub_resource type="StyleBoxTexture" id=2]
+texture = ExtResource( 2 )
+region_rect = Rect2( 0, 0, 27, 27 )
+
+[sub_resource type="StyleBoxTexture" id=3]
+texture = ExtResource( 3 )
+region_rect = Rect2( 0, 0, 26, 25 )
+
+[sub_resource type="StyleBoxTexture" id=1]
+texture = ExtResource( 2 )
+region_rect = Rect2( 0, 0, 27, 27 )
+
+[sub_resource type="StyleBoxTexture" id=4]
+texture = ExtResource( 6 )
+region_rect = Rect2( 0, 0, 27, 27 )
+
+[sub_resource type="StyleBoxTexture" id=5]
+texture = ExtResource( 1 )
+region_rect = Rect2( 0, 0, 27, 27 )
+
+[node name="Button5" type="Button"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -512.0
+margin_top = -300.0
+margin_right = -485.0
+margin_bottom = -273.0
+rect_min_size = Vector2( 27, 27 )
+focus_mode = 0
+custom_colors/font_color_pressed = Color( 0, 0, 0, 1 )
+custom_fonts/font = ExtResource( 4 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 3 )
+custom_styles/focus = SubResource( 1 )
+custom_styles/disabled = SubResource( 4 )
+custom_styles/normal = SubResource( 5 )
+clip_text = true
+script = ExtResource( 5 )
+__meta__ = {
+"_edit_lock_": true
+}
+button_texture_path = "Pharaoh_General/paneling"
+button_texture_id = 123

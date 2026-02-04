@@ -1,7 +1,7 @@
 extends Control
 
 func _on_BtnYes_pressed():
-	pass
+	Game.go_to_menu("ExploreHistory", true)
 func _on_BtnNo_pressed():
 	hide()
 
