@@ -86,11 +86,13 @@ IO="*res://scripts/autoload/IO.gd"
 Debug="*res://scripts/autoload/Debug.gd"
 Keybinds="*res://scripts/autoload/Keybinds.gd"
 Settings="*res://scripts/autoload/Settings.gd"
-Game="*res://scripts/autoload/Game.gd"
+Game="*res://scripts/autoload/game/Game.gd"
 Assets="*res://scripts/autoload/Assets.gd"
 Family="*res://scripts/autoload/game/Family.gd"
 Stopwatch="*res://scripts/autoload/Stopwatch.gd"
 Scribe="*res://scripts/autoload/Scribe.gd"
+Campaign="*res://scripts/autoload/game/Campaign.gd"
+Map="*res://scripts/autoload/game/Map.gd"
 
 [debug]
 
@@ -115,6 +117,10 @@ texture={
 [locale]
 
 translations=PoolStringArray(  )
+
+[network]
+
+limits/debugger_stdout/max_chars_per_second=204800
 
 [physics]
 

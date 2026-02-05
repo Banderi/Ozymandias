@@ -103,10 +103,10 @@ func load_text(path: String, locale: String):
 	assert(total_text_entries == header_num_text)
 	
 	return tr
-func load_mm(path: String):
+func load_mm(path: String, locale: String): # TODO
 	var file = IO.open(path) as File
 	if file == null:
-		return false
+		return null
 #	buffer_skip(buf, 24); // header
 #    for (int i = 0; i < MAX_MESSAGE_ENTRIES; i++) {
 #        lang_message *m = &data.message_entries[i];
@@ -145,9 +145,7 @@ func load_mm(path: String):
 
 func set_game_install_path(): # TODO
 	pass
-func load_locales(data_path: String = INSTALL_PATH):
-	
-	# TODO: check user settings for different locales
+func load_locales(data_path: String = INSTALL_PATH): # TODO: MM, check user settings, add different locales
 	
 	# text
 	var text_en = load("res://assets/locales/Pharaoh_Text.en.translation")
@@ -158,6 +156,14 @@ func load_locales(data_path: String = INSTALL_PATH):
 			return false
 		ResourceSaver.save("res://assets/locales/Pharaoh_Text.en.translation", text_en)
 
+	# MM
+#	var mm_en = load("res://assets/locales/Pharaoh_MM.en.translation") # TODO
+#	if mm_en == null:
+#		mm_en = load_mm(data_path + "/Pharaoh_MM.eng", "en") # the files are ALWAYS .eng, despite internal docs mentioning otherwise
+#		if mm_en == null:
+#			Log.error(self, GlobalScope.Error.ERR_FILE_NOT_FOUND, "can not find valid localization files in install folder")
+#			return false
+#		ResourceSaver.save("res://assets/locales/Pharaoh_MM.en.translation", mm_en)
 	
 	TranslationServer.add_translation(text_en)
 	TranslationServer.set_locale("en")

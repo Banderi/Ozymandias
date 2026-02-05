@@ -5,7 +5,7 @@ func MAX(bs):
 	return (1 << bs)
 func u_to_i(unsigned, bs):
 	return (unsigned + MAX(bs-1)) % MAX(bs) - MAX(bs-1)
-func buffer_padded(arr : PoolByteArray, size):
+func buffer_padded(arr: PoolByteArray, size):
 	var s = size - arr.size()
 	if s > 0:
 		var t = PoolByteArray()
@@ -16,7 +16,7 @@ func buffer_padded(arr : PoolByteArray, size):
 
 # SCRIBE
 var _path = null
-var _handle = null
+var _handle: File = null
 var _filesize = null
 var _flags = null
 func bail(err, msg) -> bool:
@@ -119,9 +119,61 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 	
 	return true
 
+# compressed (zip) ops and data chunks I/O helpers
+var _compressed_stack = []
+var _compressed_ptr = null
+func zip_uncompress(data: PoolByteArray) -> PoolByteArray:
+	return data
+func zip_compress(data: PoolByteArray) -> PoolByteArray:
+	return data
+func push_compressed() -> bool:
+	if _handle == null:
+		return bail(GlobalScope.Error.ERR_LOCKED, "no valid file handle initialized (%s)" % [_handle])
+	
+	# initialize byte field buffer (empty if writing)
+	if _flags == File.READ:
+		var o = _handle.get_position()
+		var s = _handle.get_32()
+		var raw = _handle.get_buffer(s)
+		var uncompressed = zip_uncompress(raw)
+		_compressed_stack.push_back(uncompressed)
+	else:
+		_compressed_stack.push_back([] as PoolByteArray)
+	_compressed_ptr = _compressed_stack[-1]
+	
+	return true
+func pop_compressed() -> bool: # TODO
+	if _handle == null:
+		return bail(GlobalScope.Error.ERR_LOCKED, "no valid file handle initialized (%s)" % [_handle])
+
+	
+	var bytes = _compressed_stack.pop_back()
+#	put()
+#	if _compressed_ptr == null:
+#		return bail(GlobalScope.Error.ERR_INVALID_DATA, "tried to ")
+#	var compressed = zip_compress(raw)
+
+
+	
+	if _compressed_stack.size() > 0:
+		_compressed_ptr = _compressed_stack[-1]
+	else:
+		_compressed_ptr = null
+	return true
+
+# helper I/O for grids (encapsulates push/pop_compressed and put ops)
+func put_grid(key, format, compressed: bool, grid_size: int = Map.PH_MAP_SIZE, default = 0) -> bool:
+	if !push_compressed():
+		return false
+	
+	# TODO put (each tile) --> key
+	
+	return true
+
+# primary I/O
 func put(key, format, format_extra = null, default = 0) -> bool:
 	if _handle == null:
-		return bail(GlobalScope.Error.ERR_LOCKED, "the file handle is uninitialized or invalid (%s)" % [_handle])
+		return bail(GlobalScope.Error.ERR_LOCKED, "no valid file handle initialized (%s)" % [_handle])
 	
 	if _curr_record_ref == null || !(_curr_record_ref is Dictionary || _curr_record_ref is Array):
 		return bail(GlobalScope.Error.ERR_INVALID_DATA, "the last synced chunk is invalid (%s)" % [_curr_record_ref])
@@ -139,19 +191,19 @@ func put(key, format, format_extra = null, default = 0) -> bool:
 	if _flags == File.READ:
 		if _handle.eof_reached() || _handle.get_position() >= _handle.get_len():
 			return bail(GlobalScope.Error.ERR_FILE_EOF, "file end reached")
-		match format:
+		match format: # Godot File ops, by default, are UNSIGNED
 			ScribeFormat.i8:
-				_curr_record_ref[key] = _handle.get_8()
-			ScribeFormat.u8:
 				_curr_record_ref[key] = u_to_i(_handle.get_8(), 8)
+			ScribeFormat.u8:
+				_curr_record_ref[key] = _handle.get_8()
 			ScribeFormat.i16:
-				_curr_record_ref[key] = _handle.get_16()
-			ScribeFormat.u16:
 				_curr_record_ref[key] = u_to_i(_handle.get_16(), 16)
+			ScribeFormat.u16:
+				_curr_record_ref[key] = _handle.get_16()
 			ScribeFormat.i32:
-				_curr_record_ref[key] = _handle.get_32()
-			ScribeFormat.u32:
 				_curr_record_ref[key] = u_to_i(_handle.get_32(), 32)
+			ScribeFormat.u32:
+				_curr_record_ref[key] = _handle.get_32()
 			
 			# BUG / DISCREPANCY: these will read as null-terminated, thus rewrites are NOT byte-matching past valid text data
 			ScribeFormat.ascii:

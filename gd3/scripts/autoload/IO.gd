@@ -186,16 +186,17 @@ func dir_contents(path, filter_by = ""):
 						results.files[file_name] = metadata(str(path,"/",file_name))
 			file_name = dir.get_next()
 		return results
-func find_most_recent_file(path):
+func find_most_recent_file(path, filter_by = ""):
 	var results = dir_contents(path)
 
 	var most_recent_timestamp = -1
 	var most_recent_file = null
 	for file_name in results.files:
-		var file = results.files[file_name]
-		if file.modified_timestamp > most_recent_timestamp:
-			most_recent_timestamp = file.modified_timestamp
-			most_recent_file = file_name
+		if filter_by == "" || file_name.find(filter_by) != -1:
+			var file = results.files[file_name]
+			if file.modified_timestamp > most_recent_timestamp:
+				most_recent_timestamp = file.modified_timestamp
+				most_recent_file = file_name
 	return most_recent_file
 
 # code by @DanielKotzer https://godotforums.org/d/20958-extracting-the-content-of-a-zip-file/4

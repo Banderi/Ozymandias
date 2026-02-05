@@ -13,10 +13,6 @@ var selected_family_name = null
 func _on_BtnFamilyListing_pressed(family_name):
 	$Panel/BtnProceed.disabled = false
 	selected_family_name = family_name
-#func unselect_all():
-#	for n in $Panel/Panel/OzyScrollContainer/Control/VBoxContainer.get_children():
-#		n.pressed = false
-#	selected_family_name = null
 
 onready var family_name_list_item_TSCN = load("res://scenes/UI/ListItems/ListingButton.tscn")
 func _on_menu_open(data):
@@ -29,7 +25,7 @@ func _on_menu_open(data):
 	for n in family_names_list.get_children():
 		n.queue_free()
 	
-	for family_name in Family.families_data:
+	for family_name in Family.data:
 		var node = family_name_list_item_TSCN.instance()
 		node.text = family_name
 		node.connect("pressed", self, "_on_BtnFamilyListing_pressed", [family_name])
