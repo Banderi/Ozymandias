@@ -14,6 +14,17 @@ func buffer_padded(arr: PoolByteArray, size):
 		arr.append_array(t)
 	return arr
 
+func format_size(format):
+	match format:
+		ScribeFormat.u8, ScribeFormat.i8:
+			return 1
+		ScribeFormat.u16, ScribeFormat.i16:
+			return 2
+		ScribeFormat.u32, ScribeFormat.i32:
+			return 4
+		_: # other formats have UNSPECIFIED sizes
+			return null
+
 # SCRIBE
 var _path = null
 var _handle: File = null
@@ -119,24 +130,25 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 	
 	return true
 
-# compressed (zip) ops and data chunks I/O helpers
+# compressed (pkzip) ops and data chunks I/O helpers
 var _compressed_stack = []
 var _compressed_ptr = null
-func zip_uncompress(data: PoolByteArray) -> PoolByteArray:
-	return data
-func zip_compress(data: PoolByteArray) -> PoolByteArray:
-	return data
-func push_compressed() -> bool:
+func push_compressed(expected_size) -> bool:
 	if _handle == null:
 		return bail(GlobalScope.Error.ERR_LOCKED, "no valid file handle initialized (%s)" % [_handle])
 	
 	# initialize byte field buffer (empty if writing)
 	if _flags == File.READ:
-		var o = _handle.get_position()
-		var s = _handle.get_32()
-		var raw = _handle.get_buffer(s)
-		var uncompressed = zip_uncompress(raw)
-		_compressed_stack.push_back(uncompressed)
+		var c_size = _handle.get_32()
+		if c_size == 0x80000000:
+			var raw = _handle.get_buffer(expected_size)
+			_compressed_stack.push_back(raw)
+		else:
+			var raw = _handle.get_buffer(c_size)
+			var uncompressed = PKWare.decompress(raw, expected_size)
+			if uncompressed == null:
+				return false
+			_compressed_stack.push_back(uncompressed)
 	else:
 		_compressed_stack.push_back([] as PoolByteArray)
 	_compressed_ptr = _compressed_stack[-1]
@@ -160,11 +172,14 @@ func pop_compressed() -> bool: # TODO
 	else:
 		_compressed_ptr = null
 	return true
+func put_compressed():
+	pass
 
 # helper I/O for grids (encapsulates push/pop_compressed and put ops)
-func put_grid(key, format, compressed: bool, grid_size: int = Map.PH_MAP_SIZE, default = 0) -> bool:
-	if !push_compressed():
-		return false
+func put_grid(key, compressed: bool, format, grid_size: int = Map.PH_MAP_SIZE, default = 0) -> bool:
+	if compressed:
+		if !push_compressed(grid_size * format_size(format)):
+			return false
 	
 	# TODO put (each tile) --> key
 	
@@ -240,7 +255,7 @@ func enscribe(path, operation, create_backup, enscriber_proc: FuncRef, enscriber
 	
 	var t = Stopwatch.start()
 	var r = enscriber_proc.call_funcv(enscriber_args)
-	r = _handle == null
+#	r = _handle == null
 	Scribe.close()
 	Stopwatch.stop(self, t, "time taken:")
 	return r

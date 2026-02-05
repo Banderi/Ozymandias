@@ -124,7 +124,7 @@ func enscribe_SAV():
 	Scribe.put_grid("figure", true, ScribeFormat.u16)
 	Scribe.put_grid("bitfields", true, ScribeFormat.u8)
 	Scribe.put_grid("sprite", true, ScribeFormat.u8)
-	Scribe.put_grid("random", true, ScribeFormat.u8)
+	Scribe.put_grid("random", false, ScribeFormat.u8)
 	Scribe.put_grid("desirability", true, ScribeFormat.u8)
 	Scribe.put_grid("elevation", true, ScribeFormat.u8)
 	Scribe.put_grid("building_dmg", true, ScribeFormat.i16)
@@ -134,7 +134,8 @@ func enscribe_SAV():
 	
 #	print(Campaign.map_data)
 #	print(debug_schema.file_version)
-	pass
+	
+	return true
 
 #func begin_new_campaign():
 #	pass
@@ -155,6 +156,7 @@ func _ready():
 	debug_test_button.connect("pressed", self, "_on_DebugTestBtn_Pressed")
 
 	Assets.load_locales()
+	Assets.load_tilesets()
 
 	
 	close_all_menus()

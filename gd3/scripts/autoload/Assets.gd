@@ -23,8 +23,6 @@ func file_seek(file: File, bytes: PoolByteArray, begin: int = 0): # this REQUIRE
 
 func load_texture(pak = "Pharaoh_Unloaded", data = "0_fired_00001.png"):
 	var path = "res://assets/Pharaoh/" + pak + "/" + data
-	
-	
 	var r = load(path)
 	if r == null:
 		var image = Image.new()
@@ -32,8 +30,13 @@ func load_texture(pak = "Pharaoh_Unloaded", data = "0_fired_00001.png"):
 		var texture = ImageTexture.new()
 		texture.create_from_image(image)
 		r = texture
-	
 	return r
+func load_png(path):
+	var image = Image.new()
+	image.load(path)
+	var texture = ImageTexture.new()
+	texture.create_from_image(image)
+	return texture
 
 func editor_debug_translate_labels(node):
 	if Engine.is_editor_hint():
@@ -167,4 +170,13 @@ func load_locales(data_path: String = INSTALL_PATH): # TODO: MM, check user sett
 	
 	TranslationServer.add_translation(text_en)
 	TranslationServer.set_locale("en")
+	return true
+func load_tilesets(data_path: String = INSTALL_PATH):
+	
+	# testing
+	var tileset = TileSet.new()
+	tileset.create_tile(0)
+	tileset.tile_set_texture(0, load_png("D:/PharaohExtract/Pharaoh_Terrain/FloodPlain_00001.png"))
+	(Game.ROOT_NODE.get_node("InGame/Map") as TileMap).tile_set = tileset
+	
 	return true
