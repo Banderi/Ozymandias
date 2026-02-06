@@ -59,8 +59,8 @@ func load_game(path):
 		if !Scribe.enscribe(path, File.READ, false, funcref(self, "enscribe_SAV")):
 			return false
 		
-		STATE = States.Ingame
-		close_all_menus()
+#		STATE = States.Ingame
+#		close_all_menus()
 		
 		
 		return true

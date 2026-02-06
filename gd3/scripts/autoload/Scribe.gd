@@ -272,17 +272,14 @@ func put(key, format, format_extra = null, default = 0) -> bool:
 				return bail(GlobalScope.Error.ERR_FILE_EOF, "file end reached")
 			match format: # Godot File ops, by default, are UNSIGNED
 				ScribeFormat.i8:
-#					_curr_record_ref[key] = u_to_i(_handle.get_8(), 8)
 					_curr_record_ref[key] = (_handle.get_8() + 128) % 256 - 128
 				ScribeFormat.u8:
 					_curr_record_ref[key] = _handle.get_8()
 				ScribeFormat.i16:
-#					_curr_record_ref[key] = u_to_i(_handle.get_16(), 16)
 					_curr_record_ref[key] = (_handle.get_16() + 256) % 512 - 256
 				ScribeFormat.u16:
 					_curr_record_ref[key] = _handle.get_16()
 				ScribeFormat.i32:
-#					_curr_record_ref[key] = u_to_i(_handle.get_32(), 32)
 					_curr_record_ref[key] = (_handle.get_32() + 512) % 1024 - 512
 				ScribeFormat.u32:
 					_curr_record_ref[key] = _handle.get_32()

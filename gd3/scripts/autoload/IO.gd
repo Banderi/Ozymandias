@@ -110,6 +110,7 @@ func open(path, password = ""):
 	if err != OK:
 		Log.error(null,err,str("could not read file '",path,"'"))
 		return null
+	Log.generic(null,str("file '",path,"' read successfully!"))
 	return file
 func file_exists(path):
 	var file = File.new()

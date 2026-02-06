@@ -2,6 +2,24 @@ extends Control
 
 var saving_mode = false # false = loading, true = saving
 func _on_BtnDelete_pressed():
+	
+	
+	# testing
+	var d = IO.open("G:/test2")
+	var fs = d.get_32()
+	var buf = d.get_buffer(fs)
+	
+	var t = Stopwatch.start()
+	var dc = PKWare.decompress(buf, Map.PH_MAP_SIZE * 4) # around ~140 ms
+	Stopwatch.stop(null, t, "decomp test", Stopwatch.Milliseconds)
+	
+	
+	d.close()
+	
+	
+	
+	
+	
 	pass # Replace with function body.
 func _on_BtnProceed_pressed():
 	if selected_save == null:
