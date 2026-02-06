@@ -14,6 +14,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://scripts/classes/ButtonEx.gd"
 }, {
+"base": "SceneTree",
+"class": "CustomMainLoop",
+"language": "GDScript",
+"path": "res://scripts/classes/CustomMainLoop.gd"
+}, {
 "base": "File",
 "class": "FileEx",
 "language": "GDScript",
@@ -61,6 +66,7 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "ButtonEx": "",
+"CustomMainLoop": "",
 "FileEx": "",
 "GlobalScope": "",
 "HTTPServer": "",
@@ -76,7 +82,9 @@ _global_script_class_icons={
 
 config/name="Ozymandias"
 run/main_scene="res://scenes/Root.tscn"
+run/flush_stdout_on_print=true
 config/icon="res://icon.png"
+run/main_loop_type="CustomMainLoop"
 
 [autoload]
 

@@ -1,0 +1,178 @@
+grid 'image'          ms taken: 153  28 (181 total)
+grid 'edge'           ms taken:  28  29 (57  total)
+grid 'building'       ms taken:  55  28 (83  total)
+grid 'terrain'        ms taken: 150  28 (178 total)
+grid 'aqueduct'       ms taken:  26  28 (54  total)
+grid 'figure'         ms taken:  54  28 (82  total)
+grid 'bitfields'      ms taken:  36  28 (64  total)
+grid 'sprite'         ms taken:  27  29 (56  total)
+grid 'random'         ms taken:   0  34 (33  total)
+grid 'desirability'   ms taken:  31  28 (59  total)
+grid 'elevation'      ms taken:  26  28 (54  total)
+grid 'building_dmg'   ms taken:  54  27 (81  total)
+grid 'aqueduct_bak'   ms taken:  26  32 (58  total)
+grid 'sprite_bak'     ms taken:  45  29 (74  total)
+2026/02/06 13:15:19 -- [Scribe]: time taken: (1148 milliseconds)
+
+grid 'image'          ms taken: 141  34 (175 total)
+grid 'edge'           ms taken:  28  34 (62  total)
+grid 'building'       ms taken:  55  34 (89  total)
+grid 'terrain'        ms taken: 113  35 (148 total)
+grid 'aqueduct'       ms taken:  26  34 (60  total)
+grid 'figure'         ms taken:  54  33 (87  total)
+grid 'bitfields'      ms taken:  35  35 (70  total)
+grid 'sprite'         ms taken:  28  34 (62  total)
+grid 'random'         ms taken:   0  31 (30  total)
+grid 'desirability'   ms taken:  32  33 (65  total)
+grid 'elevation'      ms taken:  26  34 (60  total)
+grid 'building_dmg'   ms taken:  54  34 (88  total)
+grid 'aqueduct_bak'   ms taken:  26  34 (60  total)
+grid 'sprite_bak'     ms taken:  26  34 (60  total)
+2026/02/06 13:29:43 -- [Scribe]: time taken: (1220 milliseconds)
+
+grid 'image'          ms taken: 140  34 (174 total)
+grid 'edge'           ms taken:  28  33 (61  total)
+grid 'building'       ms taken:  54  32 (86  total)
+grid 'terrain'        ms taken: 114  32 (146 total)
+grid 'aqueduct'       ms taken:  28  33 (61  total)
+grid 'figure'         ms taken:  53  33 (86  total)
+grid 'bitfields'      ms taken:  35  35 (70  total)
+grid 'sprite'         ms taken:  27  32 (59  total)
+grid 'random'         ms taken:   0  30 (29  total)
+grid 'desirability'   ms taken:  32  32 (64  total)
+grid 'elevation'      ms taken:  25  33 (58  total)
+grid 'building_dmg'   ms taken:  53  32 (85  total)
+grid 'aqueduct_bak'   ms taken:  25  32 (57  total)
+grid 'sprite_bak'     ms taken:  26  32 (58  total)
+2026/02/06 13:42:55 -- [Scribe]: time taken: (1193 milliseconds)
+
+
+
+grid 'image'          ms taken: 147   9 (156 total) 
+grid 'edge'           ms taken:  28 128 (156 total) 
+grid 'building'       ms taken:  54 131 (185 total) 
+grid 'terrain'        ms taken: 114  10 (124 total) 
+grid 'aqueduct'       ms taken:  25  10 (35  total) 
+grid 'figure'         ms taken:  53  10 (63  total) 
+grid 'bitfields'      ms taken:  36  10 (46  total) 
+grid 'sprite'         ms taken:  26  10 (36  total) 
+grid 'random'         ms taken:   0  25 (24  total) >> not compressed <<
+grid 'desirability'   ms taken:  32   9 (41  total) 
+grid 'elevation'      ms taken:  26  10 (36  total) 
+grid 'building_dmg'   ms taken:  54 139 (193 total) 
+grid 'aqueduct_bak'   ms taken:  28  11 (39  total) 
+grid 'sprite_bak'     ms taken:  26  10 (36  total) 
+2026/02/06 14:13:31 -- [Scribe]: time taken: (1205 milliseconds)
+
+
+grid 'image'          ms taken: 148  10 (158 total) 
+grid 'edge'           ms taken:  29 131 (160 total) 
+grid 'building'       ms taken:  56 130 (186 total) 
+grid 'terrain'        ms taken: 117  10 (127 total) 
+grid 'aqueduct'       ms taken:  25  10 (35  total) 
+grid 'figure'         ms taken:  54  10 (64  total) 
+grid 'bitfields'      ms taken:  36  10 (46  total) 
+grid 'sprite'         ms taken:  27  13 (40  total) 
+grid 'random'         ms taken:   0  25 (24  total) >> not compressed <<
+grid 'desirability'   ms taken:  33  10 (43  total) 
+grid 'elevation'      ms taken:  26  10 (36  total) 
+grid 'building_dmg'   ms taken:  55 129 (184 total) 
+grid 'aqueduct_bak'   ms taken:  26  10 (36  total) 
+grid 'sprite_bak'     ms taken:  27   9 (36  total) 
+2026/02/06 14:18:55 -- [Scribe]: time taken: (1211 milliseconds)
+
+grid 'image'          ms taken: 145  10 (155 total) 
+grid 'edge'           ms taken:  29 130 (159 total) 
+grid 'building'       ms taken:  55 129 (184 total) 
+grid 'terrain'        ms taken: 115  10 (125 total) 
+grid 'aqueduct'       ms taken:  27   9 (36  total) 
+grid 'figure'         ms taken:  54  10 (64  total) 
+grid 'bitfields'      ms taken:  36   9 (45  total) 
+grid 'sprite'         ms taken:  27  10 (37  total) 
+grid 'random'         ms taken:   0  24 (23  total) >> not compressed <<
+grid 'desirability'   ms taken:  32  10 (42  total) 
+grid 'elevation'      ms taken:  26  10 (36  total) 
+grid 'building_dmg'   ms taken:  53 128 (181 total) 
+grid 'aqueduct_bak'   ms taken:  26  10 (36  total) 
+grid 'sprite_bak'     ms taken:  26  10 (36  total) 
+2026/02/06 14:19:26 -- [Scribe]: time taken: (1192 milliseconds)
+
+
+grid 'image'          ms taken: 142  41 (183 total) 
+grid 'edge'           ms taken:  28  18 (46  total) 
+grid 'building'       ms taken:  54 129 (183 total) 
+grid 'terrain'        ms taken: 114  41 (155 total) 
+grid 'aqueduct'       ms taken:  26  10 (36  total) 
+grid 'figure'         ms taken:  52  10 (62  total) 
+grid 'bitfields'      ms taken:  36  10 (46  total) 
+grid 'sprite'         ms taken:  26  12 (38  total) 
+grid 'random'         ms taken:   0  25 (24  total) >> not compressed <<
+grid 'desirability'   ms taken:  32  10 (42  total) 
+grid 'elevation'      ms taken:  26  10 (36  total) 
+grid 'building_dmg'   ms taken:  54 131 (185 total) 
+grid 'aqueduct_bak'   ms taken:  26  13 (39  total) 
+grid 'sprite_bak'     ms taken:  48  16 (64  total) 
+2026/02/06 14:35:17 -- [Scribe]: time taken: (1171 milliseconds)
+
+
+grid 'image'          ms taken: 144  46 (190 total) 
+grid 'edge'           ms taken:  29  18 (47  total) 
+grid 'building'       ms taken:  54  18 (72  total) 
+grid 'terrain'        ms taken: 116  52 (168 total) 
+grid 'aqueduct'       ms taken:  31  10 (41  total) 
+grid 'figure'         ms taken:  56  10 (66  total) 
+grid 'bitfields'      ms taken:  36  11 (47  total) 
+grid 'sprite'         ms taken:  28  11 (39  total) 
+grid 'random'         ms taken:   0  26 (25  total) >> not compressed <<
+grid 'desirability'   ms taken:  32  11 (43  total) 
+grid 'elevation'      ms taken:  31  10 (41  total) 
+grid 'building_dmg'   ms taken:  59  20 (79  total) 
+grid 'aqueduct_bak'   ms taken:  30  10 (40  total) 
+grid 'sprite_bak'     ms taken:  29  10 (39  total) 
+2026/02/06 14:41:02 -- [Scribe]: time taken: (972 milliseconds)
+
+grid 'image'          ms taken: 144  43 (187 total) 
+grid 'edge'           ms taken:  29  18 (47  total) 
+grid 'building'       ms taken:  55  18 (73  total) 
+grid 'terrain'        ms taken: 114  47 (161 total) 
+grid 'aqueduct'       ms taken:  26  10 (36  total) 
+grid 'figure'         ms taken:  53  10 (63  total) 
+grid 'bitfields'      ms taken:  36  12 (48  total) 
+grid 'sprite'         ms taken:  27  10 (37  total) 
+grid 'random'         ms taken:   0  26 (25  total) >> not compressed <<
+grid 'desirability'   ms taken:  33  14 (47  total) 
+grid 'elevation'      ms taken:  34  12 (46  total) 
+grid 'building_dmg'   ms taken:  55  18 (73  total) 
+grid 'aqueduct_bak'   ms taken:  26  10 (36  total) 
+grid 'sprite_bak'     ms taken:  28   9 (37  total) 
+2026/02/06 14:41:26 -- [Scribe]: time taken: (948 milliseconds)
+
+grid 'image'          ms taken: 148  44 (192 total) 
+grid 'edge'           ms taken:  28  18 (46  total) 
+grid 'building'       ms taken:  55  17 (72  total) 
+grid 'terrain'        ms taken: 114  43 (157 total) 
+grid 'aqueduct'       ms taken:  26  10 (36  total) 
+grid 'figure'         ms taken:  53  12 (65  total) 
+grid 'bitfields'      ms taken:  35  10 (45  total) 
+grid 'sprite'         ms taken:  26  10 (36  total) 
+grid 'random'         ms taken:   0  26 (25  total) >> not compressed <<
+grid 'desirability'   ms taken:  31  10 (41  total) 
+grid 'elevation'      ms taken:  26   9 (35  total) 
+grid 'building_dmg'   ms taken:  52  17 (69  total) 
+grid 'aqueduct_bak'   ms taken:  25  10 (35  total) 
+grid 'sprite_bak'     ms taken:  27  10 (37  total) 
+2026/02/06 14:54:01 -- [Scribe]: time taken: (927 milliseconds)
+
+
+
+
+
+
+
+
+
+
+
+
+
+

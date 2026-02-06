@@ -8,8 +8,29 @@ const TILE_HEIGHT = 30
 const TILE_SIZE = Vector2(TILE_WIDTH, TILE_HEIGHT)
 
 var data = {}
-var grids = {}
+var grids = {
+	"image": [],
+	"edge": [],
+	"building": [],
+	"terrain": [],
+	"aqueduct": [],
+	"figure": [],
+	"bitfields": [],
+	"sprite": [],
+	"random": [],
+	"desirability": [],
+	"elevation": [],
+	"building_dmg": [],
+	"aqueduct_bak": [],
+	"sprite_bak": []
+}
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
-onready var MAP_TERRAIN = INGAME_ROOT.get_node("Map")
+onready var MAP_TERRAIN = INGAME_ROOT.get_node("Map") as TileMap
+
+func set_grid(grid_name, x, y, value):
+	if grid_name == "image":
+		MAP_TERRAIN.set_cell(x, y, value)
+	else:
+		pass

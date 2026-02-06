@@ -115,7 +115,7 @@ func enscribe_SAV():
 	Scribe.put("mission_progress_pointer", ScribeFormat.i8)
 	enscribe_schema()
 	
-	Scribe.sync_record([Map.grids], TYPE_DICTIONARY)
+#	Scribe.sync_record([Map.grids], TYPE_DICTIONARY)
 	Scribe.put_grid("image", true, ScribeFormat.u32)
 	Scribe.put_grid("edge", true, ScribeFormat.i8)
 	Scribe.put_grid("building", true, ScribeFormat.i16)

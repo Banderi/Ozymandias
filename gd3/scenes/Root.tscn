@@ -130,8 +130,14 @@ tile_set = ExtResource( 44 )
 cell_size = Vector2( 58, 30 )
 format = 1
 tile_data = PoolIntArray( -65536, 0, 0, -65529, 0, 0, 7, 0, 0, 8, 0, 0, 9, 0, 0, 65536, 0, 0, 65537, 0, 0 )
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="Camera2D" type="Camera2D" parent="InGame"]
+position = Vector2( -97, 3505 )
+current = true
+zoom = Vector2( 5, 5 )
 
 [node name="Menus" type="CanvasLayer" parent="."]
 

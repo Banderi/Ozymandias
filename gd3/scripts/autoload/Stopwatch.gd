@@ -1,11 +1,22 @@
 extends Node
-# ANTIMONY 'Stopwatch' by Banderi --- v1.0
+# ANTIMONY 'Stopwatch' by Banderi --- v1.1
+
+enum {
+	Milliseconds = 0,
+	Microsecond = 1
+}
 
 func start():
 	return OS.get_ticks_usec()
-func stop(from, time : int, message : String, precision : int = 0):
+func stop(from, time: int, message: String, precision: int = Milliseconds):
 	match precision:
-		0:
+		Milliseconds:
 			Log.generic(from, message + " (%d milliseconds)" % [OS.get_ticks_msec() - float(time) * 0.001])
-		1:
+		Microsecond:
 			Log.generic(from, message + " (%d microseconds)" % [OS.get_ticks_msec() - time])
+func query(time: int, precision: int = Milliseconds):
+	match precision:
+		Milliseconds:
+			return OS.get_ticks_msec() - float(time) * 0.001
+		Microsecond:
+			return OS.get_ticks_msec() - time
