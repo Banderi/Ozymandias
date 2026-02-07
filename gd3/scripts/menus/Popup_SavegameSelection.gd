@@ -10,7 +10,8 @@ func _on_BtnDelete_pressed():
 	var buf = d.get_buffer(fs)
 	
 	var t = Stopwatch.start()
-	var dc = PKWare.decompress(buf, Map.PH_MAP_SIZE * 4) # around ~140 ms
+#	var dc = PKWare.decompress(buf, Map.PH_MAP_SIZE * 4) # around ~140 ms
+	var dc = PKWareMono.decompress(buf, Map.PH_MAP_SIZE * 4) # around ~140 ms
 	Stopwatch.stop(null, t, "decomp test", Stopwatch.Milliseconds)
 	
 	

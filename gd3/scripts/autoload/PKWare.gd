@@ -71,6 +71,21 @@ var d_output_buffer: PoolByteArray # 8708 --- 2x 4096 (max dict size) + 516 for 
 var r_input_data # <------------- REAL input data!
 var r_output_data # <------------ REAL output buffer!
 
+func print_debug_stuff(token, __rounds):
+	
+	print("\n\n\n")
+	print("d_input_buffer_ptr = ", d_input_buffer_ptr)
+	print("d_output_buffer_ptr = ", d_output_buffer_ptr)
+	print("token_input_ptr = ", token_input_ptr)
+	print("token_output_ptr = ", token_output_ptr)
+	print("token = ", token)
+	print("__rounds = ", __rounds)
+	print("d_current_input_byte = ", d_current_input_byte)
+	print("d_current_input_bits_available = ", d_current_input_bits_available)
+	
+	
+	pass
+
 func _cleanup():
 	token_stop = false
 	token_input_ptr = 0
@@ -184,8 +199,14 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 
 	# main loop
 	var token = null
+	var __rounds = 0
 	while true:
+		
+		if __rounds == 4:
+#		if __rounds == 5246:
+			pass
 		# decode next token
+		print_debug_stuff(token, __rounds)
 		if d_current_input_byte & 1: # copy token
 			if _set_bits_used(1):
 				return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
@@ -212,7 +233,7 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 			break
 		elif token >= 256: # offset shift
 			var length = token - 254
-			var offset = _get_copy_offset(length)
+			var offset = _get_copy_offset(length) # <--------- at round 2
 			if offset == 0:
 				return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 			var src_ptr = d_output_buffer_ptr - offset
@@ -231,9 +252,11 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 			for i in range(remaining):
 				d_output_buffer[i] = d_output_buffer[4096 + i]
 			d_output_buffer_ptr = remaining
+		__rounds += 1
 	_output_func(d_output_buffer_ptr - 4096)
 	# ====== return from pk_explode_data <------------ back to pk_explode
 	
+	print_debug_stuff(token, __rounds)
 	if token != Codes.PK_EOF:
 		return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 	if token_stop:

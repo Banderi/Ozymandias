@@ -180,6 +180,10 @@ func _ready():
 #	Family.DAT_save("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep2.dat", "Banhutep")
 
 
+#	var a = YourCustomClass.new()
+	var a = load("res://scripts/mono/YourCustomClass.cs").new()
+
+
 onready var DEBUG_ROOT = ROOT_NODE.get_node("Debug")
 onready var debug_label = DEBUG_ROOT.get_node("DEBUG_LABEL")
 onready var debug_fps_label = DEBUG_ROOT.get_node("DEBUG_FPS")

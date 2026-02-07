@@ -102,12 +102,12 @@ Scribe="*res://scripts/autoload/Scribe.gd"
 Campaign="*res://scripts/autoload/game/Campaign.gd"
 Map="*res://scripts/autoload/game/Map.gd"
 PKWare="*res://scripts/autoload/PKWare.gd"
+PKWareMono="*res://scripts/mono/PKWare_mono.cs"
 
 [debug]
 
 gdscript/warnings/unused_variable=false
 gdscript/warnings/unused_argument=false
-gdscript/warnings/return_value_discarded=false
 
 [editor_plugins]
 
@@ -126,6 +126,10 @@ texture={
 [locale]
 
 translations=PoolStringArray(  )
+
+[mono]
+
+project/assembly_name="Ozymandias"
 
 [network]
 
