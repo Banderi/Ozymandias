@@ -34,3 +34,10 @@ func set_grid(grid_name, x, y, value):
 		MAP_TERRAIN.set_cell(x, y, value)
 	else:
 		pass
+
+var city_orientation = 0
+var city_view_camera_x = 0
+var city_view_camera_y = 0
+
+const MAX_BOOKMARKS = 16
+var bookmarks = []

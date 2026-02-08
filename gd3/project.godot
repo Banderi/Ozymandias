@@ -103,6 +103,16 @@ Campaign="*res://scripts/autoload/game/Campaign.gd"
 Map="*res://scripts/autoload/game/Map.gd"
 PKWare="*res://scripts/autoload/PKWare.gd"
 PKWareMono="*res://scripts/mono/PKWare_mono.cs"
+Figures="*res://scripts/autoload/game/Figures.gd"
+Routing="*res://scripts/autoload/game/Routing.gd"
+City="*res://scripts/autoload/game/City.gd"
+Buildings="*res://scripts/autoload/game/Buildings.gd"
+Scenario="*res://scripts/autoload/game/Scenario.gd"
+Empire="*res://scripts/autoload/game/Empire.gd"
+Messages="*res://scripts/autoload/game/Messages.gd"
+Gods="*res://scripts/autoload/game/Gods.gd"
+Random="*res://scripts/autoload/game/Random.gd"
+Military="*res://scripts/autoload/game/Military.gd"
 
 [debug]
 

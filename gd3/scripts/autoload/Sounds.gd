@@ -77,3 +77,9 @@ func play_ambient(ambient: String, volume : float = 1.0):
 func _ready():
 	self.set_pause_mode(2) # Set pause mode to Process
 	set_process(true)
+
+###
+
+const MAX_CITY_SOUNDS = 70
+
+var city_sounds = []

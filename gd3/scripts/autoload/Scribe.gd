@@ -58,6 +58,10 @@ func close():
 	_filesize = null
 	_flags = null
 	_curr_record_ref = null
+func assert_eof():
+	if _handle.get_position() != _handle.get_len():
+		return bail(GlobalScope.Error.ERR_FILE_EOF, "EOF mismatch")
+	return true
 
 # stopwatch used for debugging
 var _debug_t = null
@@ -84,7 +88,7 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 	
 	# root -- this MUST be a reference-able object (dict or array)
 	var root = chunk_path[0]
-	if !(root is Dictionary || root is Array):
+	if !(root is Dictionary || root is Array || root is Node):
 		return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the supplied root is invalid (%s)" % [root])
 	_curr_record_ref = root
 	
@@ -92,7 +96,7 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 	for i in range(1, chunk_path.size()):
 		var key = chunk_path[i]
 		
-		# node is describing an array element
+		# node is describing an array element -- parent MUST be an array type.
 		if key is int:
 			if !(_curr_record_ref is Array):
 				return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' requires a parent of type Array" % [key])
@@ -115,29 +119,37 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 						_:
 							return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the leaf type '%s' is not allowed" % [leaf_type])
 		
-		# node is describint a dictionary element
+		# node is describint a dictionary element -- parent MUST be a dictionary or a node.
 		elif key is String:
-			if !(_curr_record_ref is Dictionary):
-				return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' requires a parent of type Dictionary" % [key])
 			
-			if !_curr_record_ref.has(key):
+			if _curr_record_ref is Dictionary:
+				if !_curr_record_ref.has(key):
 				
-				if i < chunk_path.size() - 1:
-					match typeof(chunk_path[i + 1]):
-						TYPE_STRING:
-							_curr_record_ref[key] = {}
-						TYPE_INT:
-							_curr_record_ref[key] = []
-						_:
-							return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' is describing a disallowed type (%s)" % [chunk_path[i + 1], typeof(chunk_path[i + 1])])
-				else:
-					match leaf_type:
-						TYPE_DICTIONARY:
-							_curr_record_ref[key] = {}
-						TYPE_ARRAY:
-							_curr_record_ref[key] = []
-						_:
-							return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the leaf type '%s' is not allowed" % [leaf_type])
+					if i < chunk_path.size() - 1:
+						match typeof(chunk_path[i + 1]):
+							TYPE_STRING:
+								_curr_record_ref[key] = {}
+							TYPE_INT:
+								_curr_record_ref[key] = []
+							_:
+								return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' is describing a disallowed type (%s)" % [chunk_path[i + 1], typeof(chunk_path[i + 1])])
+					else:
+						match leaf_type:
+							TYPE_DICTIONARY:
+								_curr_record_ref[key] = {}
+							TYPE_ARRAY:
+								_curr_record_ref[key] = []
+							_:
+								return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the leaf type '%s' is not allowed" % [leaf_type])
+			elif _curr_record_ref is Node:
+				if !(key in _curr_record_ref):
+					return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' is not a member of %s" % [key, _curr_record_ref])
+			else:
+				return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' requires a parent of type Dictionary or Node" % [key])
+			
+			
+			
+			
 			
 		# move the leaf ref along
 		_curr_record_ref = _curr_record_ref[key]
@@ -150,6 +162,7 @@ var _compressed_top = null
 var _compressed_ptr = null
 func push_compressed(expected_size) -> bool: # new bytestream buffer (empty on WRITE, decompress from file handle on READ)
 	if _flags == File.READ:
+		var _fp = _handle.get_position()
 		var c_size = _handle.get_32()
 		if c_size == 0x80000000:
 			var raw = _handle.get_buffer(expected_size)
@@ -157,7 +170,7 @@ func push_compressed(expected_size) -> bool: # new bytestream buffer (empty on W
 		else:
 			var raw = _handle.get_buffer(c_size)
 			var uncompressed = PKWareMono.Inflate(raw, expected_size)
-			if uncompressed == null:
+			if uncompressed == null || uncompressed.size() != expected_size:
 				return bail(GlobalScope.Error.ERR_SCRIPT_FAILED, "PKWare decompression failed")
 			_compressed_stack.push_back(uncompressed)
 	else:
@@ -253,14 +266,19 @@ func put_grid(key, compressed: bool, format, grid_width: int = Map.PH_MAP_WIDTH,
 
 # primary I/O
 func put(key, format, format_extra = null, default = 0) -> bool:
-	if _curr_record_ref == null || !(_curr_record_ref is Dictionary || _curr_record_ref is Array):
+	if _curr_record_ref == null || !(_curr_record_ref is Dictionary || _curr_record_ref is Array || _curr_record_ref is Node):
 		return bail(GlobalScope.Error.ERR_INVALID_DATA, "the last synced chunk is invalid (%s)" % [_curr_record_ref])
 	if _curr_record_ref is Dictionary:
 		if !(key is String):
 			return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the parent chunk (Dictionary) requires a key of type String")
 		if !_curr_record_ref.has(key):
 			_curr_record_ref[key] = default
-	if _curr_record_ref is Array:
+	elif _curr_record_ref is Node:
+		if !(key is String):
+			return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the parent chunk (Node) requires a key of type String")
+		if !(key in _curr_record_ref):
+			return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the parent chunk (Node) can not introduce new member elements")
+	elif _curr_record_ref is Array:
 		if !(key is int):
 			return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the parent chunk (Array) requires a key of type Int")
 		if _curr_record_ref.size() <= key:

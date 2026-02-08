@@ -108,7 +108,6 @@ public class PKWare_mono : Node
 		}
 	}
 
-
 	// ================= token
 	private bool token_stop;
 	private int token_input_ptr;
@@ -144,19 +143,11 @@ public class PKWare_mono : Node
 	private int[] c_analyze_index;			// 8708
 	private int[] c_long_matcher;			// 518
 
-	// private int c_current_copy_length;
-	// private int c_current_copy_offset;
-	// private int c_next_copy_length;
-	// private int c_next_copy_offset;
-
 	private struct Copy {
 		public int length;
 		public int offset;
 	}
 	private Copy c_copy;
-	// private int c_copy_length;
-	// private int c_copy_offset;
-
 
 	private byte[] r_input_data; // <------------- REAL input data!
 	private byte[] r_output_data; // <------------ REAL output buffer!

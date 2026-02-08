@@ -1,5 +1,7 @@
 extends Node
 
+const INDUSTRY_RESOURCES = 36
+
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var MENUS_ROOT = ROOT_NODE.get_node("Menus")
 
@@ -42,6 +44,105 @@ func right_click_pressed(relevant_node, event): # TODO: capture right click when
 
 func debug_tools_enabled():
 	return false
+
+# PKWare inflate / deflate tests
+const CHUNK_SIZE = 1024
+func get_file_hash(path, type) -> String: #  SHA-256
+	var ctx = HashingContext.new()
+	var file = File.new()
+	ctx.start(type)
+	file.open(path, File.READ)
+	while not file.eof_reached():
+		ctx.update(file.get_buffer(CHUNK_SIZE))
+	var res = ctx.finish()
+	return res.hex_encode()
+func get_hash(path) -> String:
+	return get_file_hash(path, HashingContext.HASH_SHA256)
+func passed(a, b):
+	return "✓" if a == b else "X "
+func do_PKWare_tests():
+	var d = null
+	
+	# OG COMPRESSED
+	d = IO.open("G:/OG_COMPR", File.READ) as File
+	var og_compr_s = d.get_32()
+	var og_compr_raw = d.get_buffer(og_compr_s)
+	d.close()
+	var hash_og_compr = get_hash("G:/OG_COMPR")
+	
+	# OG UNCOMPRESSED
+	d = IO.open("G:/OG_GRID", File.READ) as File
+	var og_grid = d.get_buffer(Map.PH_MAP_SIZE * 4)
+	d.close()
+	var hash_og_grid = get_hash("G:/OG_GRID")
+	
+	
+	# test: compression
+	var rc = PKWareMono.Deflate(og_grid, 4096)
+	d = IO.open("G:/test", File.WRITE) as File
+	d.store_32(rc.size())
+	d.store_buffer(rc)
+	d.close()
+	var hash_cs_compr = get_hash("G:/test")
+#	var hash_cs_compr = "----------------------------------------------------------------"
+#	rc = PKWare.compress(og_grid, 4096)
+#	d = IO.open("G:/test", File.WRITE) as File
+#	d.store_32(rc.size())
+#	d.store_buffer(rc)
+#	d.close()
+#	var hash_gds_compr = get_hash("G:/OG_COMPR")
+	var hash_gds_compr = "----------------------------------------------------------------"
+	
+	
+	# test 2: decompression
+	var dc = PKWareMono.Inflate(og_compr_raw, Map.PH_MAP_SIZE * 4)
+	d = IO.open("G:/test3", File.WRITE) as File
+	d.store_buffer(dc)
+	d.close()
+	var hash_cs_grid = get_hash("G:/test3")
+	dc = PKWare.decompress(og_compr_raw, Map.PH_MAP_SIZE * 4) # around ~140 ms
+	d = IO.open("G:/test4", File.WRITE) as File
+	d.store_buffer(dc)
+	d.close()
+	var hash_gds_grid = get_hash("G:/test4")
+	
+	
+	print("               COMPRESSED                                                           UNCOMPRESSED")
+	print("ORIGINAL:      %s     %s" % [hash_og_compr, hash_og_grid])
+#	print("------------------------------------------------------------------------------------------------------------------------------------------------------")
+	print("Mono/C#:       %s %s  %s %s" % [hash_cs_compr, passed(hash_cs_compr, hash_og_compr), hash_cs_grid, passed(hash_cs_grid, hash_og_grid)])
+	print("GDScript:      %s %s  %s %s" % [hash_gds_compr, passed(hash_gds_compr, hash_og_compr), hash_gds_grid, passed(hash_gds_grid, hash_og_grid)])
+
+# ????????
+var unkn_debug_00 = 0
+var unkn_debug_01 = 0
+var unkn_debug_02 = 0
+var unkn_debug_03_a = 0
+var unkn_debug_03_b = 0
+var unkn_debug_04_a = 0
+var unkn_debug_04_b = 0
+var unk_05 = 0
+var unk_06 = 0
+var unused_figure_sequences = null
+var unused_10_x_820 = null
+var unk_junk14_a_1 = 0
+var unk_junk14_a_2 = 0
+var unk_junk14_a_3 = 0
+var unk_junk14_a_4 = 0
+var unk_junk14_b_1 = 0
+var unk_junk14_b_2 = 0
+var unk_junk14_b_3 = 0
+var unk_junk14_b_4 = 0
+var unk_junk18 = 0
+var bizarre_ordered_fields_1 = null
+var bizarre_ordered_fields_2 = null
+var bizarre_ordered_fields_3 = null
+var bizarre_ordered_fields_4 = null
+var bizarre_ordered_fields_5 = null
+var bizarre_ordered_fields_6 = null
+var bizarre_ordered_fields_7 = null
+var bizarre_ordered_fields_8 = null
+var bizarre_ordered_fields_9 = null
 
 #############
 
@@ -131,21 +232,356 @@ func enscribe_SAV():
 	Scribe.put_grid("aqueduct_bak", true, ScribeFormat.u8)
 	Scribe.put_grid("sprite_bak", true, ScribeFormat.u8)
 	
+	Scribe.push_compressed(Figures.MAX_FIGURES * 388) # <---------------------------------- TODO
+#	for i in Figures.MAX_FIGURES:
+#		Scribe.sync_record([Figures.figures, i], TYPE_DICTIONARY)
+#		pass
+	Scribe.pop_compressed()
+	Scribe.push_compressed(Figures.MAX_ROUTES * 2) # <---------------------------------- TODO
+#	for i in Figures.MAX_ROUTES:
+#		Scribe.sync_record([Figures.routes, i], TYPE_DICTIONARY)
+#		pass
+	Scribe.pop_compressed()
+	Scribe.push_compressed(500000) # route paths cached data <-------------------- TODO
+	Scribe.pop_compressed()
 	
-#	print(Campaign.map_data)
-#	print(debug_schema.file_version)
+	# formations
+	Scribe.push_compressed(Figures.MAX_FORMATIONS * 144) # <---------------------------- TODO
+	Scribe.pop_compressed()
+	Scribe.sync_record([Figures], TYPE_OBJECT)
+	Scribe.put("last_used_formation", ScribeFormat.i32)
+	Scribe.put("last_formation_id", ScribeFormat.i32)
+	Scribe.put("total_formations", ScribeFormat.i32)
 	
-	return true
+	# city data
+	Scribe.sync_record([City], TYPE_OBJECT)
+	Scribe.push_compressed(37808) # <----------------------------- TODO
+	Scribe.pop_compressed()
+	Scribe.put("unused_faction_flags1", ScribeFormat.i16)
+	Scribe.put("unused_faction_flags2", ScribeFormat.i16)
+	Scribe.put("player_name1", ScribeFormat.ascii, 32)
+	Scribe.put("player_name2", ScribeFormat.ascii, 32)
+	Scribe.put("city_faction", ScribeFormat.i32)
+	
+	# buildings
+	Scribe.sync_record([Buildings], TYPE_OBJECT)
+	Scribe.push_compressed(Buildings.MAX_BUILDINGS * 264) # <----------------------------- TODO
+	Scribe.pop_compressed()
+	
+	# camera orientation
+	Scribe.sync_record([Map], TYPE_OBJECT)
+	Scribe.put("city_orientation", ScribeFormat.i32)
+	
+	# game time
+	Scribe.sync_record([self], TYPE_OBJECT)
+	Scribe.put("tick", ScribeFormat.i32)
+	Scribe.put("day", ScribeFormat.i32)
+	Scribe.put("month", ScribeFormat.i32)
+	Scribe.put("year", ScribeFormat.i32)
+	Scribe.put("total_days", ScribeFormat.i32)
+	
+	Scribe.sync_record([Buildings], TYPE_OBJECT)
+	Scribe.put("highest_id_ever", ScribeFormat.i32)
+	
+	Scribe.sync_record([Gods], TYPE_OBJECT)
+	Scribe.put("tick_countdown_locusts", ScribeFormat.i32)
+	
+	# random
+	Scribe.sync_record([Random], TYPE_OBJECT)
+	Scribe.put("random_iv_1", ScribeFormat.i32)
+	Scribe.put("random_iv_2", ScribeFormat.i32)
+	
+	Scribe.sync_record([Map], TYPE_OBJECT)
+	Scribe.put("city_view_camera_x", ScribeFormat.i32)
+	Scribe.put("city_view_camera_y", ScribeFormat.i32)
+	
+	Scribe.sync_record([City], TYPE_OBJECT)
+	Scribe.put("city_graph_order", ScribeFormat.i32)
+	
+	Scribe.sync_record([Gods], TYPE_OBJECT)
+	Scribe.put("tick_countdown_hailstorm", ScribeFormat.i32)
+	
+	# empire
+	Scribe.sync_record([Empire], TYPE_OBJECT)
+	Scribe.put("empire_map_x", ScribeFormat.i32)
+	Scribe.put("empire_map_y", ScribeFormat.i32)
+	Scribe.put("empire_selected_object", ScribeFormat.i32)
+	Scribe.push_compressed(Empire.MAX_EMPIRE_CITIES * 106) # <----------------------------- TODO
+	Scribe.pop_compressed()
+	
+	# industry buildings
+	Scribe.sync_record([City, "industry_buildings_total"], TYPE_ARRAY)
+	for i in INDUSTRY_RESOURCES:
+		Scribe.put(i, ScribeFormat.i32)
+	Scribe.sync_record([City, "industry_buildings_active"], TYPE_ARRAY)
+	for i in INDUSTRY_RESOURCES:
+		Scribe.put(i, ScribeFormat.i32)
+	
+	# trade prices
+	for i in INDUSTRY_RESOURCES:
+		Scribe.sync_record([Empire, "trade_prices", i], TYPE_DICTIONARY)
+		Scribe.put("selling", ScribeFormat.i32)
+		Scribe.put("buying", ScribeFormat.i32)
+	
+	# figure names (1)	
+	Scribe.sync_record([Figures, "figure_names_1"], TYPE_ARRAY)
+	for i in 21:
+		Scribe.put(i, ScribeFormat.i32)
+	
+	# scenario data
+	Scribe.sync_record([Scenario, "info"], TYPE_DICTIONARY)
+	Scribe.put("TEMP_RAW", ScribeFormat.raw, 1592) # <---------------------------- TODO
+	Scribe.put("max_year", ScribeFormat.i32)
+	
+	# messages
+	Scribe.sync_record([Messages], TYPE_OBJECT)
+	Scribe.push_compressed(Messages.MAX_MESSAGES * 48) # <----------------------------- TODO
+	Scribe.pop_compressed()
+	Scribe.put("total_messages_passed", ScribeFormat.i32)
+	Scribe.put("total_messages_current", ScribeFormat.i32)
+	Scribe.put("last_message_id_highlighted", ScribeFormat.i32)
+	Scribe.sync_record([Messages, "census_messages_received"], TYPE_ARRAY)
+	for i in 10:
+		Scribe.put(i, ScribeFormat.u8)
+	Scribe.sync_record([Messages, "message_counts"], TYPE_ARRAY)
+	for i in Messages.MESSAGE_CATEGORIES:
+		Scribe.put(i, ScribeFormat.i32)
+	Scribe.sync_record([Messages, "message_delays"], TYPE_ARRAY)
+	for i in Messages.MESSAGE_CATEGORIES:
+		Scribe.put(i, ScribeFormat.i32)
+	
+	# burning buildings
+	Scribe.sync_record([Buildings], TYPE_OBJECT)
+	Scribe.put("burning_buildings_list_info", ScribeFormat.i32)
+	Scribe.put("burning_buildings_size", ScribeFormat.i32)
+	
+	Scribe.sync_record([Figures], TYPE_OBJECT)
+	Scribe.put("figure_sequence", ScribeFormat.i32)
+	
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put("starting_kingdom", ScribeFormat.i32)
+	Scribe.put("starting_savings", ScribeFormat.i32)
+	Scribe.put("starting_rank", ScribeFormat.i32)
+	Scribe.push_compressed(101 * 32) # <--------------------------------------------------- TODO
+#	Scribe.put("invasion_warnings", ScribeFormat.i32)
+	Scribe.pop_compressed()
+	Scribe.put("scenario_is_custom", ScribeFormat.i32)
+	
+	# city sound channels
+	Scribe.sync_record([Sounds, "city_sounds"], TYPE_OBJECT)
+	for i in Sounds.MAX_CITY_SOUNDS:
+		Scribe.put(i, ScribeFormat.raw, 128) # <------------------- TODO
+	
+	Scribe.sync_record([Buildings], TYPE_OBJECT)
+	Scribe.put("highest_id", ScribeFormat.i32)
+	
+	# traders
+	Scribe.sync_record([Figures, "figure_traders"], TYPE_ARRAY)
+	for i in Figures.MAX_TRADERS:
+		Scribe.put(i, ScribeFormat.raw, 88)
+	Scribe.sync_record([Figures], TYPE_OBJECT)
+	Scribe.put("next_free_trader_index", ScribeFormat.i32)
+
+	# buildings lists
+	Scribe.sync_record([Buildings], TYPE_OBJECT)
+	Scribe.push_compressed(500 * 2) # building_list_burning# <--------------------------------------- TODO
+	Scribe.pop_compressed()
+	Scribe.push_compressed(500 * 2) # building_list_small# <--------------------------------------- TODO
+	Scribe.pop_compressed()
+	Scribe.push_compressed(Buildings.MAX_BUILDINGS * 2) # building_list_large# <--------------------------------------- TODO
+	Scribe.pop_compressed()
+	
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put("is_campaign_mission_first", ScribeFormat.i32)
+	Scribe.put("is_campaign_mission_first_four", ScribeFormat.i32)
+	
+	Scribe.sync_record([Figures, "figure_names_3"], TYPE_ARRAY)
+	for i in 4:
+		Scribe.put(i, ScribeFormat.i32)
+	
+	Scribe.sync_record([Gods], TYPE_OBJECT)
+	Scribe.put("tick_countdown_frogs", ScribeFormat.i32)
+	Scribe.put("tick_countdown_pyramid_speedup", ScribeFormat.i32)
+	Scribe.put("tick_countdown_blood1", ScribeFormat.i32)
+	Scribe.put("unkn_06", ScribeFormat.raw, 5*4) # ????
+	
+	Scribe.sync_record([Buildings, "storage_yards_settings"], TYPE_ARRAY)
+	for i in Buildings.MAX_STORAGE_YARDS:
+		Scribe.put(i, ScribeFormat.raw, 196) # <--------------------------------------- TODO
+	
+	Scribe.sync_record([Empire], TYPE_OBJECT)
+	Scribe.push_compressed(Empire.MAX_TRADE_ROUTES * INDUSTRY_RESOURCES * 4) # trade_routes_limits <------------------ TODO
+	Scribe.pop_compressed()
+	Scribe.push_compressed(Empire.MAX_TRADE_ROUTES * INDUSTRY_RESOURCES * 4) # trade_routes_traded <------------------ TODO
+	Scribe.pop_compressed()
+	
+	Scribe.sync_record([Military], TYPE_OBJECT)
+	Scribe.put("working_towers", ScribeFormat.i32)
+	
+	Scribe.sync_record([Buildings], TYPE_OBJECT)
+	Scribe.put("creation_highest_id", ScribeFormat.i32)
+	
+	Scribe.sync_record([Routing], TYPE_OBJECT)
+	Scribe.put("routing_debug", ScribeFormat.i32)
+
+	## ============== unknown / debug stuff ============== ##
+	Scribe.sync_record([self], TYPE_OBJECT)
+	Scribe.put("unkn_debug_00", ScribeFormat.i32)
+	Scribe.put("unkn_debug_01", ScribeFormat.i32)
+	Scribe.put("unkn_debug_02", ScribeFormat.i32)
+	Scribe.put("unkn_debug_03_a", ScribeFormat.i32)
+	Scribe.put("unkn_debug_03_b", ScribeFormat.i32)
+	Scribe.put("unkn_debug_04_a", ScribeFormat.i32)
+	Scribe.put("unkn_debug_04_b", ScribeFormat.i32)
+	
+	Scribe.sync_record([Military], TYPE_OBJECT)
+	Scribe.put("invasions_creation_sequence", ScribeFormat.i16)
+	
+	Scribe.sync_record([Buildings], TYPE_OBJECT)
+	Scribe.put("corrupt_house_coords_repaired", ScribeFormat.u32)
+	Scribe.put("corrupt_house_coords_deleted", ScribeFormat.u32)
+	
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put("scenario_map_name", ScribeFormat.ascii, 65)
+	
+	for i in Map.MAX_BOOKMARKS:
+		Scribe.sync_record([Map, "bookmarks", i], TYPE_DICTIONARY)
+		Scribe.put("x", ScribeFormat.i8)
+		Scribe.put("y", ScribeFormat.i8)
+	
+	Scribe.sync_record([Gods], TYPE_OBJECT)
+	Scribe.put("tick_countdown_blood2", ScribeFormat.i32)
+
+	# ============== ????
+	Scribe.sync_record([self], TYPE_OBJECT)
+	Scribe.put("unk_05", ScribeFormat.i32)
+	Scribe.put("unk_06", ScribeFormat.i32)
+	
+	# ============== ????
+	Scribe.sync_record([Scenario, "unk_fields"], TYPE_ARRAY)
+	for i in 99:
+		Scribe.put(i, ScribeFormat.i32)
+
+	Scribe.put_grid("fertility", false, ScribeFormat.u8)
+	
+	for i in Scenario.MAX_EVENTS:
+		Scribe.sync_record([Scenario, "events", i], TYPE_DICTIONARY)
+		Scribe.put("TEMP", ScribeFormat.raw, 124) # <---------------------------- TODO
+	Scribe.sync_record([Scenario, "events_extra"], TYPE_DICTIONARY)
+	Scribe.put("unk00", ScribeFormat.i32)
+	Scribe.put("unk01", ScribeFormat.i32)
+	Scribe.put("unk02", ScribeFormat.i32)
+	Scribe.put("unk03", ScribeFormat.i32)
+	Scribe.put("unk04", ScribeFormat.i32)
+	Scribe.put("unk05", ScribeFormat.i32)
+	Scribe.put("unk06", ScribeFormat.i32)
+	
+	# ferries
+	for i in Figures.MAX_FERRIES:
+		Scribe.sync_record([Figures, "ferry_queues", i], TYPE_ARRAY)
+		for j in Figures.MAX_FIGURES_WAITING_PER_FERRY:
+			Scribe.put(j, ScribeFormat.i32)
+	for i in Figures.MAX_FERRIES:
+		Scribe.sync_record([Figures, "ferry_transiting", i], TYPE_ARRAY)
+		for j in Figures.MAX_FIGURES_PER_FERRY:
+			Scribe.put(j, ScribeFormat.i32)
+	
+	# ============== ????
+	Scribe.sync_record([self], TYPE_OBJECT)
+	Scribe.put("unused_figure_sequences", ScribeFormat.raw, 4 * 4)
+	Scribe.put("unused_10_x_820", ScribeFormat.raw, 10 * 820)
+	
+	Scribe.sync_record([Empire], TYPE_OBJECT)
+	Scribe.push_compressed(40 * 32) # unused multiple-empires leftover stuff from C3
+	Scribe.pop_compressed()
+	Scribe.push_compressed(Empire.MAX_MAP_OBJECTS * 98) # empire_map_objects <-------------------------------- TODO
+	Scribe.pop_compressed()
+	Scribe.push_compressed(Empire.MAX_EMPIRE_ROUTES * 324) # empire_map_routes <-------------------------------- TODO
+	Scribe.pop_compressed()
+	
+	Scribe.put_grid("vegetation_growth", false, ScribeFormat.u8)
+	
+	# ============== ????
+	Scribe.sync_record([self], TYPE_OBJECT)
+	Scribe.put("unk_junk14_a_1", ScribeFormat.i32)
+	Scribe.put("unk_junk14_a_2", ScribeFormat.i32)
+	Scribe.put("unk_junk14_a_3", ScribeFormat.i32)
+	Scribe.put("unk_junk14_a_4", ScribeFormat.i32)
+	Scribe.put("unk_junk14_b_1", ScribeFormat.u8)
+	Scribe.put("unk_junk14_b_2", ScribeFormat.u8)
+	Scribe.put("unk_junk14_b_3", ScribeFormat.u8)
+	Scribe.put("unk_junk14_b_4", ScribeFormat.u8)
+	Scribe.put("bizarre_ordered_fields_1", ScribeFormat.raw, 22 * 24)
+	
+	# floodplain data
+	Scribe.push_compressed(36) # floodplain_settings <-------------------------------- TODO
+	Scribe.pop_compressed()
+	
+	Scribe.put_grid("unk_grid03_routing_cache", true, ScribeFormat.i32)
+	
+	
+	Scribe.sync_record([self], TYPE_OBJECT)
+	Scribe.put("bizarre_ordered_fields_4", ScribeFormat.raw, 13 * 24)
+
+	Scribe.sync_record([Figures, "figure_names_2"], TYPE_ARRAY)
+	for i in 16:
+		Scribe.put(i, ScribeFormat.i32)
+	
+	Scribe.sync_record([Scenario, "tutorial_flags_1"], TYPE_ARRAY)
+	for i in 26:
+		Scribe.put(i, ScribeFormat.u8)
+	Scribe.sync_record([Scenario, "tutorial_flags_2"], TYPE_ARRAY)
+	for i in 15:
+		Scribe.put(i, ScribeFormat.u8)
+	
+	Scribe.put_grid("unk_grid03_deleted_buildings", true, ScribeFormat.u8)
+	
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put("mission_play_type", ScribeFormat.u8)
+	
+	Scribe.put_grid("moisture_grid", true, ScribeFormat.u8)
+	
+	Scribe.sync_record([self], TYPE_OBJECT)
+	Scribe.put("bizarre_ordered_fields_2", ScribeFormat.raw, 10 * 24)
+	Scribe.put("bizarre_ordered_fields_3", ScribeFormat.raw, 18 * 24)
+	Scribe.put("unk_junk18", ScribeFormat.i32)
+	
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put("difficulty", ScribeFormat.i32)
+	
+	### ======================= POST-FILE VERSION 160 ======================= ###
+	
+	if debug_schema.file_version >= 160:
+		Scribe.sync_record([Military, "campaign_company_rejoin"], TYPE_ARRAY)
+		for i in 3:
+			Scribe.put(i, ScribeFormat.u32)
+
+		Scribe.sync_record([self], TYPE_OBJECT)
+		Scribe.put("bizarre_ordered_fields_5", ScribeFormat.raw, 27 * 24)
+		Scribe.put("bizarre_ordered_fields_6", ScribeFormat.raw, 27 * 24)
+		Scribe.put("bizarre_ordered_fields_7", ScribeFormat.raw, 15 * 24)
+		Scribe.put("bizarre_ordered_fields_8", ScribeFormat.raw, 56 * 24)
+#		Scribe.put("bizarre_ordered_fields_9", ScribeFormat.raw, 74 * 24)
+		Scribe.put("bizarre_ordered_fields_9", ScribeFormat.raw, 75 * 24) # schema says 75, but sometimes it's 74?
+
+	return Scribe.assert_eof()
 
 #func begin_new_campaign():
 #	pass
 
 #############
 
-var ticks = 0
+
+var tick = 0
+var day = 0
+var month = 0
+var year = 0
+var total_ticks = 0
+var total_days = 0
 func game_loop(delta):
-	for i in debug_test_spinbox.value:
-		ticks += 1
+#	for i in debug_test_spinbox.value:
+#		ticks += 1
+	pass
 func game_tick(delta):
 	pass
 
@@ -194,7 +630,7 @@ onready var debug_test_button = debug_test_label.get_node("Button")
 var last_fps = 60
 var test_adj = 1
 func _on_DebugTestBtn_Pressed():
-	ticks = 100
+	pass
 func tick_maxfps_test(delta):
 	if (1.0 / delta) < 59.8:
 		test_adj = min(test_adj - 10, 0)
@@ -228,5 +664,5 @@ func _process(delta):
 	debug_fps_label.text = str(last_fps, " FPS")
 	
 	if debug_test_label.visible:
-		debug_test_label.text = "%s (%s)\n%s" % [delta, 1.0 / delta, ticks]
+		debug_test_label.text = "%s (%s)\n%s" % [delta, 1.0 / delta, total_ticks]
 		tick_maxfps_test(delta)
