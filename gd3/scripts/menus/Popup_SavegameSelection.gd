@@ -1,31 +1,75 @@
 extends Control
 
+const CHUNK_SIZE = 1024
+func get_file_hash(path, type) -> String: #  SHA-256
+	var ctx = HashingContext.new()
+	var file = File.new()
+	ctx.start(type)
+	file.open(path, File.READ)
+	while not file.eof_reached():
+		ctx.update(file.get_buffer(CHUNK_SIZE))
+	var res = ctx.finish()
+	return res.hex_encode()
+func get_hash(path) -> String:
+	return get_file_hash(path, HashingContext.HASH_SHA256)
+func passed(a, b):
+	return "✓" if a == b else "X "
+
 var saving_mode = false # false = loading, true = saving
 func _on_BtnDelete_pressed():
 	
 	
-	# testing
-	var d = IO.open("G:/test", File.READ) as File
-	var fs = d.get_32()
-	var buf = d.get_buffer(fs)
+	var d = null
 	
-	var t = Stopwatch.start()
-#	var dc = PKWare.decompress(buf, Map.PH_MAP_SIZE * 4) # around ~140 ms
-	var dc = PKWareMono.Inflate(buf, Map.PH_MAP_SIZE * 4) # around ~140 ms
-	Stopwatch.stop(null, t, "decomp test", Stopwatch.Milliseconds)
+	# OG COMPRESSED
+	d = IO.open("G:/OG_COMPR", File.READ) as File
+	var og_compr_s = d.get_32()
+	var og_compr_raw = d.get_buffer(og_compr_s)
 	d.close()
+	var hash_og_compr = get_hash("G:/OG_COMPR")
+	
+	# OG UNCOMPRESSED
+	d = IO.open("G:/OG_GRID", File.READ) as File
+	var og_grid = d.get_buffer(Map.PH_MAP_SIZE * 4)
+	d.close()
+	var hash_og_grid = get_hash("G:/OG_GRID")
 	
 	
+	# test: compression
+	var rc = PKWareMono.Deflate(og_grid, 4096)
+	d = IO.open("G:/test", File.WRITE) as File
+	d.store_32(rc.size())
+	d.store_buffer(rc)
+	d.close()
+	var hash_cs_compr = get_hash("G:/test")
+#	var hash_cs_compr = "----------------------------------------------------------------"
+#	rc = PKWare.compress(og_grid, 4096)
+#	d = IO.open("G:/test", File.WRITE) as File
+#	d.store_32(rc.size())
+#	d.store_buffer(rc)
+#	d.close()
+#	var hash_gds_compr = get_hash("G:/OG_COMPR")
+	var hash_gds_compr = "----------------------------------------------------------------"
 	
-	var d2 = IO.open("G:/test2", File.WRITE) as File
-	t = Stopwatch.start()
-	var rc = PKWareMono.Deflate(dc, 4096)
-	Stopwatch.stop(null, t, "decomp test", Stopwatch.Milliseconds)
-	d2.store_32(rc.size())
-	d2.store_buffer(rc)
-	d2.close()
+	
+	# test 2: decompression
+	var dc = PKWareMono.Inflate(og_compr_raw, Map.PH_MAP_SIZE * 4)
+	d = IO.open("G:/test3", File.WRITE) as File
+	d.store_buffer(dc)
+	d.close()
+	var hash_cs_grid = get_hash("G:/test3")
+	dc = PKWare.decompress(og_compr_raw, Map.PH_MAP_SIZE * 4) # around ~140 ms
+	d = IO.open("G:/test4", File.WRITE) as File
+	d.store_buffer(dc)
+	d.close()
+	var hash_gds_grid = get_hash("G:/test4")
 	
 	
+	print("               COMPRESSED                                                           UNCOMPRESSED")
+	print("ORIGINAL:      %s     %s" % [hash_og_compr, hash_og_grid])
+#	print("------------------------------------------------------------------------------------------------------------------------------------------------------")
+	print("Mono/C#:       %s %s  %s %s" % [hash_cs_compr, passed(hash_cs_compr, hash_og_compr), hash_cs_grid, passed(hash_cs_grid, hash_og_grid)])
+	print("GDScript:      %s %s  %s %s" % [hash_gds_compr, passed(hash_gds_compr, hash_og_compr), hash_gds_grid, passed(hash_gds_grid, hash_og_grid)])
 	
 	
 	

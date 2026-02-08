@@ -202,11 +202,11 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 	var __rounds = 0
 	while true:
 		
-		if __rounds == 4:
+#		if __rounds == 4:
 #		if __rounds == 5246:
-			pass
+#			pass
 		# decode next token
-		print_debug_stuff(token, __rounds)
+#		print_debug_stuff(token, __rounds)
 		if d_current_input_byte & 1: # copy token
 			if _set_bits_used(1):
 				return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
@@ -256,7 +256,7 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 	_output_func(d_output_buffer_ptr - 4096)
 	# ====== return from pk_explode_data <------------ back to pk_explode
 	
-	print_debug_stuff(token, __rounds)
+#	print_debug_stuff(token, __rounds)
 	if token != Codes.PK_EOF:
 		return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 	if token_stop:

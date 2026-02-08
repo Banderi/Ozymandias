@@ -172,7 +172,7 @@ public class PKWare_mono : Node
 		token_input_ptr += length;
 		return length;
 	}
-	private void _output_func(int length) {
+	private void _output_func(int starting_buffer_ptr, int length) {
 		if (token_stop)
 			return;
 		if (token_output_ptr >= token_output_length) {
@@ -185,10 +185,9 @@ public class PKWare_mono : Node
 			token_stop = true;
 		} else {
 			for (int i = 0; i < length; i++)
-				r_output_data[token_output_ptr + i] = _output_buffer[i];
+				r_output_data[token_output_ptr + i] = _output_buffer[starting_buffer_ptr + i];
 			token_output_ptr += length;
 		}
-	
 	}
 	private bool _set_bits_used(int num_bits) {
 		if (d_current_input_bits_available >= num_bits) {
@@ -306,7 +305,7 @@ public class PKWare_mono : Node
 			}
 			// flush buffer if needed
 			if (d_output_buffer_ptr >= 8192) {
-				_output_func(4096);
+				_output_func(4096, 4096);
 				
 				var remaining = d_output_buffer_ptr - 4096;
 				for (int i = 0; i < remaining; i++)
@@ -315,7 +314,7 @@ public class PKWare_mono : Node
 			}
 			__rounds++;
 		}
-		_output_func(d_output_buffer_ptr - 4096);
+		_output_func(4096, d_output_buffer_ptr - 4096);
 		// ====== return from pk_explode_data <------------ back to pk_explode
 		
 		if (token != (int)Codes.PK_EOF)
@@ -338,11 +337,13 @@ public class PKWare_mono : Node
 		return used;
 	}
 	private void pk_implode_flush_full_buffer() {
-		_output_func(2048);
+		_output_func(0, 2048);
 		byte new_first_byte = _output_buffer[2048];
 		byte last_byte = _output_buffer[d_output_buffer_ptr];
 		d_output_buffer_ptr -= 2048;
 		// memset(_output_buffer, 0, 2050); // <------- useless????
+		for (int i = 0; i < 2050; i++)
+			_output_buffer[i] = 0;
 		if (d_output_buffer_ptr != 0)
 			_output_buffer[0] = new_first_byte;
 		if (c_current_output_bits_used != 0)
@@ -760,7 +761,7 @@ public class PKWare_mono : Node
 		if (c_current_output_bits_used != 0)
 			d_output_buffer_ptr++;
 
-		_output_func(d_output_buffer_ptr);
+		_output_func(0, d_output_buffer_ptr);
 		
 		// // read initial buffer
 		// d_input_buffer_end = _input_func(2048);
