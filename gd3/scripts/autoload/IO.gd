@@ -99,14 +99,14 @@ func read(path, get_as_text = false, password = ""):
 	file.close()
 	Log.generic(null,str("file '",path,"' read successfully!"))
 	return data
-func open(path, password = ""):
+func open(path, flags, password = ""):
 	# init stream
 	var file = File.new()
 	var err = -1
 	if password == "":
-		err = file.open(path, File.READ)
+		err = file.open(path, flags)
 	else:
-		err = file.open_encrypted_with_pass(path, File.READ, password)
+		err = file.open_encrypted_with_pass(path, flags, password)
 	if err != OK:
 		Log.error(null,err,str("could not read file '",path,"'"))
 		return null

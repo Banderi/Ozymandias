@@ -156,8 +156,7 @@ func push_compressed(expected_size) -> bool: # new bytestream buffer (empty on W
 			_compressed_stack.push_back(raw)
 		else:
 			var raw = _handle.get_buffer(c_size)
-#			var uncompressed = PKWare.decompress(raw, expected_size)
-			var uncompressed = PKWareMono.decompress(raw, expected_size)
+			var uncompressed = PKWareMono.Inflate(raw, expected_size)
 			if uncompressed == null:
 				return bail(GlobalScope.Error.ERR_SCRIPT_FAILED, "PKWare decompression failed")
 			_compressed_stack.push_back(uncompressed)

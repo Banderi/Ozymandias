@@ -59,7 +59,7 @@ func editor_debug_translate_labels(node):
 					node.text = text_en.get_message(node.localized_key)
 					print("updated: %s (%s)" % [node.text, node.localized_key])
 func load_text(path: String, locale: String):
-	var file = IO.open(path)
+	var file = IO.open(path, File.READ)
 	if file == null:
 		return null
 	
@@ -107,7 +107,7 @@ func load_text(path: String, locale: String):
 	
 	return tr
 func load_mm(path: String, locale: String): # TODO
-	var file = IO.open(path) as File
+	var file = IO.open(path, File.READ) as File
 	if file == null:
 		return null
 #	buffer_skip(buf, 24); // header

@@ -5,17 +5,25 @@ func _on_BtnDelete_pressed():
 	
 	
 	# testing
-	var d = IO.open("G:/test2")
+	var d = IO.open("G:/test", File.READ) as File
 	var fs = d.get_32()
 	var buf = d.get_buffer(fs)
 	
 	var t = Stopwatch.start()
 #	var dc = PKWare.decompress(buf, Map.PH_MAP_SIZE * 4) # around ~140 ms
-	var dc = PKWareMono.decompress(buf, Map.PH_MAP_SIZE * 4) # around ~140 ms
+	var dc = PKWareMono.Inflate(buf, Map.PH_MAP_SIZE * 4) # around ~140 ms
 	Stopwatch.stop(null, t, "decomp test", Stopwatch.Milliseconds)
-	
-	
 	d.close()
+	
+	
+	
+	var d2 = IO.open("G:/test2", File.WRITE) as File
+	t = Stopwatch.start()
+	var rc = PKWareMono.Deflate(dc, 4096)
+	Stopwatch.stop(null, t, "decomp test", Stopwatch.Milliseconds)
+	d2.store_32(rc.size())
+	d2.store_buffer(rc)
+	d2.close()
 	
 	
 	
