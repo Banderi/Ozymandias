@@ -60,7 +60,6 @@ func get_hash(path) -> String:
 	return get_file_hash(path, HashingContext.HASH_SHA256)
 func passed(a, b):
 	return "✓" if a == b else "X "
-
 func do_PKWare_test(i, og_deflated: PoolByteArray, og_inflated: PoolByteArray):
 	if i == 24:
 		pass
@@ -75,14 +74,8 @@ func do_PKWare_test(i, og_deflated: PoolByteArray, og_inflated: PoolByteArray):
 func do_PKWare_tests():
 	print("      COMPRESSED       UNCOMPRESSED")
 	print("-------------------------------------")
-	
-	
-#	var l = range(0, 24)
-#	var l2 = range(25, 34)
-#	l.append_array(l2)
-#	for i in l:
+	var _t = Stopwatch.start()
 	for i in range(0, 34):
-#	for i in range(24, 25):
 		var file = File.new()
 		file.open(str("G:/tests2/", i), File.READ)
 		var og_defl = file.get_buffer(file.get_len())
@@ -90,6 +83,7 @@ func do_PKWare_tests():
 		var og_infl = file.get_buffer(file.get_len())
 		file.close()
 		do_PKWare_test(i, og_defl, og_infl)
+	Stopwatch.stop(self, _t, "", Stopwatch.Milliseconds)
 		
 # ????????
 var unkn_debug_00 = 0
