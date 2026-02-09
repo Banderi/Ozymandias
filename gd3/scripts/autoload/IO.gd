@@ -93,7 +93,8 @@ func read(path, get_as_text = false, password = ""):
 		data = file.get_as_text()
 	else:
 		data = file.get_var(true)
-#		data = str2var(file.get_as_text())
+		if data == null:
+			data = file.get_buffer(file.get_len())
 
 	# close stream
 	file.close()

@@ -156,19 +156,25 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 	
 	return true
 
+#var __i = 0
+
 # compressed chunk stack ops and I/O helpers
 var _compressed_stack = []
 var _compressed_top = null
 var _compressed_ptr = null
 func push_compressed(expected_size) -> bool: # new bytestream buffer (empty on WRITE, decompress from file handle on READ)
 	if _flags == File.READ:
-		var _fp = _handle.get_position()
 		var c_size = _handle.get_32()
 		if c_size == 0x80000000:
 			var raw = _handle.get_buffer(expected_size)
 			_compressed_stack.push_back(raw)
 		else:
 			var raw = _handle.get_buffer(c_size)
+			
+#			var fp = IO.open("G:/tests2/"+str(__i), File.WRITE) as File
+#			fp.store_buffer(raw)
+#			__i += 1
+			
 			var uncompressed = PKWareMono.Inflate(raw, expected_size)
 			if uncompressed == null || uncompressed.size() != expected_size:
 				return bail(GlobalScope.Error.ERR_SCRIPT_FAILED, "PKWare decompression failed")

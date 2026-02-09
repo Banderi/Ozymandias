@@ -60,59 +60,37 @@ func get_hash(path) -> String:
 	return get_file_hash(path, HashingContext.HASH_SHA256)
 func passed(a, b):
 	return "✓" if a == b else "X "
-func do_PKWare_tests():
-	var d = null
-	
-	# OG COMPRESSED
-	d = IO.open("G:/OG_COMPR", File.READ) as File
-	var og_compr_s = d.get_32()
-	var og_compr_raw = d.get_buffer(og_compr_s)
-	d.close()
-	var hash_og_compr = get_hash("G:/OG_COMPR")
-	
-	# OG UNCOMPRESSED
-	d = IO.open("G:/OG_GRID", File.READ) as File
-	var og_grid = d.get_buffer(Map.PH_MAP_SIZE * 4)
-	d.close()
-	var hash_og_grid = get_hash("G:/OG_GRID")
-	
-	
-	# test: compression
-	var rc = PKWareMono.Deflate(og_grid, 4096)
-	d = IO.open("G:/test", File.WRITE) as File
-	d.store_32(rc.size())
-	d.store_buffer(rc)
-	d.close()
-	var hash_cs_compr = get_hash("G:/test")
-#	var hash_cs_compr = "----------------------------------------------------------------"
-#	rc = PKWare.compress(og_grid, 4096)
-#	d = IO.open("G:/test", File.WRITE) as File
-#	d.store_32(rc.size())
-#	d.store_buffer(rc)
-#	d.close()
-#	var hash_gds_compr = get_hash("G:/OG_COMPR")
-	var hash_gds_compr = "----------------------------------------------------------------"
-	
-	
-	# test 2: decompression
-	var dc = PKWareMono.Inflate(og_compr_raw, Map.PH_MAP_SIZE * 4)
-	d = IO.open("G:/test3", File.WRITE) as File
-	d.store_buffer(dc)
-	d.close()
-	var hash_cs_grid = get_hash("G:/test3")
-	dc = PKWare.decompress(og_compr_raw, Map.PH_MAP_SIZE * 4) # around ~140 ms
-	d = IO.open("G:/test4", File.WRITE) as File
-	d.store_buffer(dc)
-	d.close()
-	var hash_gds_grid = get_hash("G:/test4")
-	
-	
-	print("               COMPRESSED                                                           UNCOMPRESSED")
-	print("ORIGINAL:      %s     %s" % [hash_og_compr, hash_og_grid])
-#	print("------------------------------------------------------------------------------------------------------------------------------------------------------")
-	print("Mono/C#:       %s %s  %s %s" % [hash_cs_compr, passed(hash_cs_compr, hash_og_compr), hash_cs_grid, passed(hash_cs_grid, hash_og_grid)])
-	print("GDScript:      %s %s  %s %s" % [hash_gds_compr, passed(hash_gds_compr, hash_og_compr), hash_gds_grid, passed(hash_gds_grid, hash_og_grid)])
 
+func do_PKWare_test(i, og_deflated: PoolByteArray, og_inflated: PoolByteArray):
+	if i == 24:
+		pass
+	var hash_og_deflated = (og_deflated as Array).hash()
+	var hash_og_inflated = (og_inflated as Array).hash()
+	var hash_cs_deflated = (PKWareMono.Deflate(og_inflated, 4096) as Array).hash()
+	var hash_cs_inflated = (PKWareMono.Inflate(og_deflated, og_inflated.size()) as Array).hash()
+	print("%2d:   %012d %s  %012d %s" % [
+		i,
+		hash_cs_deflated, passed(hash_cs_deflated, hash_og_deflated),
+		hash_cs_inflated, passed(hash_cs_inflated, hash_og_inflated)])
+func do_PKWare_tests():
+	print("      COMPRESSED       UNCOMPRESSED")
+	print("-------------------------------------")
+	
+	
+#	var l = range(0, 24)
+#	var l2 = range(25, 34)
+#	l.append_array(l2)
+#	for i in l:
+	for i in range(0, 34):
+#	for i in range(24, 25):
+		var file = File.new()
+		file.open(str("G:/tests2/", i), File.READ)
+		var og_defl = file.get_buffer(file.get_len())
+		file.open(str("G:/tests3/", i), File.READ)
+		var og_infl = file.get_buffer(file.get_len())
+		file.close()
+		do_PKWare_test(i, og_defl, og_infl)
+		
 # ????????
 var unkn_debug_00 = 0
 var unkn_debug_01 = 0

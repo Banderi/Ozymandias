@@ -140,7 +140,7 @@ public class PKWare_mono : Node
 	private int c_copy_offset_extra_mask;
 	private int c_current_output_bits_used;
 	private int[] c_analyze_offset_table;	// 2304
-	private int[] c_analyze_index;			// 8708
+	private int[] c_analyze_index;			// 8708+128
 	private int[] c_long_matcher;			// 518
 
 	private struct Copy {
@@ -317,6 +317,12 @@ public class PKWare_mono : Node
 		return r_output_data;
 	}
 
+	private byte fetch_oob_comp_input_buffer(int i) {
+		if (i < 8708)
+			return _input_buffer[i];
+		else
+			return _output_buffer[i - 8708];
+	}
 	private int pk_implode_fill_input_buffer(int bytes_to_read) {
 		int used = 0;
 		int read;
@@ -444,10 +450,26 @@ public class PKWare_mono : Node
 				int input_ptr_copy_plus_one = input_ptr_copy + 1;
 				int matched_bytes_s = 2;
 				do {
+					if (matched_bytes_s == 440) {
+						int a = 3247;
+					}
+
+
 					start_match_plus_one++;
 					input_ptr_copy_plus_one++;
+
+					if (input_ptr_copy_plus_one >= 8708){
+						int a = 3674;}
+					// if (input_ptr_copy_plus_one > 8708) // <------------- no...
+					// 	break;
+
 					// if (*start_match_plus_one != *input_ptr_copy_plus_one)
-					if (_input_buffer[start_match_plus_one] != _input_buffer[input_ptr_copy_plus_one])
+					// if (input_ptr_copy_plus_one >= 8708) {
+					// 	if (_input_buffer[start_match_plus_one] != _output_buffer[input_ptr_copy_plus_one - 8708])
+					// 		break;
+					// } else if (_input_buffer[start_match_plus_one] != _input_buffer[input_ptr_copy_plus_one])
+					// 	break;
+					if (_input_buffer[start_match_plus_one] != fetch_oob_comp_input_buffer(input_ptr_copy_plus_one))
 						break;
 
 					matched_bytes_s++;
@@ -467,7 +489,7 @@ public class PKWare_mono : Node
 			// start_match = hash_analyze_index_ptr;
 			// int a = c_analyze_index[hash_analyze_index_ptr];
 			start_match = c_analyze_index[hash_analyze_index_ptr];
-			if (prev_input_ptr <= start_match) { // <---------------- BUG
+			if (prev_input_ptr <= start_match) {
 				copy.length = max_matched_bytes < 2 ? 0 : max_matched_bytes;
 				return;
 			}
@@ -548,7 +570,10 @@ public class PKWare_mono : Node
 				match_ptr = c_analyze_index[hash_analyze_index_ptr];
 			}
 			// while (input_ptr[matched_bytes] == *match_ptr) {
-			while (_input_buffer[input_ptr + matched_bytes] == _input_buffer[match_ptr]) { // <------------------------------------------------- BUG!
+
+
+			// while (_input_buffer[input_ptr + matched_bytes] == _input_buffer[match_ptr]) { // <---------------------- this here is wrong for some reason......
+			while (fetch_oob_comp_input_buffer(input_ptr + matched_bytes) == _input_buffer[match_ptr]) { // <---------------------- this here is wrong for some reason......
 				matched_bytes++;
 				if (matched_bytes >= 516)
 					break;
@@ -616,10 +641,12 @@ public class PKWare_mono : Node
 	public byte[] Deflate(byte[] raw_data, int dictionary_size) {
 		_reset_token();
 		c_current_output_bits_used = 0;
+		// _input_buffer = new byte[8708+128];
 		_input_buffer = new byte[8708];
 		_output_buffer = new byte[2050];
 
 		c_analyze_offset_table = new int[2304];
+   		// c_analyze_index = new int[8708+128];
    		c_analyze_index = new int[8708];
 		c_long_matcher = new int[518];
 		// d_output_buffer_ptr = 0; // <---- this gets set later
@@ -699,7 +726,7 @@ public class PKWare_mono : Node
 				bool write_literal = false;
 				bool write_copy = false;
 
-				if (__rounds == 17 && __r_rounds == 154){
+				if (__rounds == 1 && __r_rounds == 8){
 					bool a = true;}
 				// c_current_copy_length = 0;
 				// c_current_copy_offset = 0;
