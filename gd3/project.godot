@@ -101,7 +101,6 @@ Stopwatch="*res://scripts/autoload/Stopwatch.gd"
 Scribe="*res://scripts/autoload/Scribe.gd"
 Campaign="*res://scripts/autoload/game/Campaign.gd"
 Map="*res://scripts/autoload/game/Map.gd"
-PKWare="*res://scripts/autoload/PKWare.gd"
 PKWareMono="*res://scripts/mono/PKWare_mono.cs"
 Figures="*res://scripts/autoload/game/Figures.gd"
 Routing="*res://scripts/autoload/game/Routing.gd"
@@ -113,6 +112,7 @@ Messages="*res://scripts/autoload/game/Messages.gd"
 Gods="*res://scripts/autoload/game/Gods.gd"
 Random="*res://scripts/autoload/game/Random.gd"
 Military="*res://scripts/autoload/game/Military.gd"
+GridsMono="*res://scripts/mono/Grids_mono.cs"
 
 [debug]
 

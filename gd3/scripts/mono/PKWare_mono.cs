@@ -11,7 +11,8 @@ public class PKWare_mono : Node
 	// Log.error(...)
 	Node Log;
 	Dictionary Errors;
-	byte[] error(string Err, string Message) {
+	byte[] error(string Err, string Message)
+	{
 		GetNode("/root/Log").Call("error", "", Errors[Err], Message);
 		return new byte[0];
 	}
@@ -19,9 +20,7 @@ public class PKWare_mono : Node
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		// Called every time the node is added to the scene.
-		// Initialization here.
-		GD.Print("PKWareMono");
+		GD.Print("PKWareMono loaded: " + this);
 		
 		// Log.error(...)
 		Log = GetNode("/root/Log");
@@ -55,7 +54,8 @@ public class PKWare_mono : Node
 			}
 		}
 	}
-	void _construct_explode_jump_table(int size, int[] bits, int[] codes, int[] jump) { // jump[] <-- output
+	void _construct_explode_jump_table(int size, int[] bits, int[] codes, int[] jump) // jump[] <-- output
+	{
 		for (int i = size - 1; i > -1; i--) {
 			var bit = bits[i];
 			var code = codes[i];
@@ -66,7 +66,8 @@ public class PKWare_mono : Node
 		}
 	}
 
-	enum Codes {
+	enum Codes
+	{
 		PK_SUCCESS = 0,
 		PK_INVALID_WINDOWSIZE = 1,
 		PK_LITERAL_ENCODING_UNSUPPORTED = 2,
@@ -129,6 +130,7 @@ public class PKWare_mono : Node
 
 	byte[] r_input_data; // <------------- REAL input data!
 	byte[] r_output_data; // <------------ REAL output buffer!
+	int _output_buffer_ptr;
 
 	// ================= decompression (inflate)
 	int d_current_input_byte;
@@ -136,7 +138,6 @@ public class PKWare_mono : Node
 
 	int d_input_buffer_ptr;
 	int d_input_buffer_end;
-	int _output_buffer_ptr;
 
 	// ================= compression (deflate)
 	int c_copy_offset_extra_mask;
@@ -151,8 +152,7 @@ public class PKWare_mono : Node
 		if (tokenizer.in_ptr >= tokenizer.in_length)
 			return 0;
 		length = Math.Min(length, tokenizer.in_length - tokenizer.in_ptr);
-		for (int i = 0; i < length; i++)
-			_input_buffer[i + starting_buffer_ptr] = r_input_data[tokenizer.in_ptr + i];
+		Buffer.BlockCopy(r_input_data, tokenizer.in_ptr, _input_buffer, starting_buffer_ptr, length);
 		tokenizer.in_ptr += length;
 		return length;
 	}
@@ -168,8 +168,7 @@ public class PKWare_mono : Node
 			error("ERR_FILE_CORRUPT", "COMP1 corrupt");
 			tokenizer.stop = true;
 		} else {
-			for (int i = 0; i < length; i++)
-				r_output_data[tokenizer.out_ptr + i] = _output_buffer[starting_buffer_ptr + i];
+			Buffer.BlockCopy(_output_buffer, starting_buffer_ptr, r_output_data, tokenizer.out_ptr, length);
 			tokenizer.out_ptr += length;
 		}
 	}
@@ -282,6 +281,7 @@ public class PKWare_mono : Node
 				var src_ptr = _output_buffer_ptr - offset;
 				for (int i = 0; i < length; i++)
 					_output_buffer[_output_buffer_ptr + i] = _output_buffer[src_ptr + i];
+				// Buffer.BlockCopy(_output_buffer, src_ptr, _output_buffer, _output_buffer_ptr, length);
 				_output_buffer_ptr += length;
 			} else { // literal byte
 				_output_buffer[_output_buffer_ptr] = (byte)token;
@@ -292,8 +292,7 @@ public class PKWare_mono : Node
 				_output_func(4096, 4096);
 				
 				var remaining = _output_buffer_ptr - 4096;
-				for (int i = 0; i < remaining; i++)
-					_output_buffer[i] = _output_buffer[4096 + i];
+				Buffer.BlockCopy(_output_buffer, 4096, _output_buffer, 0, remaining);
 				_output_buffer_ptr = remaining;
 			}
 			__rounds++;
@@ -340,8 +339,7 @@ public class PKWare_mono : Node
 			byte new_first_byte = _output_buffer[2048];
 			byte last_byte = _output_buffer[_output_buffer_ptr];
 			_output_buffer_ptr -= 2048;
-			for (int i = 0; i < 2050; i++)
-				_output_buffer[i] = 0;
+			System.Array.Clear(_output_buffer, 0, 2050);
 			if (_output_buffer_ptr != 0)
 				_output_buffer[0] = new_first_byte;
 			if (c_current_output_bits_used != 0)
@@ -495,17 +493,14 @@ public class PKWare_mono : Node
 		// never reached
 	}
 	void _analyze_input(int input_start, int input_end) {
-		for (int i = 0; i < c_analyze_offset_table.Length; i++)
-			c_analyze_offset_table[i] = 0;
+		System.Array.Clear(c_analyze_offset_table, 0, c_analyze_offset_table.Length);
 		for (int index = input_start; index < input_end; index++)
 			c_analyze_offset_table[4 * _input_buffer[index] + 5 * _input_buffer[index + 1]]++;
-
 		int running_total = 0;
 		for (int i = 0; i < 2304; i++) {
 			running_total += c_analyze_offset_table[i];
 			c_analyze_offset_table[i] = running_total;
 		}
-
 		for (int index = input_end - 1; index >= input_start; index--) {
 			int hash_value = 4 * _input_buffer[index] + 5 * _input_buffer[index + 1];
 			int value = --c_analyze_offset_table[hash_value];
@@ -522,10 +517,12 @@ public class PKWare_mono : Node
    		c_analyze_index = new int[8708];
 		c_long_matcher = new int[518];
 
-		r_input_data = raw_data;
-		r_output_data = new byte[3000000]; // buffer of fixed size
+		// int estimated_out_bufsize = tokenizer.in_length + 1024;
+		int estimated_out_bufsize = 3000000; // todo: resize this automatically
 		tokenizer.in_length = raw_data.Length;
-		tokenizer.out_length = 3000000; // this gets used accordingly
+		tokenizer.out_length = estimated_out_bufsize; // this gets used accordingly
+		r_input_data = raw_data;
+		r_output_data = new byte[estimated_out_bufsize];
 
 		// prepare dictionary size, window size, and copy offset extra mask
 		switch (dictionary_size) {
@@ -640,8 +637,7 @@ public class PKWare_mono : Node
 
 			if (!eof) {
 				input_ptr -= 4096;
-				for (int i = 0; i < _dictionary_size + 516; i++)
-					_input_buffer[i] = _input_buffer[4096 + i];
+				Buffer.BlockCopy(_input_buffer, 4096, _input_buffer, 0, _dictionary_size + 516);
 			}
 			__rounds++;
 		}

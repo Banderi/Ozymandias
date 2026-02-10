@@ -77,13 +77,13 @@ func do_PKWare_tests():
 	var _t = Stopwatch.start()
 	for i in range(0, 34):
 		var file = File.new()
-		file.open(str("G:/tests2/", i), File.READ)
+		file.open(str("res://../tests/d/", i), File.READ)
 		var og_defl = file.get_buffer(file.get_len())
-		file.open(str("G:/tests3/", i), File.READ)
+		file.open(str("res://../tests/i/", i), File.READ)
 		var og_infl = file.get_buffer(file.get_len())
 		file.close()
 		do_PKWare_test(i, og_defl, og_infl)
-	Stopwatch.stop(self, _t, "", Stopwatch.Milliseconds)
+	Stopwatch.stop(self, _t, "", Stopwatch.Milliseconds) # ~1150 ms ---> ~1100 ms
 		
 # ????????
 var unkn_debug_00 = 0
@@ -489,7 +489,7 @@ func enscribe_SAV():
 	Scribe.push_compressed(36) # floodplain_settings <-------------------------------- TODO
 	Scribe.pop_compressed()
 	
-	Scribe.put_grid("unk_grid03_routing_cache", true, ScribeFormat.i32)
+	Scribe.put_grid("unk_grid03", true, ScribeFormat.i32) # routing cache...?
 	
 	
 	Scribe.sync_record([self], TYPE_OBJECT)
@@ -506,12 +506,12 @@ func enscribe_SAV():
 	for i in 15:
 		Scribe.put(i, ScribeFormat.u8)
 	
-	Scribe.put_grid("unk_grid03_deleted_buildings", true, ScribeFormat.u8)
+	Scribe.put_grid("unk_grid04", true, ScribeFormat.u8) # deleted buildings...?
 	
 	Scribe.sync_record([Scenario], TYPE_OBJECT)
 	Scribe.put("mission_play_type", ScribeFormat.u8)
 	
-	Scribe.put_grid("moisture_grid", true, ScribeFormat.u8)
+	Scribe.put_grid("moisture", true, ScribeFormat.u8)
 	
 	Scribe.sync_record([self], TYPE_OBJECT)
 	Scribe.put("bizarre_ordered_fields_2", ScribeFormat.raw, 10 * 24)
@@ -589,7 +589,7 @@ func _ready():
 
 
 #	var a = YourCustomClass.new()
-	var a = load("res://scripts/mono/YourCustomClass.cs").new()
+#	var a = load("res://scripts/mono/YourCustomClass.cs").new()
 
 
 onready var DEBUG_ROOT = ROOT_NODE.get_node("Debug")

@@ -7,33 +7,39 @@ const TILE_WIDTH = 58
 const TILE_HEIGHT = 30
 const TILE_SIZE = Vector2(TILE_WIDTH, TILE_HEIGHT)
 
-var data = {}
-var grids = {
-	"image": [],
-	"edge": [],
-	"building": [],
-	"terrain": [],
-	"aqueduct": [],
-	"figure": [],
-	"bitfields": [],
-	"sprite": [],
-	"random": [],
-	"desirability": [],
-	"elevation": [],
-	"building_dmg": [],
-	"aqueduct_bak": [],
-	"sprite_bak": []
-}
-
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
 onready var MAP_TERRAIN = INGAME_ROOT.get_node("Map") as TileMap
 
+var data = {}
+onready var grids = {
+	"image": MAP_TERRAIN, # testing!
+	"edge": null,
+	"building": [],
+	"terrain": null,
+	"aqueduct": null,
+	"figure": null,
+	"bitfields": null,
+	"sprite": null,
+	"random": null,
+	"desirability": null,
+	"elevation": null,
+	"building_dmg": null,
+	"aqueduct_bak": null,
+	"sprite_bak": null,
+	
+	"fertility": null,
+	"vegetation_growth": null,
+	"unk_grid03": null,
+	"unk_grid04": null,
+	"moisture": null
+}
+
 func set_grid(grid_name, x, y, value):
-	if grid_name == "image":
-		MAP_TERRAIN.set_cell(x, y, value)
-	else:
-		pass
+	if !(grid_name in grids):
+		return false
+	grids[grid_name].set_cell(x, y, value)
+	return true
 
 var city_orientation = 0
 var city_view_camera_x = 0
