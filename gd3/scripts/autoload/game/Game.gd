@@ -4,6 +4,7 @@ const INDUSTRY_RESOURCES = 36
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var MENUS_ROOT = ROOT_NODE.get_node("Menus")
+onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
 
 # generics
 func is_valid_objref(node):
@@ -132,12 +133,11 @@ func load_game(path):
 		if !Scribe.enscribe(path, File.READ, false, funcref(self, "enscribe_SAV")):
 			return false
 		
-#		STATE = States.Ingame
-#		close_all_menus()
-		
+		STATE = States.Ingame
+		close_all_menus()
 		
 		return true
-func save_game(path):
+func save_game(path): # TODO
 	if STATE == States.MainMenu:
 		Log.error(self, GlobalScope.Error.ERR_LOCKED, "can not save without a game loaded first")
 		return false
@@ -538,9 +538,6 @@ func enscribe_SAV():
 
 	return Scribe.assert_eof()
 
-#func begin_new_campaign():
-#	pass
-
 #############
 
 
@@ -567,7 +564,7 @@ func _ready():
 	Assets.load_tilesets()
 
 	
-	close_all_menus()
+#	close_all_menus()
 	
 	# TODO:
 	# loading:
@@ -577,7 +574,7 @@ func _ready():
 #	go_to_menu("Splash")
 #	go_to_menu("FamilySelection")
 	go_to_menu("GameSelection", "Banhutep")
-	popup_menu("SavegameSelection", false)
+#	popup_menu("SavegameSelection", false)
 #	go_to_menu("TextureRect2")
 #	go_to_menu("Control2")
 	
@@ -623,11 +620,17 @@ func _process(delta):
 	game_loop(delta)
 
 	# debug prints
-	var debug_text = "[color=#888888]Ozymandias Godot3.6 v0.1[/color]\n"
+	var debug_text = "[color=#888888]Ozymandias Godot3.6 v0.2[/color]\n"
 	debug_text += "[color=#888888]game_state:[/color]       %s\n" % [Log.get_enum_string(States, STATE)]
 	debug_text += "[color=#888888]last_menu:[/color]        %s\n" % [debug_last_menu]
 	debug_text += "[color=#888888]current_family:[/color]   %s\n" % [Family.current_family]
 	debug_text += "[color=#888888]families:[/color]         %s\n" % [Family.data.size()]
+	#
+	debug_text += "[color=#888888]camera:[/color]              %s\n" % [INGAME_ROOT.CAMERA.position]
+	debug_text += "[color=#888888]zoom:[/color]                %s\n" % [INGAME_ROOT.camera_zoom_target]
+	debug_text += "[color=#888888]curr_click_mouse:[/color]    %s\n" % [INGAME_ROOT.current_click_game_coords]
+	debug_text += "[color=#888888]last_click_mouse:[/color]    %s\n" % [INGAME_ROOT.last_click_game_coords]
+	debug_text += "[color=#888888]last_click_camera:[/color]   %s\n" % [INGAME_ROOT.camera_previous_game_coords]
 	
 	if debug_label.bbcode_text != debug_text:
 		debug_label.bbcode_text = debug_text

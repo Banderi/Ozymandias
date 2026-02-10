@@ -45,6 +45,7 @@
 [ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00191.png" type="Texture" id=43]
 [ext_resource path="res://assets/Tileset_Test.tres" type="TileSet" id=44]
 [ext_resource path="res://scripts/InGame.gd" type="Script" id=45]
+[ext_resource path="res://scripts/DebugLayer.gd" type="Script" id=46]
 
 [sub_resource type="StyleBoxTexture" id=9]
 texture = ExtResource( 33 )
@@ -108,13 +109,6 @@ modulate_color = Color( 1, 1, 1, 0.5 )
 [sub_resource type="StyleBoxTexture" id=20]
 texture = ExtResource( 36 )
 region_rect = Rect2( 0, 0, 39, 26 )
-
-[sub_resource type="GDScript" id=2]
-script/source = "extends CanvasLayer
-
-func hide():
-	return null
-"
 
 [node name="Root" type="Node"]
 
@@ -1403,13 +1397,13 @@ script = ExtResource( 14 )
 localized_key = "TEXT_13_7"
 
 [node name="Debug" type="CanvasLayer" parent="."]
-script = SubResource( 2 )
+script = ExtResource( 46 )
 
 [node name="DEBUG_LABEL" type="RichTextLabel" parent="Debug"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 10.0
-margin_top = 12.0
+margin_top = 26.0
 margin_right = -12.0
 margin_bottom = -9.0
 mouse_filter = 2
@@ -1468,6 +1462,24 @@ grow_horizontal = 0
 text = "60 FPS"
 align = 2
 
+[node name="DEBUG_BTNS" type="HBoxContainer" parent="Debug"]
+anchor_right = 1.0
+margin_bottom = 20.0
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="BtnPKWareTest" type="Button" parent="Debug/DEBUG_BTNS"]
+margin_right = 97.0
+margin_bottom = 20.0
+text = "PKWare tests"
+
+[node name="BtnLoadAutosave" type="Button" parent="Debug/DEBUG_BTNS"]
+margin_left = 101.0
+margin_right = 195.0
+margin_bottom = 20.0
+text = "autosave.sav"
+
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnPlay" to="Menus/Main" method="_on_BtnPlay_pressed"]
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnWebsite" to="Menus/Main" method="_on_BtnWebsite_pressed"]
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnEditor" to="Menus/Main" method="_on_BtnEditor_pressed"]
@@ -1495,3 +1507,5 @@ align = 2
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnYes" to="Menus/QuitGameConfirm" method="_on_BtnYes_pressed"]
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnNo" to="Menus/QuitGameConfirm" method="_on_BtnNo_pressed"]
 [connection signal="focus_entered" from="Menus/Splash" to="Menus/Splash" method="_on_Splash_focus_entered"]
+[connection signal="pressed" from="Debug/DEBUG_BTNS/BtnPKWareTest" to="Debug" method="_on_BtnPKWareTest_pressed"]
+[connection signal="pressed" from="Debug/DEBUG_BTNS/BtnLoadAutosave" to="Debug" method="_on_BtnLoadAutosave_pressed"]

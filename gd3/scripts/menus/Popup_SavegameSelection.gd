@@ -2,7 +2,6 @@ extends Control
 
 var saving_mode = false # false = loading, true = saving
 func _on_BtnDelete_pressed():
-	Game.do_PKWare_tests()
 	pass # Replace with function body.
 func _on_BtnProceed_pressed():
 	if selected_save == null:
