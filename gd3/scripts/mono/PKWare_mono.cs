@@ -1,58 +1,21 @@
 using Godot;
 using Godot.Collections;
 using System;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.InteropServices;
+
 
 public class PKWare_mono : Node
 {
 	// Log.error(...)
-	private Node Log;
-	private Dictionary Errors;
-	private byte[] error(string Err, string Message) {
+	Node Log;
+	Dictionary Errors;
+	byte[] error(string Err, string Message) {
 		GetNode("/root/Log").Call("error", "", Errors[Err], Message);
 		return new byte[0];
 	}
 	
-	enum Codes {
-		PK_SUCCESS = 0,
-		PK_INVALID_WINDOWSIZE = 1,
-		PK_LITERAL_ENCODING_UNSUPPORTED = 2,
-		PK_TOO_FEW_INPUT_BYTES = 3,
-		PK_ERROR_DECODING = 4,
-		PK_EOF = 773,
-		PK_ERROR_VALUE = 774
-	}
-
-	// lookup tables for copy offset encoding
-	private static readonly int[] COPY_OFFSET_BITS = {
-		2, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-		6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-		7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-		8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-	};
-	private static readonly int[] COPY_OFFSET_CODE = {
-		0x03, 0x0D, 0x05, 0x19, 0x09, 0x11, 0x01, 0x3E,
-		0x1E, 0x2E, 0x0E, 0x36, 0x16, 0x26, 0x06, 0x3A,
-		0x1A, 0x2A, 0x0A, 0x32, 0x12, 0x22, 0x42, 0x02,
-		0x7C, 0x3C, 0x5C, 0x1C, 0x6C, 0x2C, 0x4C, 0x0C,
-		0x74, 0x34, 0x54, 0x14, 0x64, 0x24, 0x44, 0x04,
-		0x78, 0x38, 0x58, 0x18, 0x68, 0x28, 0x48, 0x08,
-		0xF0, 0x70, 0xB0, 0x30, 0xD0, 0x50, 0x90, 0x10,
-		0xE0, 0x60, 0xA0, 0x20, 0xC0, 0x40, 0x80, 0x00,
-	};
-
-	// lookup tables for copy length encoding
-	private static readonly int[] COPY_LENGTH_BASE_BITS = {3, 2, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7};
-	private static readonly int[] COPY_LENGTH_BASE_VALUE = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x0A, 0x0E, 0x16, 0x26, 0x46, 0x86, 0x106};
-	private static readonly int[] COPY_LENGTH_BASE_CODE = {0x05, 0x03, 0x01, 0x06, 0x0A, 0x02, 0x0C, 0x14, 0x04, 0x18, 0x08, 0x30, 0x10, 0x20, 0x40, 0x00};
-	private static readonly int[] COPY_LENGTH_EXTRA_BITS = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8};
-
-	// explode/implode tables
-	private int[] d_copy_offset_jump_table;	// 256
-	private int[] d_copy_length_jump_table; // 256
-	private int[] c_codeword_bits;			// 774
-	private int[] c_codeword_values;		// 774
-
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
@@ -66,11 +29,6 @@ public class PKWare_mono : Node
 		Dictionary consts = script.GetScriptConstantMap();
 		Errors = consts["Error"] as Dictionary;
 
-		_PK_init();
-	}
-
-	// init global/const data & tables
-	private void _PK_init() {
 		// PKWare explode jump tables
 		d_copy_offset_jump_table = new int[256];
 		d_copy_length_jump_table = new int[256];
@@ -97,7 +55,7 @@ public class PKWare_mono : Node
 			}
 		}
 	}
-	private void _construct_explode_jump_table(int size, int[] bits, int[] codes, int[] jump) { // jump[] <-- output
+	void _construct_explode_jump_table(int size, int[] bits, int[] codes, int[] jump) { // jump[] <-- output
 		for (int i = size - 1; i > -1; i--) {
 			var bit = bits[i];
 			var code = codes[i];
@@ -108,79 +66,114 @@ public class PKWare_mono : Node
 		}
 	}
 
-	// ================= token
-	private bool token_stop;
-	private int token_input_ptr;
-	private int token_input_length;
-	private int token_output_ptr;
-	private int token_output_length;
-	private void _reset_token() {
-		token_stop = false;
-		token_input_ptr = 0;
-		token_input_length = 0;
-		token_output_ptr = 0;
-		token_output_length = 0;
+	enum Codes {
+		PK_SUCCESS = 0,
+		PK_INVALID_WINDOWSIZE = 1,
+		PK_LITERAL_ENCODING_UNSUPPORTED = 2,
+		PK_TOO_FEW_INPUT_BYTES = 3,
+		PK_ERROR_DECODING = 4,
+		PK_EOF = 773,
+		PK_ERROR_VALUE = 774
 	}
 
-	private int _window_size;
-	private int _dictionary_size;
+	// lookup tables for copy offset encoding
+	static readonly int[] COPY_OFFSET_BITS = {
+		2, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6,
+		6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+		7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+		8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
+	};
+	static readonly int[] COPY_OFFSET_CODE = {
+		0x03, 0x0D, 0x05, 0x19, 0x09, 0x11, 0x01, 0x3E,
+		0x1E, 0x2E, 0x0E, 0x36, 0x16, 0x26, 0x06, 0x3A,
+		0x1A, 0x2A, 0x0A, 0x32, 0x12, 0x22, 0x42, 0x02,
+		0x7C, 0x3C, 0x5C, 0x1C, 0x6C, 0x2C, 0x4C, 0x0C,
+		0x74, 0x34, 0x54, 0x14, 0x64, 0x24, 0x44, 0x04,
+		0x78, 0x38, 0x58, 0x18, 0x68, 0x28, 0x48, 0x08,
+		0xF0, 0x70, 0xB0, 0x30, 0xD0, 0x50, 0x90, 0x10,
+		0xE0, 0x60, 0xA0, 0x20, 0xC0, 0x40, 0x80, 0x00,
+	};
 
-	// ================= decompression (inflate)
-	private int d_current_input_byte;
-	private int d_current_input_bits_available;
+	// lookup tables for copy length encoding
+	static readonly int[] COPY_LENGTH_BASE_BITS = {3, 2, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7};
+	static readonly int[] COPY_LENGTH_BASE_VALUE = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x0A, 0x0E, 0x16, 0x26, 0x46, 0x86, 0x106};
+	static readonly int[] COPY_LENGTH_BASE_CODE = {0x05, 0x03, 0x01, 0x06, 0x0A, 0x02, 0x0C, 0x14, 0x04, 0x18, 0x08, 0x30, 0x10, 0x20, 0x40, 0x00};
+	static readonly int[] COPY_LENGTH_EXTRA_BITS = {0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8};
 
-	private int d_input_buffer_ptr;
-	private int d_input_buffer_end;
-	private int _output_buffer_ptr;
-	
-	private byte[] _input_buffer;			// 8708 (deflate) --- 2048 (inflate)
-	private byte[] _output_buffer;			// 2050 (deflate) --- 8708 (inflate) < 2x 4096 (max dict size) + 516 for copying
+	// explode/implode tables
+	int[] d_copy_offset_jump_table;	// 256
+	int[] d_copy_length_jump_table; // 256
+	int[] c_codeword_bits;			// 774
+	int[] c_codeword_values;		// 774
 
-	// ================= compression (deflate)
-	private int c_copy_offset_extra_mask;
-	private int c_current_output_bits_used;
-	private int[] c_analyze_offset_table;	// 2304
-	private int[] c_analyze_index;			// 8708+128
-	private int[] c_long_matcher;			// 518
-
-	private struct Copy {
+	struct Copy {
 		public int length;
 		public int offset;
 	}
-	private Copy c_copy;
 
-	private byte[] r_input_data; // <------------- REAL input data!
-	private byte[] r_output_data; // <------------ REAL output buffer!
+	// ================= token
+	class Tokenizer {
+		internal bool stop = false;
+		internal int in_ptr = 0;
+		internal int in_length = 0;
+		internal int out_ptr = 0;
+		internal int out_length = 0;
+	}
+	Tokenizer tokenizer;
 
-	private int _input_func(int starting_buffer_ptr, int length) {
-		if (token_stop)
+	int _window_size;
+	int _dictionary_size;
+
+	byte[] _input_buffer;			// 8708 (deflate) --- 2048 (inflate)
+	byte[] _output_buffer;			// 2050 (deflate) --- 8708 (inflate) < 2x 4096 (max dict size) + 516 for copying
+
+	byte[] r_input_data; // <------------- REAL input data!
+	byte[] r_output_data; // <------------ REAL output buffer!
+
+	// ================= decompression (inflate)
+	int d_current_input_byte;
+	int d_current_input_bits_available;
+
+	int d_input_buffer_ptr;
+	int d_input_buffer_end;
+	int _output_buffer_ptr;
+
+	// ================= compression (deflate)
+	int c_copy_offset_extra_mask;
+	int c_current_output_bits_used;
+	int[] c_analyze_offset_table;	// 2304
+	int[] c_analyze_index;			// 8708
+	int[] c_long_matcher;			// 518
+
+	int _input_func(int starting_buffer_ptr, int length) {
+		if (tokenizer.stop)
 			return 0;
-		if (token_input_ptr >= token_input_length)
+		if (tokenizer.in_ptr >= tokenizer.in_length)
 			return 0;
-		length = Math.Min(length, token_input_length - token_input_ptr);
+		length = Math.Min(length, tokenizer.in_length - tokenizer.in_ptr);
 		for (int i = 0; i < length; i++)
-			_input_buffer[i + starting_buffer_ptr] = r_input_data[token_input_ptr + i];
-		token_input_ptr += length;
+			_input_buffer[i + starting_buffer_ptr] = r_input_data[tokenizer.in_ptr + i];
+		tokenizer.in_ptr += length;
 		return length;
 	}
-	private void _output_func(int starting_buffer_ptr, int length) {
-		if (token_stop)
+	void _output_func(int starting_buffer_ptr, int length) {
+		if (tokenizer.stop)
 			return;
-		if (token_output_ptr >= token_output_length) {
+		if (tokenizer.out_ptr >= tokenizer.out_length) {
 			error("ERR_OUT_OF_MEMORY", "COMP2 out of buffer space");
-			token_stop = true;
+			tokenizer.stop = true;
 			return;
 		}
-		if (token_output_length - token_output_ptr < length) {
+		if (tokenizer.out_length - tokenizer.out_ptr < length) {
 			error("ERR_FILE_CORRUPT", "COMP1 corrupt");
-			token_stop = true;
+			tokenizer.stop = true;
 		} else {
 			for (int i = 0; i < length; i++)
-				r_output_data[token_output_ptr + i] = _output_buffer[starting_buffer_ptr + i];
-			token_output_ptr += length;
+				r_output_data[tokenizer.out_ptr + i] = _output_buffer[starting_buffer_ptr + i];
+			tokenizer.out_ptr += length;
 		}
 	}
-	private bool _set_bits_used(int num_bits) {
+	bool _set_bits_used(int num_bits) {
 		if (d_current_input_bits_available >= num_bits) {
 			d_current_input_bits_available -= num_bits;
 			d_current_input_byte = d_current_input_byte >> num_bits;
@@ -203,7 +196,7 @@ public class PKWare_mono : Node
 		d_current_input_bits_available += 8 - num_bits;
 		return false;
 	}
-	private int _get_copy_offset(int copy_length) {
+	int _get_copy_offset(int copy_length) {
 		var index = d_copy_offset_jump_table[d_current_input_byte & 0xFF];
 		if (_set_bits_used(COPY_OFFSET_BITS[index]))
 			return 0;
@@ -220,7 +213,7 @@ public class PKWare_mono : Node
 		return offset + 1;
 	}
 	public byte[] Inflate(byte[] compressed_data, int expected_size) {
-		_reset_token();
+		tokenizer = new Tokenizer();
 		d_current_input_byte = 0;
 		d_current_input_bits_available = 0;
 		_input_buffer = new byte[2048];
@@ -228,8 +221,8 @@ public class PKWare_mono : Node
 
 		r_input_data = compressed_data;
 		r_output_data = new byte[expected_size];
-		token_input_length = compressed_data.Length;
-		token_output_length = expected_size;
+		tokenizer.in_length = compressed_data.Length;
+		tokenizer.out_length = expected_size;
 		
 		// read initial buffer
 		d_input_buffer_end = _input_func(0, 2048);
@@ -310,20 +303,20 @@ public class PKWare_mono : Node
 		
 		if (token != (int)Codes.PK_EOF)
 			return error("ERR_PARSE_ERROR", $"decompression error: '{Codes.PK_ERROR_VALUE}'");
-		if (token_stop)
+		if (tokenizer.stop)
 			return error("ERR_PARSE_ERROR", "COMP error uncompressing");
-		if (token_output_ptr != expected_size)
+		if (tokenizer.out_ptr != expected_size)
 			return error("ERR_FILE_EOF", "decompression completed with incorrect size");
 		return r_output_data;
 	}
 
-	private byte _fetch_oob_input_buffer(int i) {
-		if (i < 8708)
-			return _input_buffer[i];
-		else
+	byte _fetch_oob_input_buffer(int i) {	// this is necessary because in the OG code the indexer goes out of bounds. though
+		if (i < 8708)						// technically undefined behavior, pk_comp_buffer's layout has output_data[] set
+			return _input_buffer[i];		// right after input_data[], and this is used by the code deterministically (e.g.
+		else								// the first two bytes - IS_LITERAL_ENCODING and WINDOW_SIZE - are *always* 00 06)
 			return _output_buffer[i - 8708];
 	}
-	private void _write_bits(int num_bits, int value) {
+	void _write_bits(int num_bits, int value) {
 		if (num_bits > 8) { // but never more than 16
 			num_bits -= 8;
 			_write_bits(8, value);
@@ -355,7 +348,7 @@ public class PKWare_mono : Node
 				_output_buffer[_output_buffer_ptr] = last_byte;
 		}
 	}
-	private void _determine_copy(int input_index, ref Copy copy) {
+	void _determine_copy(int input_index, ref Copy copy) {
 		int input_ptr = input_index;
 
 		int hash_value = 4 * _input_buffer[input_ptr] + 5 * _input_buffer[input_ptr + 1];
@@ -501,7 +494,7 @@ public class PKWare_mono : Node
 		}
 		// never reached
 	}
-	private void _analyze_input(int input_start, int input_end) {
+	void _analyze_input(int input_start, int input_end) {
 		for (int i = 0; i < c_analyze_offset_table.Length; i++)
 			c_analyze_offset_table[i] = 0;
 		for (int index = input_start; index < input_end; index++)
@@ -520,7 +513,7 @@ public class PKWare_mono : Node
 		}
 	}
 	public byte[] Deflate(byte[] raw_data, int dictionary_size) {
-		_reset_token();
+		tokenizer = new Tokenizer();
 		c_current_output_bits_used = 0;
 		_input_buffer = new byte[8708];
 		_output_buffer = new byte[2050];
@@ -531,8 +524,8 @@ public class PKWare_mono : Node
 
 		r_input_data = raw_data;
 		r_output_data = new byte[3000000]; // buffer of fixed size
-		token_input_length = raw_data.Length;
-		token_output_length = 3000000; // this gets used accordingly
+		tokenizer.in_length = raw_data.Length;
+		tokenizer.out_length = 3000000; // this gets used accordingly
 
 		// prepare dictionary size, window size, and copy offset extra mask
 		switch (dictionary_size) {
@@ -627,8 +620,8 @@ public class PKWare_mono : Node
 						write_literal = true;
 				}
 
+				// write copy or literal
 				if (write_copy) {
-					// _write_copy_length_offset(ref copy);
 					_write_bits(c_codeword_bits[copy.length + 254], c_codeword_values[copy.length + 254]);
 					if (copy.length == 2) {
 						_write_bits(COPY_OFFSET_BITS[copy.offset >> 2], COPY_OFFSET_CODE[copy.offset >> 2]);
@@ -639,7 +632,6 @@ public class PKWare_mono : Node
 					}
 					input_ptr += copy.length;
 				} else if (write_literal) {
-					// write literal
 					_write_bits(c_codeword_bits[_input_buffer[input_ptr]], c_codeword_values[_input_buffer[input_ptr]]);
 					input_ptr++;
 				}
@@ -661,7 +653,7 @@ public class PKWare_mono : Node
 
 		_output_func(0, _output_buffer_ptr);
 		
-		System.Array.Resize(ref r_output_data, token_output_ptr);
+		System.Array.Resize(ref r_output_data, tokenizer.out_ptr);
 		return r_output_data;
 	}
 }
