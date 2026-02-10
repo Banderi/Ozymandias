@@ -9,11 +9,10 @@ const TILE_SIZE = Vector2(TILE_WIDTH, TILE_HEIGHT)
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
-onready var MAP_TERRAIN = INGAME_ROOT.get_node("Map") as TileMap
 
 var data = {}
 onready var grids = {
-	"image": MAP_TERRAIN, # testing!
+	"image": INGAME_ROOT.get_node("Map_Flat") as TileMap, # testing!
 	"edge": null,
 	"building": [],
 	"terrain": null,
@@ -35,6 +34,13 @@ onready var grids = {
 	"moisture": null
 }
 
+var tileset_flat = null
+
+func set_tileset(grid_name, tileset: TileSet):
+	if !(grid_name in grids):
+		return false
+	grids[grid_name].tile_set = tileset
+	return true
 func set_grid(grid_name, x, y, value):
 	if !(grid_name in grids):
 		return false
@@ -47,3 +53,6 @@ var city_view_camera_y = 0
 
 const MAX_BOOKMARKS = 16
 var bookmarks = []
+
+func _ready():
+	set_tileset("image", tileset_flat)

@@ -118,7 +118,7 @@ __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="Map" type="TileMap" parent="InGame"]
+[node name="Map_Flat" type="TileMap" parent="InGame"]
 mode = 1
 tile_set = ExtResource( 44 )
 cell_size = Vector2( 58, 30 )

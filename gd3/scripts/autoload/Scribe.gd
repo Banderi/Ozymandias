@@ -224,53 +224,8 @@ func put_grid(key, compressed: bool, format, grid_width: int = Map.PH_MAP_WIDTH,
 			pass
 		else:
 			pass
-	
-#	if _flags == File.READ:
-#		if compressed:
-#			var stream = StreamPeerBuffer.new()
-#			stream.data_array = _compressed_top
-#			match format:
-#				ScribeFormat.i8:
-#					for y in range(grid_width):
-#						for x in range(grid_width):
-#							Map.set_grid(key, x, y, (stream.get_8() + 128) % 256 - 128)
-#				ScribeFormat.u8:
-#					for y in range(grid_width):
-#						for x in range(grid_width):
-#							Map.set_grid(key, x, y, stream.get_8())
-#				ScribeFormat.i16:
-#					for y in range(grid_width):
-#						for x in range(grid_width):
-#							Map.set_grid(key, x, y, (stream.get_16() + 256) % 512 - 256)
-#				ScribeFormat.u16:
-#					for y in range(grid_width):
-#						for x in range(grid_width):
-#							Map.set_grid(key, x, y, stream.get_16())
-#				ScribeFormat.i32:
-#					for y in range(grid_width):
-#						for x in range(grid_width):
-#							Map.set_grid(key, x, y, (stream.get_32() + 512) % 1024 - 512)
-#				ScribeFormat.u32:
-#					for y in range(grid_width):
-#						for x in range(grid_width):
-#							Map.set_grid(key, x, y, stream.get_32())
-#		else:
-#			var tsize = format_size(format)
-#			for y in range(grid_width):
-#				for x in range(grid_width):
-#					_handle.get_buffer(tsize)
-#	else:
-#		if compressed:
-##			for y in range(grid_width):
-##				for x in range(grid_width):
-#			pass # TODO
-#		else:
-##			for y in range(grid_width):
-##				for x in range(grid_width):
-#			pass # TODO
-	
 	var _t_2 = Stopwatch.query(_t, Stopwatch.Milliseconds)
-	# expected: ~10-40 for byte reading, ~10-20 more for Map access, ~30-40 more for TileMap change
+	# expected: ??
 	
 	if compressed && !pop_compressed():
 		return false # the above already bails on fail
