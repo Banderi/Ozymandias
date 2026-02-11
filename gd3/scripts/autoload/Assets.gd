@@ -23,9 +23,11 @@ func file_seek(file: File, bytes: PoolByteArray, begin: int = 0): # this REQUIRE
 
 func load_png(path):
 	var image = Image.new()
-	image.load(path)
+	var r = image.load(path)
+	if r != OK:
+		return null
 	var texture = ImageTexture.new()
-	texture.create_from_image(image)
+	texture.create_from_image(image, 0)
 	return texture
 func load_pak_image():
 	pass
@@ -316,11 +318,29 @@ func load_sgx(pak_name: String, data_path: String = DATA_PATH, sg_ext: String = 
 #	print("\n")
 	return true
 
-func tileset_add_tile_from_sg_image(tileset: TileSet, id: int, path: String):
-	tileset.create_tile(id)
+const TILE_WIDTH_PIXELS = 60
+const TILE_HEIGHT_PIXELS = 30
+const HALF_TILE_WIDTH_PIXELS = 30
+const HALF_TILE_HEIGHT_PIXELS = 15
+func tileset_add_tile_from_sg_image(tileset: TileSet, id: int):
+	
+	var img = SG.Pharaoh_Terrain.img[id]
+	var bmp_name = SG.Pharaoh_Terrain.bmp[img.bmp_record].name
+	bmp_name = bmp_name.rsplit(".", false, 1)[0]
+	var path = "D:/PharaohExtract/Pharaoh_Terrain/%s_%05d.png" % [bmp_name, img.idx_in_bmp]
+	
 	var texture = load_png(path)
-	tileset.tile_set_texture(id, texture)
-	tileset.tile_set_texture_offset(id, Vector2(0, 30 - texture.get_size().y))
+	if texture == null:
+		return false
+	
+#	var tile_size = img.isometric_tile_size
+	var tile_size = (img.width + 2) / TILE_WIDTH_PIXELS
+	if img.width != 58:
+		pass
+	
+	tileset.create_tile(id + 14252)
+	tileset.tile_set_texture(id + 14252, texture)
+	tileset.tile_set_texture_offset(id + 14252, Vector2(0, (15 * (tile_size + 1)) - texture.get_size().y))
 
 func editor_debug_translate_labels(node):
 	if Engine.is_editor_hint():
@@ -479,6 +499,13 @@ func load_tilesets(install_path: String = INSTALL_PATH):
 	
 	
 	# testing
+	var tileset = TileSet.new()
+	for i in range(201, SG.Pharaoh_Terrain.img.size()):
+#	for i in range(201, 240):
+		tileset_add_tile_from_sg_image(tileset, i)
+	ResourceSaver.save("res://assets/Tileset_Test2.tres", tileset)
+	Map.tileset_flat = tileset
+	
 #	var tileset = TileSet.new()
 #	for i in range(201, SG.Pharaoh_Terrain.img.size()):
 #		var img = SG.Pharaoh_Terrain.img[i]
@@ -488,6 +515,7 @@ func load_tilesets(install_path: String = INSTALL_PATH):
 #		tileset_add_tile_from_sg_image(tileset, i + 14252, path)
 #	ResourceSaver.save("res://assets/Tileset_Test2.tres", tileset)
 #	Map.tileset_flat = tileset
-	Map.tileset_flat = load("res://assets/Tileset_Test2.tres")
+
+#	Map.tileset_flat = load("res://assets/Tileset_Test2.tres")
 	
 	return true
