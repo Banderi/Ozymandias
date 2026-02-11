@@ -6,6 +6,8 @@ onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var MENUS_ROOT = ROOT_NODE.get_node("Menus")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
 
+onready var TEST_SPR_ATLAS = ROOT_NODE.get_node("TEST_SPR_ATLAS")
+
 # generics
 func is_valid_objref(node):
 	if node != null && !(!weakref(node).get_ref()):

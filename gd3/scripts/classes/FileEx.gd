@@ -17,7 +17,9 @@ func get_null_terminated_string() -> String:
 	var csv = get_csv_line("\u0000")
 	return csv[0]
 
-func end_reached():
+func end_reached(strict = false):
+	if strict:
+		return get_position() == get_len()
 	return get_position() >= get_len()
 
 var cursor = 0

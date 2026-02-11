@@ -22,7 +22,7 @@ func camera_movements(event):
 			camera_zoom_target /= 0.85
 		if event.button_index == BUTTON_WHEEL_UP:
 			camera_zoom_target *= 0.85
-		camera_zoom_target = clamp(camera_zoom_target, 1, 10)
+		camera_zoom_target = clamp(camera_zoom_target, 0.1, 10)
 	
 		if event.button_index == BUTTON_MIDDLE || event.button_index == BUTTON_RIGHT: # TODO: use key settings
 			if camera_previous_game_coords == null && event.pressed:
@@ -78,6 +78,16 @@ func _process(delta):
 			elif Input.is_mouse_button_pressed(MOUSE_DRAG_SIMPLE):
 				var delta_pos = current_click_mousepos[MOUSE_DRAG_SIMPLE-1] - last_click_mousepos[MOUSE_DRAG_SIMPLE-1]
 				CAMERA.position = camera_previous_game_coords - delta_pos * camera_zoom_target
+		var camera_pan_keyboard_delta = Vector2()
+		if Input.is_key_pressed(KEY_UP):
+			camera_pan_keyboard_delta.y -= 1
+		if Input.is_key_pressed(KEY_DOWN):
+			camera_pan_keyboard_delta.y += 1
+		if Input.is_key_pressed(KEY_LEFT):
+			camera_pan_keyboard_delta.x -= 1
+		if Input.is_key_pressed(KEY_RIGHT):
+			camera_pan_keyboard_delta.x += 1
+		CAMERA.position += camera_pan_keyboard_delta * camera_zoom_target * 10.0
 		
 		# TODO adaptive limits to playable scenario/map area
 		CAMERA.position.x = clamp(CAMERA.position.x, -6000, 6000)

@@ -114,6 +114,7 @@ Random="*res://scripts/autoload/game/Random.gd"
 Military="*res://scripts/autoload/game/Military.gd"
 GridsMono="*res://scripts/mono/Grids_mono.cs"
 Viewports="*res://scripts/autoload/Viewports.gd"
+SGImageMono="*res://scripts/mono/SGImage_mono.cs"
 
 [debug]
 

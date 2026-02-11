@@ -1,4 +1,4 @@
-[gd_scene load_steps=61 format=2]
+[gd_scene load_steps=62 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -43,9 +43,10 @@
 [ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00193.png" type="Texture" id=41]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00194.png" type="Texture" id=42]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_General/paneling/00191.png" type="Texture" id=43]
-[ext_resource path="res://assets/Tileset_Test.tres" type="TileSet" id=44]
+[ext_resource path="res://assets/Tileset_Test2.tres" type="TileSet" id=44]
 [ext_resource path="res://scripts/InGame.gd" type="Script" id=45]
 [ext_resource path="res://scripts/DebugLayer.gd" type="Script" id=46]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/commerce/00002.png" type="Texture" id=47]
 
 [sub_resource type="StyleBoxTexture" id=9]
 texture = ExtResource( 33 )
@@ -132,6 +133,24 @@ __meta__ = {
 position = Vector2( -97, 3505 )
 current = true
 zoom = Vector2( 5, 5 )
+
+[node name="TEST_SPR_ATLAS" type="Node2D" parent="."]
+visible = false
+
+[node name="RECT" type="ReferenceRect" parent="TEST_SPR_ATLAS"]
+margin_right = 1000.0
+margin_bottom = 1500.0
+mouse_filter = 2
+editor_only = false
+
+[node name="Sprite" type="Sprite" parent="TEST_SPR_ATLAS"]
+visible = false
+texture = ExtResource( 47 )
+centered = false
+
+[node name="Camera2D" type="Camera2D" parent="TEST_SPR_ATLAS"]
+position = Vector2( 704, 988 )
+zoom = Vector2( 3, 3 )
 
 [node name="Menus" type="CanvasLayer" parent="."]
 
@@ -1471,14 +1490,19 @@ __meta__ = {
 
 [node name="BtnPKWareTest" type="Button" parent="Debug/DEBUG_BTNS"]
 margin_right = 97.0
-margin_bottom = 20.0
+margin_bottom = 24.0
 text = "PKWare tests"
 
 [node name="BtnLoadAutosave" type="Button" parent="Debug/DEBUG_BTNS"]
 margin_left = 101.0
 margin_right = 195.0
-margin_bottom = 20.0
+margin_bottom = 24.0
 text = "autosave.sav"
+
+[node name="BtnTestTerrainImages" type="SpinBox" parent="Debug/DEBUG_BTNS"]
+margin_left = 199.0
+margin_right = 273.0
+margin_bottom = 24.0
 
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnPlay" to="Menus/Main" method="_on_BtnPlay_pressed"]
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnWebsite" to="Menus/Main" method="_on_BtnWebsite_pressed"]
@@ -1509,3 +1533,4 @@ text = "autosave.sav"
 [connection signal="focus_entered" from="Menus/Splash" to="Menus/Splash" method="_on_Splash_focus_entered"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnPKWareTest" to="Debug" method="_on_BtnPKWareTest_pressed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnLoadAutosave" to="Debug" method="_on_BtnLoadAutosave_pressed"]
+[connection signal="value_changed" from="Debug/DEBUG_BTNS/BtnTestTerrainImages" to="Debug" method="_on_BtnTestTerrainImages_value_changed"]

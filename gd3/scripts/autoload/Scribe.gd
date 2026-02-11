@@ -233,9 +233,9 @@ func put_grid(key, compressed: bool, format, grid_width: int = Map.PH_MAP_WIDTH,
 	var _t_3 = Stopwatch.query(_t, Stopwatch.Milliseconds)
 	print("grid %-20s ms taken: %3d %3d (%-3d total) %s" % [
 		"'" + key + "'",
-		_t_1 + (_t_3 - _t_2),
-		_t_2 - _t_1,
-		_t_3,
+		_t_1 + (_t_3 - _t_2),	# push & pop
+		_t_2 - _t_1,			# SetGrid loop
+		_t_3,					# final tally
 		"" if compressed else ">> not compressed <<"
 	])
 	return true

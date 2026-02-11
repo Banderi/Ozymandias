@@ -100,7 +100,7 @@ func read(path, get_as_text = false, password = ""):
 	file.close()
 	Log.generic(null,str("file '",path,"' read successfully!"))
 	return data
-func open(path, flags, password = ""):
+func open(path, flags, password = "", suppress_log = false):
 	# init stream
 	var file = File.new()
 	var err = -1
@@ -111,7 +111,8 @@ func open(path, flags, password = ""):
 	if err != OK:
 		Log.error(null,err,str("could not read file '",path,"'"))
 		return null
-	Log.generic(null,str("file '",path,"' read successfully!"))
+	if !suppress_log:
+		Log.generic(null,str("file '",path,"' read successfully!"))
 	return file
 func file_exists(path):
 	var file = File.new()

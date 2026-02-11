@@ -27,18 +27,45 @@ func load_png(path):
 	var texture = ImageTexture.new()
 	texture.create_from_image(image)
 	return texture
+func load_pak_image():
+	pass
 
+# SG graphics / paks
+enum ImageTypes {
+	Plain_WithTransparency = 0,
+	Plain_Opaque = 1,
+	Plain_16x16 = 10,
+	Plain_24x24 = 12,
+	Plain_32x32 = 13, # only used in system.bmp
+	Plain_Font = 20,
+	Isometric = 30,
+	Modded = 40	
+}
+var SG = {}
 const SGX_HEADER_SIZE = 80
-const SGX_MAX_GROUPS = 300
-func load_sgx(path_sgx: String, path_pak: String): # code from https://github.com/lclarkmichalek/libsg/blob/master/c/sgfile.c
-	var file = IO.open(path_sgx, File.READ) as File
+const SGX_MAX_BMPS = 300
+const SGX_MAX_TAGS = 300
+func load_sgx(pak_name: String, data_path: String = DATA_PATH, sg_ext: String = ".sg3", data_ext: String = ".555"): # code from https://github.com/lclarkmichalek/libsg/blob/master/c/sgfile.c
+	var _t = Stopwatch.start()
+	
+	var file = IO.open(data_path + "/" + pak_name + sg_ext, File.READ, "", true) as File
 	if file == null:
 		return false
 	file.set_script(preload("res://scripts/classes/FileEx.gd"))
 	file = file as FileEx
 	
+	# initialize pak data
+	SG[pak_name] = {
+		"header": {},
+		"bmp": [],
+		"img": [],
+		"groups": [],
+		"tag_names": []
+	}
+	var p_pak = SG[pak_name]
+	
 	# header
-	var header = {
+	p_pak.header = {
 		"filesize_sgx": file.get_u32(),
 		"version": file.get_u32(),
 		"unk00": file.get_u32(), # ???
@@ -61,49 +88,70 @@ func load_sgx(path_sgx: String, path_pak: String): # code from https://github.co
 		"unk19": file.get_32()
 	}
 	
-	# bmp group image ids
-	var bmp = []
-	for i in header.bmp_records:
-		bmp.push_back({ "image_id": file.get_u16() })
+	# tag groups
+	for i in p_pak.header.bmp_records:
+		p_pak.groups.push_back(file.get_u16())
 	
 	# bmp records
-	file.push_cursor_base(SGX_HEADER_SIZE + 2 * SGX_MAX_GROUPS)
-	for i in header.bmp_records:
-		bmp[i].merge({
+	file.push_cursor_base(SGX_HEADER_SIZE + 2 * SGX_MAX_BMPS)
+	for i in p_pak.header.bmp_records:
+		p_pak.bmp.push_back({
 			"name": file.get_buffer(65).get_string_from_ascii(),
 			"comment": file.get_buffer(51).get_string_from_ascii(),
 			"width": file.get_u32(),
 			"height": file.get_u32(),
 			"num_images": file.get_u32(),
+			"__num_images_i": 0,
 			"index_start": file.get_u32(),
-			"index_end": file.get_u32()
+			"index_end": file.get_u32(),
+			"unk00": file.get_u32(),  # unknown, img record index
+			"unk01": file.get_u32(),
+			"unk02": file.get_u32(),
+			"unk03": file.get_u32(),  #			8
+			"unk04": file.get_u32(),  #			172
+			"smallest_img_width": file.get_u32(),
+			"smallest_img_height": file.get_u32(),
+			
+			"unk07": file.get_u32(),  # 39214	897425
+			"unk08": file.get_u32(),  # 50124	1575400
+			"unk09": file.get_u32(),  # 10910	677975
+			
+			"unk10": file.get_u32(),  #				10
+			"unk11": file.get_u32(),
+			"unk12": file.get_u32(),
+			"unk13": file.get_u32(),
+			"unk14": file.get_u32(),
+			"unk15a": file.get_u16(), # 1			1
+			"unk15b": file.get_u16()  #				2
 		})
+	var has_system_bmp = p_pak.header.bmp_records > 0 && p_pak.bmp[0].name == "system.bmp"
 	
 	# image data
 	var MAX_BMP_RECORDS
 	var IMG_RECORD_SIZE = 64
 	var include_alpha = false
-	if header.version == 211:
+	if p_pak.header.version == 211:
 		MAX_BMP_RECORDS = 100 # .sg2
 	else:
 		MAX_BMP_RECORDS = 200 # .sg3
-	if header.version >= 214:
+	if p_pak.header.version >= 214:
 		include_alpha = true
 		IMG_RECORD_SIZE = 72
 	file.push_cursor_base(200 * MAX_BMP_RECORDS + IMG_RECORD_SIZE)  # first one is empty/dummy
-	var img = []
-	for i in header.img_records:
-		img.push_back({
-			"sgx_data_offset": file.get_u32(),
+	p_pak.img.push_back(null)
+	for i in p_pak.header.img_records:
+		p_pak.img.push_back({
+			"__sgx_idx": i, # first one is NULL
+			"data_offset": file.get_u32(),
 			"data_length": file.get_u32(),
 			"uncompressed_length": file.get_u32(),
 			"unk00": file.get_32(),
 			"offset_mirror": file.get_i32(), # .sg3 only
 			"width": max(file.get_i16(), 0),
 			"height": max(file.get_i16(), 0),
-			"unk01": file.get_16(),
-			"unk02": file.get_16(),
-			"unk03": file.get_16(),
+			"atlas_x": file.get_16(),
+			"atlas_y": file.get_16(),
+			"name_idx": file.get_16(),
 			"animation.num_sprites": file.get_u16(),
 			"animation.unk04": file.get_16(),
 			"animation.sprite_x_offset": file.get_i16(),
@@ -120,53 +168,159 @@ func load_sgx(path_sgx: String, path_pak: String): # code from https://github.co
 			"is_external": file.get_i8(),
 			"has_isometric_top": file.get_i8(),
 			"unk11": file.get_8(),
-			"unk12": file.get_8(),
-			"bmp_record_id": file.get_u8(),
+			"isometric_tile_size": file.get_8(), # not fully consistent?
+			"bmp_record": file.get_u8(),
 			"unk13": file.get_8(),
 			"animation.speed_id": file.get_u8(),
 			"unk14": file.get_8(),
 			"unk15": file.get_8(),
 			"unk16": file.get_8(),
 			"unk17": file.get_8(),
-			"unk18": file.get_8()
+			"isometric_multi_tile": file.get_8(),
+			"alpha_offset": 0,
+			"alpha_length": 0
 		})
+		var img = p_pak.img[-1]
 		if include_alpha:
-			img[i]["alpha_offset"] = file.get_i32()
-			img[i]["alpha_length"] = file.get_i32()
+			img.alpha_offset = file.get_i32()
+			img.alpha_length = file.get_i32()
+		p_pak.bmp[img.bmp_record].__num_images_i += 1
+		img.idx_in_bmp = p_pak.bmp[img.bmp_record].__num_images_i
+		
 	
 	# img names at the end
-	file.push_cursor_base(header.img_records_max * IMG_RECORD_SIZE - IMG_RECORD_SIZE + 48)
-	for i in header.img_records:
-		img[i]["name"] = file.get_buffer(48).get_string_from_ascii()
-	assert(file.eof_reached())
+	file.push_cursor_base((p_pak.header.img_records_max - 1) * IMG_RECORD_SIZE)
+	for i in SGX_MAX_TAGS: # first field here is also empty/dummy
+		p_pak.tag_names.push_back(file.get_buffer(48).get_string_from_ascii())
+	assert(file.end_reached(true))
+	var _t_1 = Stopwatch.query(_t, Stopwatch.Milliseconds)
 	
-	# =========== .555 / image data pak =========== #
+	# =========== .555 pak / actual image data =========== #
 	
-	file = IO.open(path_pak, File.READ) as File
+	file = IO.open(data_path + "/" + pak_name + data_ext, File.READ, "", true) as File
 	if file == null:
 		return false
 	file.set_script(preload("res://scripts/classes/FileEx.gd"))
 	file = file as FileEx
 	
 	# image data
-	for image in img:
-		var data = file.get_buffer(4 * image.width * image.height)
-		match image.type:
-			0, 1, 10, 12, 13:
-				pass
-			30:
-				pass
-			256, 257, 276:
-				pass
+	var images_skipped = 0
+	var i = -1
+	for img in p_pak.img:
+		i += 1
+		if img == null || (has_system_bmp && img.bmp_record == 0): # skip system.bmp
+			images_skipped += 1
+			continue
+		
+		# convert raw pixel data
+		var raw_data = file.get_buffer(4 * img.width * img.height)
+		match img.type:
+			ImageTypes.Plain_WithTransparency,\
+			ImageTypes.Plain_Opaque,\
+			ImageTypes.Plain_16x16,\
+			ImageTypes.Plain_24x24,\
+			ImageTypes.Plain_32x32,\
+			ImageTypes.Plain_Font:
+				if !img.is_fully_compressed:
+					var imgdata = SGImageMono.readPlain(raw_data)
+				else: # 256, 257, 276 etc.
+					var imgdata = SGImageMono.readSprite(raw_data)
+			ImageTypes.Isometric:
+				var imgdata = SGImageMono.readIsometric(raw_data)
 			_: # unknown image type?
-				continue
-		if image.alpha_length != 0:
+				Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "unknown image type '%d'" % [img.type])
+		if img.get("alpha_length", 0) != 0:
 			pass
-		if image.offset_mirror:
+		if img.offset_mirror != 0:
 			pass
+	if has_system_bmp:
+		assert(images_skipped == p_pak.bmp[0].num_images + 1)
+	var _t_2 = Stopwatch.query(_t, Stopwatch.Milliseconds)
 	
-	
+	print("SG pak %-20s ms taken: %3d %3d (%-3d total) %-5d images, %-3d bmps, %-3d groups" % [
+		"'" + pak_name + "'",
+		_t_1,
+		_t_2 - _t_1,
+		_t_2,
+		p_pak.header.img_records,
+		p_pak.header.bmp_records_nix_system,
+		p_pak.groups.size()
+	])
+#	print("---------------------------------------------------------------------------------------------------------------------------------------------")
+#	for r in bmp:
+#		print("%-20s %-4d : %-4d %-4d : %-4d %-4d %-4d %-4d : %-4d %-4d %-4d %-4d : %-4d %-3d : %-8d %-8d %-8d %-4d %-4d %-4d %-4d %-4d %-3d %-3d" % [
+#			r.name, r.global_group_id,
+#			r.width, r.height,
+#			r.num_images, r.index_start, r.index_end,
+#			r.unk00,
+#			r.unk01,
+#			r.unk02,
+#			r.unk03,
+#			r.unk04,
+#			r.smallest_img_width,
+#			r.smallest_img_height,
+#			r.unk07, r.unk08, r.unk09,
+#			r.unk10,
+#			r.unk11,
+#			r.unk12,
+#			r.unk13,
+#			r.unk14,
+#			r.unk15a,
+#			r.unk15b,
+#		])
+#	print("\n")
+#	var last_bmp = 0
+#	var i_in_bmp = 0
+#	for r in img:
+#		if last_bmp != r.bmp_record:
+#			last_bmp = r.bmp_record
+#			i_in_bmp = 0
+#		i_in_bmp += 1
+#		print("%-2d %-4d %-3d : %-4d %-4d %-4d %-3d : %-4d %-4d %-4d %-4d %-4d %-4d %-2d : %-2d %-2d %-2d %-2d %-2d %-2d %-2d %-2d %s" % [
+#			r.bmp_record,
+#			r.__sgx_idx,
+#			i_in_bmp,
+#			r.unk00,
+#			r.atlas_x,
+#			r.atlas_y,
+#			r.name_idx,
+#			r["animation.unk04"],
+#			r["animation.unk05"],
+#			r["animation.unk06"],
+#			r["animation.unk07"],
+#			r["animation.unk08"],
+#			r["animation.unk09"],
+#			r["animation.unk10"],
+#			r.unk11,
+#			r.isometric_tile_size,
+#			r.unk13,
+#			r.unk14,
+#			r.unk15,
+#			r.unk16,
+#			r.unk17,
+#			r.isometric_multi_tile,
+#			spr_names[r.name_idx]
+#		])
+#
+#		if r.bmp_record == 4:
+#
+#			var n = ColorRect.new()
+#			n.color = Color8(randi()%255, randi()%255, randi()%255)
+#			n.rect_size = Vector2(r.width, r.height)
+#			n.rect_position = Vector2(r.atlas_x, r.atlas_y)
+#	#		var n = Sprite.new()
+#	#		n.centered = false
+#	#		n.texture = load_png(
+#			Game.TEST_SPR_ATLAS.add_child(n)
+#			Game.TEST_SPR_ATLAS.get_node("RECT").rect_size = Vector2(bmp[r.bmp_record].width, bmp[r.bmp_record].height)
+#	print("\n")
 	return true
+
+func tileset_add_tile_from_sg_image(tileset: TileSet, id: int, path: String):
+	tileset.create_tile(id)
+	var texture = load_png(path)
+	tileset.tile_set_texture(id, texture)
+	tileset.tile_set_texture_offset(id, Vector2(0, 30 - texture.get_size().y))
 
 func editor_debug_translate_labels(node):
 	if Engine.is_editor_hint():
@@ -280,12 +434,12 @@ func load_mm(path: String, locale: String): # TODO
 
 func set_game_install_path(): # TODO
 	pass
-func load_locales(data_path: String = INSTALL_PATH): # TODO: MM, check user settings, add different locales
+func load_locales(install_path: String = INSTALL_PATH): # TODO: MM, check user settings, add different locales
 	
 	# text
 	var text_en = load("res://assets/locales/Pharaoh_Text.en.translation")
 	if text_en == null:
-		text_en = load_text(data_path + "/Pharaoh_Text.eng", "en") # the files are ALWAYS .eng, despite internal docs mentioning otherwise
+		text_en = load_text(install_path + "/Pharaoh_Text.eng", "en") # the files are ALWAYS .eng, despite internal docs mentioning otherwise
 		if text_en == null:
 			Log.error(self, GlobalScope.Error.ERR_FILE_NOT_FOUND, "can not find valid localization files in install folder")
 			return false
@@ -294,7 +448,7 @@ func load_locales(data_path: String = INSTALL_PATH): # TODO: MM, check user sett
 	# MM
 #	var mm_en = load("res://assets/locales/Pharaoh_MM.en.translation") # TODO
 #	if mm_en == null:
-#		mm_en = load_mm(data_path + "/Pharaoh_MM.eng", "en") # the files are ALWAYS .eng, despite internal docs mentioning otherwise
+#		mm_en = load_mm(install_path + "/Pharaoh_MM.eng", "en") # the files are ALWAYS .eng, despite internal docs mentioning otherwise
 #		if mm_en == null:
 #			Log.error(self, GlobalScope.Error.ERR_FILE_NOT_FOUND, "can not find valid localization files in install folder")
 #			return false
@@ -303,29 +457,37 @@ func load_locales(data_path: String = INSTALL_PATH): # TODO: MM, check user sett
 	TranslationServer.add_translation(text_en)
 	TranslationServer.set_locale("en")
 	return true
-func load_sounds(data_path: String = INSTALL_PATH): # TODO
+func load_sounds(install_path: String = INSTALL_PATH): # TODO
 	pass
-func load_backdrops(data_path: String = INSTALL_PATH): # TODO
+func load_backdrops(install_path: String = INSTALL_PATH): # TODO
 	pass
-func load_animations(data_path: String = INSTALL_PATH): # TODO
+func load_animations(install_path: String = INSTALL_PATH): # TODO
 	pass
-func load_monuments(data_path: String = INSTALL_PATH): # TODO
+func load_monuments(install_path: String = INSTALL_PATH): # TODO
 	pass
-func load_enemies(data_path: String = INSTALL_PATH): # TODO
+func load_enemies(install_path: String = INSTALL_PATH): # TODO
 	pass
-func load_settings(data_path: String = INSTALL_PATH): # TODO
+func load_settings(install_path: String = INSTALL_PATH): # TODO
 	pass
-func load_tilesets(data_path: String = INSTALL_PATH):
+func load_tilesets(install_path: String = INSTALL_PATH):
 	
-	if !load_sgx(data_path + "/Data/Pharaoh_Terrain.sg3", data_path + "/Data/Pharaoh_Terrain.555"):
-		return false
+	if !load_sgx("Pharaoh_Terrain"): return false
+#	if !load_sgx("Pharaoh_General"): return false
+#	if !load_sgx("Pharaoh_Unloaded"): return false
+#	if !load_sgx("SprMain"): return false
+#	if !load_sgx("SprMain2"): return false
 	
 	
 	# testing
-	var tileset = TileSet.new()
-	tileset.create_tile(0)
-	tileset.tile_set_texture(0, load_png("D:/PharaohExtract/Pharaoh_Terrain/FloodPlain_00001.png"))
-	
-	Map.tileset_flat = tileset
+#	var tileset = TileSet.new()
+#	for i in range(201, SG.Pharaoh_Terrain.img.size()):
+#		var img = SG.Pharaoh_Terrain.img[i]
+#		var bmp_name = SG.Pharaoh_Terrain.bmp[img.bmp_record].name
+#		bmp_name = bmp_name.rsplit(".", false, 1)[0]
+#		var path = "D:/PharaohExtract/Pharaoh_Terrain/%s_%05d.png" % [bmp_name, img.idx_in_bmp]
+#		tileset_add_tile_from_sg_image(tileset, i + 14252, path)
+#	ResourceSaver.save("res://assets/Tileset_Test2.tres", tileset)
+#	Map.tileset_flat = tileset
+	Map.tileset_flat = load("res://assets/Tileset_Test2.tres")
 	
 	return true
