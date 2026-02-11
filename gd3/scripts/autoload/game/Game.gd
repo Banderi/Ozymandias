@@ -589,6 +589,11 @@ func _ready():
 
 #	var a = YourCustomClass.new()
 #	var a = load("res://scripts/mono/YourCustomClass.cs").new()
+	
+	yield(get_tree(),"idle_frame")
+	Game.load_game("res://../tests/autosave.sav")
+#	STATE = States.Ingame
+#	close_all_menus()
 
 
 onready var DEBUG_ROOT = ROOT_NODE.get_node("Debug")

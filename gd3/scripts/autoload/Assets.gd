@@ -27,7 +27,7 @@ func load_png(path):
 	if r != OK:
 		return null
 	var texture = ImageTexture.new()
-	texture.create_from_image(image, 0)
+	texture.create_from_image(image, Texture.FLAG_MIPMAPS)
 	return texture
 func load_pak_image():
 	pass
@@ -491,7 +491,7 @@ func load_settings(install_path: String = INSTALL_PATH): # TODO
 	pass
 func load_tilesets(install_path: String = INSTALL_PATH):
 	
-	if !load_sgx("Pharaoh_Terrain"): return false
+#	if !load_sgx("Pharaoh_Terrain"): return false
 #	if !load_sgx("Pharaoh_General"): return false
 #	if !load_sgx("Pharaoh_Unloaded"): return false
 #	if !load_sgx("SprMain"): return false
@@ -499,12 +499,12 @@ func load_tilesets(install_path: String = INSTALL_PATH):
 	
 	
 	# testing
-	var tileset = TileSet.new()
-	for i in range(201, SG.Pharaoh_Terrain.img.size()):
-#	for i in range(201, 240):
-		tileset_add_tile_from_sg_image(tileset, i)
-	ResourceSaver.save("res://assets/Tileset_Test2.tres", tileset)
-	Map.tileset_flat = tileset
+#	var tileset = TileSet.new()
+#	for i in range(201, SG.Pharaoh_Terrain.img.size()):
+##	for i in range(201, 240):
+#		tileset_add_tile_from_sg_image(tileset, i)
+#	ResourceSaver.save("res://assets/Tileset_Test4.tres", tileset)
+#	Map.tileset_flat = tileset
 	
 #	var tileset = TileSet.new()
 #	for i in range(201, SG.Pharaoh_Terrain.img.size()):
@@ -516,6 +516,6 @@ func load_tilesets(install_path: String = INSTALL_PATH):
 #	ResourceSaver.save("res://assets/Tileset_Test2.tres", tileset)
 #	Map.tileset_flat = tileset
 
-#	Map.tileset_flat = load("res://assets/Tileset_Test2.tres")
+	Map.tileset_flat = load("res://assets/Pharaoh/Tileset_Test2.tres")
 	
 	return true
