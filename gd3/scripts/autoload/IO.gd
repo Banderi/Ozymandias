@@ -1,37 +1,38 @@
 extends Node
-# ANTIMONY 'IO' by Banderi --- v1.5
+# ANTIMONY 'IO' by Banderi --- v2.0
 
 # check if running via Godot editor Play/F5 function (NOT in-editor "tool" scripts)
-func is_editor():
+func is_editor() -> bool:
 	var exe_filename = naked_filename(OS.get_executable_path())
 	return "Godot" in exe_filename
 
 # directory IO
-func get_runtime_path(trail_slash = true):
+func get_runtime_path(trail_slash: bool = true) -> String: # this returns the Godot executable path IF running in editor.
 	return naked_folder_path(OS.get_executable_path(), trail_slash)
-func get_folder_split_path(path):
-	# this only legally accepts full paths with a file name at the end!
+func get_folder_split_path(path: String) -> PoolStringArray: # this REQUIRES full filesystem paths with a file at the end.
 	var result = path.rsplit('/', false, 1)
 	if result.size() == 1:
-		return ["", result[0]]
+		return PoolStringArray(["", result[0]])
 	result[0] += '/'
 	return result
-func naked_folder_path(path, trail_slash = true):
+func naked_folder_path(path: String, trail_slash: bool = true) -> String: # this REQUIRES a path ending with a slash.
 	var lsl_idx = path.find_last('/')
 	if lsl_idx == -1:
 		return path + ('/' if trail_slash else '')
 	else:
 		return path.substr(0, lsl_idx + (1 if trail_slash else 0))
-func naked_filename(path):
+func naked_filename(path: String): # this trims the DIRECTORIES and returns the remaining file name in a full path.
 	var lsl_idx = path.find_last('/')
 	if lsl_idx == -1:
 		return path # different behavior than naked_folder_path -- here we assume it's a trailing name, not a drive name
 	else:
 		var file_name = path.substr(lsl_idx + 1)
 		return null if file_name == "" else file_name
+func strip_extension(path: String):
+	return path.rsplit(".", false, 1)[0]
 
 # basic IO
-func create_folder(path):
+func create_folder(path: String):
 	var dir = Directory.new()
 	if !dir.dir_exists(path):
 		var err = dir.make_dir_recursive(path)
@@ -39,7 +40,7 @@ func create_folder(path):
 			Log.error(null,err,str("could not create directory at '",path,"'"))
 			return false
 	return true
-func write(path, data, create_folder_if_missing = true, password = ""):
+func write(path: String, data, create_folder_if_missing = true, suppress_log: bool = false, password: String = ""):
 	var err = -1
 
 	# check path
@@ -49,10 +50,12 @@ func write(path, data, create_folder_if_missing = true, password = ""):
 		if create_folder_if_missing:
 			err = dir.make_dir_recursive(split_path[0])
 			if err != OK:
-				Log.error(null,err,str("could not create directory at '",split_path[0],"' for file '",split_path[1],"'"))
+				if !suppress_log:
+					Log.error(null,err,str("could not create directory at '",split_path[0],"' for file '",split_path[1],"'"))
 				return false
 		else:
-			Log.error(null,7,str("directory '",split_path[0],"' not found for file '",split_path[1],"'"))
+			if !suppress_log:
+				Log.error(null,7,str("directory '",split_path[0],"' not found for file '",split_path[1],"'"))
 			return false
 #	if data is Resource:
 #		err = ResourceSaver.save(path, data)
@@ -70,7 +73,8 @@ func write(path, data, create_folder_if_missing = true, password = ""):
 	else:
 		err = file.open_encrypted_with_pass(path, File.WRITE, password)
 	if err != OK:
-		Log.error(null,err,str("could not write to file '",path,"'"))
+		if !suppress_log:
+			Log.error(null,err,str("could not write to file '",path,"'"))
 		return false
 
 	# write data
@@ -81,9 +85,10 @@ func write(path, data, create_folder_if_missing = true, password = ""):
 
 	# close stream
 	file.close()
-	Log.generic(null,str("file '",path,"' written successfully!"))
+	if !suppress_log:
+		Log.generic(null,str("file '",path,"' written successfully!"))
 	return true
-func read(path, get_as_text = false, password = ""):
+func read(path: String, get_as_text = false, suppress_log = false, password = ""):
 	# init stream
 	var file = File.new()
 	var err = -1
@@ -92,7 +97,8 @@ func read(path, get_as_text = false, password = ""):
 	else:
 		err = file.open_encrypted_with_pass(path, File.READ, password)
 	if err != OK:
-		Log.error(null,err,str("could not read file '",path,"'"))
+		if !suppress_log:
+			Log.error(null,err,str("could not read file '",path,"'"))
 		return null
 
 	# read data
@@ -106,9 +112,10 @@ func read(path, get_as_text = false, password = ""):
 
 	# close stream
 	file.close()
-	Log.generic(null,str("file '",path,"' read successfully!"))
+	if !suppress_log:
+		Log.generic(null,str("file '",path,"' read successfully!"))
 	return data
-func open(path, flags, password = "", suppress_log = false):
+func open(path: String, flags, suppress_log = false, password: String = ""):
 	# init stream
 	var file = File.new()
 	var err = -1
@@ -121,11 +128,39 @@ func open(path, flags, password = "", suppress_log = false):
 		return null
 	if !suppress_log:
 		Log.generic(null,str("file '",path,"' read successfully!"))
+	
+	file.set_script(preload("res://scripts/classes/FileEx.gd"))
 	return file
-func file_exists(path):
+func file_exists(path: String):
 	var file = File.new()
 	return file.file_exists(path)
-func metadata(path): # TODO: folder metadata
+func find_file_recursive(path: String, file_name: String, dir = null): # this REQUIRES a naked filename AND path.
+	
+	# open dir at path
+	if dir == null:
+		dir = Directory.new()
+	var err = dir.open(path)
+	if err != OK:
+		Log.error(null,err,str("could not access directory '",path,"'"))
+		return null
+	else:
+		# traverse dir tree
+		var folders = []
+		dir.list_dir_begin()
+		var fn = dir.get_next()
+		while fn != "":
+			if fn == file_name:
+				return str(path, "/", file_name) # found!
+			elif dir.current_is_dir() && fn != "." && fn != "..":
+				folders.push_back(fn)
+			fn = dir.get_next()
+		
+		# recursion into subfolders
+		for folder in folders:
+			var r = find_file_recursive(str(path, "/", folder), file_name, dir)
+			if r != null:
+				return r
+func metadata(path: String): # TODO: folder metadata
 	var file = File.new()
 	var err = file.open(path, File.READ)
 	if err != OK:
@@ -140,21 +175,21 @@ func metadata(path): # TODO: folder metadata
 	}
 	file.close()
 	return data
-func delete(path):
+func delete(path: String) -> bool:
 	var dir = Directory.new()
 	var err = dir.remove(path)
 	if err != OK:
 		Log.error(null,err,str("could not delete file '",path,"'"))
 		return false
 	return true
-func rename(path, new_filename):
+func rename(path: String, new_filename: String) -> bool:
 	var dir = Directory.new()
 	var err = dir.rename(path, new_filename)
 	if err != OK:
 		Log.error(null,err,str("could not rename file '",path,"' to '",new_filename,"'"))
 		return false
 	return true
-func move_file(path, to, remove_previous = true, overwrite = false):
+func move_file(path: String, to: String, remove_previous: bool = true, overwrite: bool = false) -> bool:
 	if !overwrite && file_exists(to):
 		Log.error(null,GlobalScope.Error.ERR_ALREADY_EXISTS,str("could not move file from '",path,"' to '",to,"'"))
 		return false
@@ -169,13 +204,13 @@ func move_file(path, to, remove_previous = true, overwrite = false):
 			Log.error(null,err,str("could not delete file '",path,"'"))
 			return false
 	return true
-func copy_file(path, to, overwrite = false):
+func copy_file(path: String, to: String, overwrite: bool = false) -> bool:
 	return move_file(path, to, false, overwrite)
 
-func dir_exists(path):
+func dir_exists(path: String) -> bool:
 	var dir = Directory.new()
 	return dir.dir_exists(path)
-func dir_contents(path, filter_by = ""):
+func dir_contents(path: String, filter_by: String = ""): # this is SLOW. use find_file_recursive() if searching for files instead.
 	var dir = Directory.new()
 	var err = dir.open(path)
 	if err != OK:
@@ -197,7 +232,7 @@ func dir_contents(path, filter_by = ""):
 						results.files[file_name] = metadata(str(path,"/",file_name))
 			file_name = dir.get_next()
 		return results
-func find_most_recent_file(path, filter_by = ""):
+func find_most_recent_file(path: String, filter_by: String = ""):
 	var results = dir_contents(path)
 
 	var most_recent_timestamp = -1

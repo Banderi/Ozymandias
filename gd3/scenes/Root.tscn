@@ -1,4 +1,4 @@
-[gd_scene load_steps=63 format=2]
+[gd_scene load_steps=64 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -47,6 +47,7 @@
 [ext_resource path="res://scripts/InGame.gd" type="Script" id=45]
 [ext_resource path="res://scripts/DebugLayer.gd" type="Script" id=46]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_General/commerce/00002.png" type="Texture" id=47]
+[ext_resource path="res://scripts/classes/ConfirmationDialogEx.gd" type="Script" id=48]
 
 [sub_resource type="ShaderMaterial" id=31]
 shader = ExtResource( 44 )
@@ -168,6 +169,20 @@ __meta__ = {
 }
 
 [node name="Menus" type="CanvasLayer" parent="."]
+
+[node name="FileDialog" type="FileDialog" parent="Menus"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -245.5
+margin_top = -148.0
+margin_right = 245.5
+margin_bottom = 148.0
+window_title = "Open a Directory"
+mode = 2
+access = 2
+script = ExtResource( 48 )
 
 [node name="Main" type="TextureRect" parent="Menus"]
 visible = false
@@ -1431,6 +1446,7 @@ script = ExtResource( 14 )
 localized_key = "TEXT_13_7"
 
 [node name="Debug" type="CanvasLayer" parent="."]
+visible = false
 script = ExtResource( 46 )
 
 [node name="DEBUG_LABEL" type="RichTextLabel" parent="Debug"]
@@ -1493,6 +1509,9 @@ margin_top = 11.0
 margin_right = -18.0
 margin_bottom = 25.0
 grow_horizontal = 0
+custom_colors/font_color_shadow = Color( 0, 0, 0, 0.54902 )
+custom_constants/shadow_offset_y = 1
+custom_constants/shadow_as_outline = 1
 text = "60 FPS"
 align = 2
 

@@ -34,7 +34,7 @@ onready var grids = {
 	"moisture": null
 }
 
-var tileset_flat = null
+var tileset_image = null
 
 func set_tileset(grid_name, tileset: TileSet):
 	if !(grid_name in grids):
@@ -55,4 +55,5 @@ const MAX_BOOKMARKS = 16
 var bookmarks = []
 
 func _ready():
-	set_tileset("image", tileset_flat)
+	yield(Assets, "ready")
+	set_tileset("image", tileset_image)

@@ -3,8 +3,9 @@ extends Node
 const INDUSTRY_RESOURCES = 36
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
-onready var MENUS_ROOT = ROOT_NODE.get_node("Menus")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
+onready var MENUS_ROOT = ROOT_NODE.get_node("Menus")
+onready var DEBUG_ROOT = ROOT_NODE.get_node("Debug")
 
 onready var TEST_SPR_ATLAS = ROOT_NODE.get_node("TEST_SPR_ATLAS")
 
@@ -560,10 +561,16 @@ func game_tick(delta):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	yield(Assets, "ready")
+	
+	INGAME_ROOT.show()
+	MENUS_ROOT.show()
+	DEBUG_ROOT.show()
+	
 	debug_test_button.connect("pressed", self, "_on_DebugTestBtn_Pressed")
-
-	Assets.load_locales()
-	Assets.load_tilesets()
+	
+#	Assets.load_locales()
+#	Assets.load_tilesets()
 
 	
 #	close_all_menus()
@@ -590,13 +597,12 @@ func _ready():
 #	var a = YourCustomClass.new()
 #	var a = load("res://scripts/mono/YourCustomClass.cs").new()
 	
-	yield(get_tree(),"idle_frame")
+#	yield(get_tree(), "idle_frame")
 	Game.load_game("res://../tests/autosave.sav")
 #	STATE = States.Ingame
 #	close_all_menus()
 
 
-onready var DEBUG_ROOT = ROOT_NODE.get_node("Debug")
 onready var debug_label = DEBUG_ROOT.get_node("DEBUG_LABEL")
 onready var debug_fps_label = DEBUG_ROOT.get_node("DEBUG_FPS")
 onready var debug_test_label = DEBUG_ROOT.get_node("DEBUG_LABEL2")
@@ -633,7 +639,7 @@ func _process(delta):
 	debug_text += "[color=#888888]current_family:[/color]   %s\n" % [Family.current_family]
 	debug_text += "[color=#888888]families:[/color]         %s\n" % [Family.data.size()]
 	#
-	debug_text += "[color=#888888]camera:[/color]              %s\n" % [INGAME_ROOT.CAMERA.position]
+	debug_text += "[color=#888888]camera:[/color]              %s\n" % [INGAME_ROOT.camera_position_target]
 	debug_text += "[color=#888888]zoom:[/color]                %s\n" % [INGAME_ROOT.camera_zoom_target]
 	debug_text += "[color=#888888]curr_click_mouse:[/color]    %s\n" % [INGAME_ROOT.current_click_game_coords]
 	debug_text += "[color=#888888]last_click_mouse:[/color]    %s\n" % [INGAME_ROOT.last_click_game_coords]

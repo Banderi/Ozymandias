@@ -14,6 +14,11 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://scripts/classes/ButtonEx.gd"
 }, {
+"base": "ConfirmationDialog",
+"class": "ConfirmationDialogEx",
+"language": "GDScript",
+"path": "res://scripts/classes/ConfirmationDialogEx.gd"
+}, {
 "base": "SceneTree",
 "class": "CustomMainLoop",
 "language": "GDScript",
@@ -66,6 +71,7 @@ _global_script_classes=[ {
 } ]
 _global_script_class_icons={
 "ButtonEx": "",
+"ConfirmationDialogEx": "",
 "CustomMainLoop": "",
 "FileEx": "",
 "GlobalScope": "",
@@ -88,20 +94,23 @@ run/main_loop_type="CustomMainLoop"
 
 [autoload]
 
-Sounds="*res://scripts/autoload/Sounds.gd"
-Log="*res://scripts/autoload/Log.gd"
-IO="*res://scripts/autoload/IO.gd"
 Debug="*res://scripts/autoload/Debug.gd"
-Keybinds="*res://scripts/autoload/Keybinds.gd"
-Settings="*res://scripts/autoload/Settings.gd"
-Game="*res://scripts/autoload/game/Game.gd"
-Assets="*res://scripts/autoload/Assets.gd"
-Family="*res://scripts/autoload/game/Family.gd"
+IO="*res://scripts/autoload/IO.gd"
+Log="*res://scripts/autoload/Log.gd"
 Stopwatch="*res://scripts/autoload/Stopwatch.gd"
+Settings="*res://scripts/autoload/Settings.gd"
+Keybinds="*res://scripts/autoload/Keybinds.gd"
+GridsMono="*res://scripts/mono/Grids_mono.cs"
+PKWareMono="*res://scripts/mono/PKWare_mono.cs"
+SGImageMono="*res://scripts/mono/SGImage_mono.cs"
 Scribe="*res://scripts/autoload/Scribe.gd"
+Assets="*res://scripts/autoload/Assets.gd"
+Sounds="*res://scripts/autoload/Sounds.gd"
+Viewports="*res://scripts/autoload/Viewports.gd"
+Game="*res://scripts/autoload/game/Game.gd"
+Family="*res://scripts/autoload/game/Family.gd"
 Campaign="*res://scripts/autoload/game/Campaign.gd"
 Map="*res://scripts/autoload/game/Map.gd"
-PKWareMono="*res://scripts/mono/PKWare_mono.cs"
 Figures="*res://scripts/autoload/game/Figures.gd"
 Routing="*res://scripts/autoload/game/Routing.gd"
 City="*res://scripts/autoload/game/City.gd"
@@ -112,9 +121,6 @@ Messages="*res://scripts/autoload/game/Messages.gd"
 Gods="*res://scripts/autoload/game/Gods.gd"
 Random="*res://scripts/autoload/game/Random.gd"
 Military="*res://scripts/autoload/game/Military.gd"
-GridsMono="*res://scripts/mono/Grids_mono.cs"
-Viewports="*res://scripts/autoload/Viewports.gd"
-SGImageMono="*res://scripts/mono/SGImage_mono.cs"
 
 [debug]
 

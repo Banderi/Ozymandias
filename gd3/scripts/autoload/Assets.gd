@@ -1,13 +1,64 @@
 tool
 extends Node
 
-# TODO: put these in user setting
-const INSTALL_PATH = "D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra" 
-const DATA_PATH = INSTALL_PATH + "/Data"
-const SAVES_PATH = INSTALL_PATH + "/Save"
-
+# user / res & game data paths
+onready var INSTALL_PATH_SELECT_DIALOG = get_tree().root.get_node("Root/Menus/FileDialog") as FileDialog
 const RES_ASSETS_PATH = "res://assets/Pharaoh"
-const USER_ASSETS_PATH = "user://assets/Pharaoh"
+const USER_ASSETS_PATH = "user://assets_cache/"
+#var DATA_PATH = null
+var SAVES_PATH = null
+var GAME_FILES = {} # this is the actual cache list of game files paths, when (if) found
+func find_and_record_game_file(file_name: String, subdir: String = ""):
+	var path = IO.find_file_recursive(str(Settings.INSTALL_PATH, subdir), file_name)
+	if path == null:
+		return Log.error(self, GlobalScope.Error.ERR_FILE_NOT_FOUND, "could not find %s within game folders" % [file_name])
+	GAME_FILES[file_name] = path
+	return path
+func get_game_file_path(file_name: String): # this is SYNCHRONOUS and does NOT ask to select a new folder.
+	var path = GAME_FILES.get(file_name, null)
+	if path == null:
+		return find_and_record_game_file(file_name)
+	return path
+func ASYNC_get_game_file_path(file_name: String): # this is ASYNCHRONOUS and WILL ask to select a new folder.
+	var path = GAME_FILES.get(file_name, null)
+	while path == null:
+		path = IO.find_file_recursive(Settings.INSTALL_PATH, file_name)
+		if path == null:
+			yield(ASYNC_set_game_install_paths(false, "Can not find %s!" % [file_name]), "completed")
+			
+		yield(Engine.get_main_loop(), "idle_frame")
+	yield(Engine.get_main_loop(), "idle_frame")
+func ASYNC_set_game_install_paths(force_user_select: bool, title_text: String, dialog_text: String = "Please select the folder containing Pharaoh game data.\n"):
+	if Settings.INSTALL_PATH == null || force_user_select:
+#		DATA_PATH = null
+		SAVES_PATH = null
+		Settings.update("INSTALL_PATH", null)
+		var satisfied = false
+		var path = null
+		while !satisfied:
+			INSTALL_PATH_SELECT_DIALOG.dialog_text = dialog_text
+			INSTALL_PATH_SELECT_DIALOG.window_title = title_text
+			INSTALL_PATH_SELECT_DIALOG.popup_centered()
+			path = yield(INSTALL_PATH_SELECT_DIALOG, "chosen")
+			
+			satisfied = path != null
+#			if !IO.file_exists(str(path, "/Pharaoh_Text.eng")): satisfied = false
+#			if !IO.file_exists(str(path, "/Pharaoh_MM.eng")): satisfied = false
+#			if !IO.file_exists(str(path, "/Data/Pharaoh_Terrain.sg3")): satisfied = false
+			
+			
+			
+			yield(Engine.get_main_loop(), "idle_frame") # this is required because ConfirmationDialogExt continuously fires "chosen" on the same frame
+			
+		Settings.update("INSTALL_PATH", path)
+	else:
+		yield(get_tree(), "idle_frame")
+	
+	# enumerate game files and record their paths
+#	DATA_PATH = Settings.INSTALL_PATH + "/Data"
+	SAVES_PATH = Settings.INSTALL_PATH + "/Save"
+	
+
 
 func file_seek(file: File, bytes: PoolByteArray, begin: int = 0): # this REQUIRES a valid file handle 
 	var filesize = file.get_len()
@@ -24,7 +75,7 @@ func file_seek(file: File, bytes: PoolByteArray, begin: int = 0): # this REQUIRE
 		file.seek(_offset + 1) # sadly..... we must do EVERY byte.
 	return -1
 
-func load_png(path):
+func load_png(path: String):
 	var image = Image.new()
 	var r = image.load(path)
 	if r != OK:
@@ -35,7 +86,7 @@ func load_png(path):
 func load_pak_image():
 	pass
 
-# SG graphics / paks
+# SG "Sierra Graphics" archives
 enum ImageTypes {
 	Plain_WithTransparency = 0,
 	Plain_Opaque = 1,
@@ -50,27 +101,41 @@ var SG = {}
 const SGX_HEADER_SIZE = 80
 const SGX_MAX_BMPS = 300
 const SGX_MAX_TAGS = 300
-func load_sgx(pak_name: String, data_path: String = DATA_PATH, sg_ext: String = ".sg3", data_ext: String = ".555"): # code from https://github.com/lclarkmichalek/libsg/blob/master/c/sgfile.c
+func load_sgx(sgx_file: String, force_extraction: bool = false):
+	# original SG format dissection resources:
+	# https://github.com/bvschaik/julius/blob/master/src/core/image.c
+	# https://github.com/lclarkmichalek/libsg/blob/master/c/sgfile.c
+	# https://github.com/bvschaik/citybuilding-tools/wiki/SG-file-format
+
+	# check if already extracted
+	var sgx_name = IO.strip_extension(sgx_file)
+	if sgx_name in SG && !force_extraction:
+		return true
+
 	var _t = Stopwatch.start()
 	
-	var file = IO.open(data_path + "/" + pak_name + sg_ext, File.READ, "", true) as File
+	# actual path
+	var sgx_path = get_game_file_path(sgx_file)
+	if sgx_path == null:
+		return false
+	Stopwatch.stop(self, _t, "get_game_file_path()")
+	
+	var file = IO.open(sgx_path, File.READ, true) as FileEx
 	if file == null:
 		return false
-	file.set_script(preload("res://scripts/classes/FileEx.gd"))
-	file = file as FileEx
 	
 	# initialize pak data
-	SG[pak_name] = {
+	SG[sgx_name] = {
 		"header": {},
 		"bmp": [],
 		"img": [],
 		"groups": [],
 		"tag_names": []
 	}
-	var p_pak = SG[pak_name]
+	var p_sgdata = SG[sgx_name]
 	
 	# header
-	p_pak.header = {
+	p_sgdata.header = {
 		"filesize_sgx": file.get_u32(),
 		"version": file.get_u32(),
 		"unk00": file.get_u32(), # ???
@@ -94,13 +159,13 @@ func load_sgx(pak_name: String, data_path: String = DATA_PATH, sg_ext: String = 
 	}
 	
 	# tag groups
-	for i in p_pak.header.bmp_records:
-		p_pak.groups.push_back(file.get_u16())
+	for i in p_sgdata.header.bmp_records:
+		p_sgdata.groups.push_back(file.get_u16())
 	
 	# bmp records
 	file.push_cursor_base(SGX_HEADER_SIZE + 2 * SGX_MAX_BMPS)
-	for i in p_pak.header.bmp_records:
-		p_pak.bmp.push_back({
+	for i in p_sgdata.header.bmp_records:
+		p_sgdata.bmp.push_back({
 			"name": file.get_buffer(65).get_string_from_ascii(),
 			"comment": file.get_buffer(51).get_string_from_ascii(),
 			"width": file.get_u32(),
@@ -129,23 +194,23 @@ func load_sgx(pak_name: String, data_path: String = DATA_PATH, sg_ext: String = 
 			"unk15a": file.get_u16(), # 1			1
 			"unk15b": file.get_u16()  #				2
 		})
-	var has_system_bmp = p_pak.header.bmp_records > 0 && p_pak.bmp[0].name == "system.bmp"
+	var has_system_bmp = p_sgdata.header.bmp_records > 0 && p_sgdata.bmp[0].name == "system.bmp"
 	
 	# image data
 	var MAX_BMP_RECORDS
 	var IMG_RECORD_SIZE = 64
 	var include_alpha = false
-	if p_pak.header.version == 211:
+	if p_sgdata.header.version == 211:
 		MAX_BMP_RECORDS = 100 # .sg2
 	else:
 		MAX_BMP_RECORDS = 200 # .sg3
-	if p_pak.header.version >= 214:
+	if p_sgdata.header.version >= 214:
 		include_alpha = true
 		IMG_RECORD_SIZE = 72
 	file.push_cursor_base(200 * MAX_BMP_RECORDS + IMG_RECORD_SIZE)  # first one is empty/dummy
-	p_pak.img.push_back(null)
-	for i in p_pak.header.img_records:
-		p_pak.img.push_back({
+	p_sgdata.img.push_back(null)
+	for i in p_sgdata.header.img_records:
+		p_sgdata.img.push_back({
 			"__sgx_idx": i, # first one is NULL
 			"data_offset": file.get_u32(),
 			"data_length": file.get_u32(),
@@ -185,33 +250,31 @@ func load_sgx(pak_name: String, data_path: String = DATA_PATH, sg_ext: String = 
 			"alpha_offset": 0,
 			"alpha_length": 0
 		})
-		var img = p_pak.img[-1]
+		var img = p_sgdata.img[-1]
 		if include_alpha:
 			img.alpha_offset = file.get_i32()
 			img.alpha_length = file.get_i32()
-		p_pak.bmp[img.bmp_record].__num_images_i += 1
-		img.idx_in_bmp = p_pak.bmp[img.bmp_record].__num_images_i
+		p_sgdata.bmp[img.bmp_record].__num_images_i += 1
+		img.idx_in_bmp = p_sgdata.bmp[img.bmp_record].__num_images_i
 		
 	
 	# img names at the end
-	file.push_cursor_base((p_pak.header.img_records_max - 1) * IMG_RECORD_SIZE)
+	file.push_cursor_base((p_sgdata.header.img_records_max - 1) * IMG_RECORD_SIZE)
 	for i in SGX_MAX_TAGS: # first field here is also empty/dummy
-		p_pak.tag_names.push_back(file.get_buffer(48).get_string_from_ascii())
+		p_sgdata.tag_names.push_back(file.get_buffer(48).get_string_from_ascii())
 	assert(file.end_reached(true))
 	var _t_1 = Stopwatch.query(_t, Stopwatch.Milliseconds)
 	
 	# =========== .555 pak / actual image data =========== #
 	
-	file = IO.open(data_path + "/" + pak_name + data_ext, File.READ, "", true) as File
+	file = IO.open(str(IO.naked_folder_path(sgx_path), "/", sgx_name, ".555"), File.READ, true) as FileEx
 	if file == null:
 		return false
-	file.set_script(preload("res://scripts/classes/FileEx.gd"))
-	file = file as FileEx
 	
 	# image data
 	var images_skipped = 0
 	var i = -1
-	for img in p_pak.img:
+	for img in p_sgdata.img:
 		i += 1
 		if img == null || (has_system_bmp && img.bmp_record == 0): # skip system.bmp
 			images_skipped += 1
@@ -239,17 +302,17 @@ func load_sgx(pak_name: String, data_path: String = DATA_PATH, sg_ext: String = 
 		if img.offset_mirror != 0:
 			pass
 	if has_system_bmp:
-		assert(images_skipped == p_pak.bmp[0].num_images + 1)
+		assert(images_skipped == p_sgdata.bmp[0].num_images + 1)
 	var _t_2 = Stopwatch.query(_t, Stopwatch.Milliseconds)
 	
 	print("SG pak %-20s ms taken: %3d %3d (%-3d total) %-5d images, %-3d bmps, %-3d groups" % [
-		"'" + pak_name + "'",
+		"'" + sgx_name + "'",
 		_t_1,
 		_t_2 - _t_1,
 		_t_2,
-		p_pak.header.img_records,
-		p_pak.header.bmp_records_nix_system,
-		p_pak.groups.size()
+		p_sgdata.header.img_records,
+		p_sgdata.header.bmp_records_nix_system,
+		p_sgdata.groups.size()
 	])
 #	print("---------------------------------------------------------------------------------------------------------------------------------------------")
 #	for r in bmp:
@@ -325,52 +388,55 @@ const TILE_WIDTH_PIXELS = 60
 const TILE_HEIGHT_PIXELS = 30
 const HALF_TILE_WIDTH_PIXELS = 30
 const HALF_TILE_HEIGHT_PIXELS = 15
-func tileset_add_tile_from_sg_image(tileset: TileSet, id: int):
+func tileset_add_tile_from_sg_image(tileset: TileSet, sgx_name: String, id: int):
 	
-	# res asset copied
-#	var png_path = str(RES_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".png")
+	#  OPTION 1: read cached raw texture streams -- around ~390 ms
+	var path_cached = str(USER_ASSETS_PATH, "/Data/" , sgx_name, "/", id, ".texture")
+	var texture = IO.read(path_cached, false, true)
+	
+	#  OPTION 2: extract from SG paks -- ?? ms
+	if texture == null:
+		if !load_sgx(sgx_name + ".sg3"): # TODO
+			return false
+		pass 
+	
+	# OPTION 3: loading pngs from res:// -- around ~1050 ms
+	if texture == null:
+		var png_path = str(RES_ASSETS_PATH, "/", sgx_name, "/", id, ".png")
+		if IO.file_exists(png_path):
+			var image = Image.new()
+			var r = image.load(png_path)
+			if r != OK:
+				return false
+			texture = ImageTexture.new()
+			texture.create_from_image(image, 0) # MUST NOT HAVE Texture.FLAG_MIPMAPS here.
+			IO.write(path_cached, texture, true) # save to cache
+	
+	# OPTION 4: loading pngs from PharaohExtract -- around ~1050 ms
+	if texture == null:
 
-	# PharaohExtract testing temps
-	var img = SG.Pharaoh_Terrain.img[id]
-	var bmp_name = SG.Pharaoh_Terrain.bmp[img.bmp_record].name
-	bmp_name = bmp_name.rsplit(".", false, 1)[0]
-	var png_path = "D:/PharaohExtract/Pharaoh_Terrain/%s_%05d.png" % [bmp_name, img.idx_in_bmp]
-#	IO.copy_file(png_path, str(RES_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".png"))
+		# compose full path from bmp records
+		var img = SG[sgx_name].img[id] # this was enumerated at OPTION 2, so it must be valid.
+		var bmp_name = SG[sgx_name].bmp[img.bmp_record].name
+		bmp_name = bmp_name.rsplit(".", false, 1)[0]
+		var png_path = "D:/PharaohExtract/%s/%s_%05d.png" % [sgx_name, bmp_name, img.idx_in_bmp]
+		
+		# load from png
+		if IO.file_exists(png_path):
+			var image = Image.new()
+			var r = image.load()
+			if r != OK:
+				return false
+			texture = ImageTexture.new()
+			texture.create_from_image(image, 0) # MUST NOT HAVE Texture.FLAG_MIPMAPS here.
+			IO.write(path_cached, texture, true) # save to cache
 	
-	
-	# load from png -- around ~1050 ms
-	var image = Image.new()
-	var r = image.load(png_path)
-	if r != OK:
+	if texture == null: # welp?!???
 		return false
-	var texture = ImageTexture.new()
-	texture.create_from_image(image, 0) # <---- MUST NOT HAVE Texture.FLAG_MIPMAPS here.
 
-
-	# load from saved texture -- around ~600 ms
-#	var texture = IO.read(str(USER_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".texture"))
-#	if texture == null:
-#		return false
 	
-	# load from saved image -- around ~650 ms (same as above)
-#	var image = IO.read(str(USER_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".image"))
-#	if image == null:
-#		return false
-#	var texture = ImageTexture.new()
-#	texture.create_from_image(image, 0)
-	
-	
-	# save texture data
-	if !IO.dir_exists(USER_ASSETS_PATH + "/Pharaoh_Terrain"):
-		IO.create_folder(USER_ASSETS_PATH + "/Pharaoh_Terrain")
-	IO.write(str(USER_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".texture"), texture)
-	IO.write(str(USER_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".image"), image)
-	
-	
-#	var tile_size = img.isometric_tile_size
-#	var tile_size = (img.width + 2) / TILE_WIDTH_PIXELS
+	# create tile and add texture to tileset
 	var tile_size = (texture.get_size().x + 2) / TILE_WIDTH_PIXELS
-	
 	tileset.create_tile(id + 14252)
 	tileset.tile_set_texture(id + 14252, texture)
 	tileset.tile_set_texture_offset(id + 14252, Vector2(0, (15 * (tile_size + 1)) - texture.get_size().y))
@@ -397,11 +463,9 @@ func editor_debug_translate_labels(node):
 					node.text = text_en.get_message(node.localized_key)
 					print("updated: %s (%s)" % [node.text, node.localized_key])
 func load_text(path: String, locale: String):
-	var file = IO.open(path, File.READ)
+	var file = IO.open(path, File.READ) as FileEx
 	if file == null:
 		return null
-	file.set_script(preload("res://scripts/classes/FileEx.gd"))
-	file = file as FileEx
 
 	# header (28 bytes)
 	var header_title = file.get_buffer(16).get_string_from_ascii()
@@ -446,11 +510,9 @@ func load_text(path: String, locale: String):
 	file.close()
 	return tr
 func load_mm(path: String, locale: String): # TODO
-	var file = IO.open(path, File.READ) as File
+	var file = IO.open(path, File.READ) as FileEx
 	if file == null:
 		return null
-	file.set_script(preload("res://scripts/classes/FileEx.gd"))
-	file = file as FileEx
 #	buffer_skip(buf, 24); // header
 #    for (int i = 0; i < MAX_MESSAGE_ENTRIES; i++) {
 #        lang_message *m = &data.message_entries[i];
@@ -486,21 +548,24 @@ func load_mm(path: String, locale: String): # TODO
 
 ###
 
-func set_game_install_path(): # TODO
-	pass
-func load_locales(install_path: String = INSTALL_PATH): # TODO: MM, check user settings, add different locales
+func load_locales(): # TODO: MM, check user settings, add different locales
 	
 	# text
+	var _t = Stopwatch.start()
 	var text_en = load("res://assets/locales/Pharaoh_Text.en.translation")
 	if text_en == null:
-		text_en = load_text(install_path + "/Pharaoh_Text.eng", "en") # the files are ALWAYS .eng, despite internal docs mentioning otherwise
+		_t = Stopwatch.start()
+		text_en = load_text(get_game_file_path("Pharaoh_Text.eng"), "en") # the files are ALWAYS .eng, despite internal docs mentioning otherwise
 		if text_en == null:
 			Log.error(self, GlobalScope.Error.ERR_FILE_NOT_FOUND, "can not find valid localization files in install folder")
 			return false
 		ResourceSaver.save("res://assets/locales/Pharaoh_Text.en.translation", text_en)
+		Stopwatch.stop(self, _t, "extracted Pharaoh_Text into Pharaoh_Text.en.translation")
+	else:
+		Stopwatch.stop(self, _t, "loaded Pharaoh_Text.en.translation")
 
-	# MM
-#	var mm_en = load("res://assets/locales/Pharaoh_MM.en.translation") # TODO
+	# MM -- TODO
+#	var mm_en = load("res://assets/locales/Pharaoh_MM.en.translation")
 #	if mm_en == null:
 #		mm_en = load_mm(install_path + "/Pharaoh_MM.eng", "en") # the files are ALWAYS .eng, despite internal docs mentioning otherwise
 #		if mm_en == null:
@@ -511,34 +576,55 @@ func load_locales(install_path: String = INSTALL_PATH): # TODO: MM, check user s
 	TranslationServer.add_translation(text_en)
 	TranslationServer.set_locale("en")
 	return true
-func load_sounds(install_path: String = INSTALL_PATH): # TODO
+func load_sounds(): # TODO
 	pass
-func load_backdrops(install_path: String = INSTALL_PATH): # TODO
+func load_backdrops(): # TODO
 	pass
-func load_animations(install_path: String = INSTALL_PATH): # TODO
+func load_animations(): # TODO
 	pass
-func load_monuments(install_path: String = INSTALL_PATH): # TODO
+func load_monuments(): # TODO
 	pass
-func load_enemies(install_path: String = INSTALL_PATH): # TODO
+func load_enemies(): # TODO
 	pass
-func load_settings(install_path: String = INSTALL_PATH): # TODO
+func load_settings(): # TODO
 	pass
-func load_tilesets(install_path: String = INSTALL_PATH):
+func load_tilesets():
 	
-	if !load_sgx("Pharaoh_Terrain"): return false
-#	if !load_sgx("Pharaoh_General"): return false
-#	if !load_sgx("Pharaoh_Unloaded"): return false
-#	if !load_sgx("SprMain"): return false
-#	if !load_sgx("SprMain2"): return false
 	
 
-	# ========================== TESTING ========================== #
+	# load tileset from raw Variant disk file -- around ~400 ms
 	var _t = Stopwatch.start()
-	var tileset = TileSet.new()
-	for i in range(201, SG.Pharaoh_Terrain.img.size()):
-		tileset_add_tile_from_sg_image(tileset, i)
-	Stopwatch.stop(self, _t, "tileset textures load")
-	Map.tileset_flat = tileset
+	var path_cached_tileset = USER_ASSETS_PATH + "/Data/Pharaoh_Terrain.tileset"
+	if IO.file_exists(path_cached_tileset):
+		Map.tileset_image = IO.read(path_cached_tileset)
+		Stopwatch.stop(self, _t, "tileset textures load")
+	else:
+		
+#		if !load_sgx("Pharaoh_Terrain"): return false
+#		if !load_sgx("Pharaoh_General"): return false
+#		if !load_sgx("Pharaoh_Unloaded"): return false
+#		if !load_sgx("SprMain"): return false
+#		if !load_sgx("SprMain2"): return false
+		
+		# construct tileset from extracted sprites -- 
+		var tileset = TileSet.new()
+#		for i in range(201, SG.Pharaoh_Terrain.img.size()):
+		for i in range(201, 1515 + 1):
+			tileset_add_tile_from_sg_image(tileset, "Pharaoh_Terrain", i)
+		Map.tileset_image = tileset
+		Stopwatch.stop(self, _t, "tileset textures load")
+		
+		# save tileset as raw Variant disk file -- around ~310 ms
+		_t = Stopwatch.start()
+		IO.write(path_cached_tileset, tileset)
+		Stopwatch.stop(self, _t, "tileset save to disk")
+		
+
+#	var tileset = TileSet.new()
+#	for i in range(201, SG.Pharaoh_Terrain.img.size()):
+#		tileset_add_tile_from_sg_image(tileset, i)
+#	Stopwatch.stop(self, _t, "tileset textures load")
+#	Map.tileset_image = tileset
 
 	# save tileset as Resource -- around ~4000 ms !!!!!
 #	_t = Stopwatch.start()
@@ -552,11 +638,15 @@ func load_tilesets(install_path: String = INSTALL_PATH):
 
 	# load tileset from Resource -- around ~4000 ms !!!!!
 #	var _t = Stopwatch.start()
-#	Map.tileset_flat = load("res://assets/Pharaoh/Tileset_Test4.tres")
+#	Map.tileset_image = load("res://assets/Pharaoh/Tileset_Test4.tres")
 #	Stopwatch.stop(self, _t, "tileset textures load")
 
-	# load tileset from Resource -- around 400 ms
-#	var _t = Stopwatch.start()
-#	Map.tileset_flat = IO.read("res://assets/Pharaoh/Tileset_Test5.tres")
-#	Stopwatch.stop(self, _t, "tileset textures load")
 	return true
+
+func _ready():
+	yield(get_tree(), "idle_frame") # this is required for tree nodes (e.g. FileDialog) to set up before usage.
+	yield(ASYNC_set_game_install_paths(false, "Pharaoh Install Path"), "completed")
+	
+	load_locales()
+	load_tilesets()
+	emit_signal("ready") # W H Y is this not automatic ?!??!?!?!?????
