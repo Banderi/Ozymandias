@@ -5,7 +5,7 @@
 [ext_resource path="res://scenes/UI/Panel1.tscn" type="PackedScene" id=5]
 [ext_resource path="res://scenes/UI/Panel2.tscn" type="PackedScene" id=6]
 [ext_resource path="res://scenes/UI/OzyScrollContainer.tscn" type="PackedScene" id=7]
-[ext_resource path="res://assets/fonts/small_black_on_black.tres" type="BitmapFont" id=18]
+[ext_resource path="res://assets/fonts/texture_fonts/small_black_on_black.tres" type="BitmapFont" id=18]
 
 [sub_resource type="StyleBoxTexture" id=1]
 texture = ExtResource( 2 )

@@ -1,8 +1,8 @@
 [gd_scene load_steps=5 format=2]
 
-[ext_resource path="res://assets/fonts/small_black_on_black.tres" type="BitmapFont" id=1]
+[ext_resource path="res://assets/fonts/texture_fonts/small_black_on_black.tres" type="BitmapFont" id=1]
 [ext_resource path="res://scripts/classes/ButtonEx.gd" type="Script" id=2]
-[ext_resource path="res://assets/fonts/small_white.tres" type="BitmapFont" id=3]
+[ext_resource path="res://assets/fonts/texture_fonts/small_white.tres" type="BitmapFont" id=3]
 
 [sub_resource type="StyleBoxEmpty" id=1]
 content_margin_left = 10.0
