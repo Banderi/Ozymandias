@@ -31,6 +31,14 @@ func naked_filename(path):
 		return null if file_name == "" else file_name
 
 # basic IO
+func create_folder(path):
+	var dir = Directory.new()
+	if !dir.dir_exists(path):
+		var err = dir.make_dir_recursive(path)
+		if err != OK:
+			Log.error(null,err,str("could not create directory at '",path,"'"))
+			return false
+	return true
 func write(path, data, create_folder_if_missing = true, password = ""):
 	var err = -1
 

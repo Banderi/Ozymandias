@@ -6,6 +6,9 @@ const INSTALL_PATH = "D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra"
 const DATA_PATH = INSTALL_PATH + "/Data"
 const SAVES_PATH = INSTALL_PATH + "/Save"
 
+const RES_ASSETS_PATH = "res://assets/Pharaoh"
+const USER_ASSETS_PATH = "user://assets/Pharaoh"
+
 func file_seek(file: File, bytes: PoolByteArray, begin: int = 0): # this REQUIRES a valid file handle 
 	var filesize = file.get_len()
 	var search_size = bytes.size()
@@ -324,23 +327,54 @@ const HALF_TILE_WIDTH_PIXELS = 30
 const HALF_TILE_HEIGHT_PIXELS = 15
 func tileset_add_tile_from_sg_image(tileset: TileSet, id: int):
 	
+	# res asset copied
+#	var png_path = str(RES_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".png")
+
+	# PharaohExtract testing temps
 	var img = SG.Pharaoh_Terrain.img[id]
 	var bmp_name = SG.Pharaoh_Terrain.bmp[img.bmp_record].name
 	bmp_name = bmp_name.rsplit(".", false, 1)[0]
-	var path = "D:/PharaohExtract/Pharaoh_Terrain/%s_%05d.png" % [bmp_name, img.idx_in_bmp]
+	var png_path = "D:/PharaohExtract/Pharaoh_Terrain/%s_%05d.png" % [bmp_name, img.idx_in_bmp]
+#	IO.copy_file(png_path, str(RES_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".png"))
 	
-	var texture = load_png(path)
-	if texture == null:
+	
+	# load from png -- around ~1050 ms
+	var image = Image.new()
+	var r = image.load(png_path)
+	if r != OK:
 		return false
+	var texture = ImageTexture.new()
+	texture.create_from_image(image, 0) # <---- MUST NOT HAVE Texture.FLAG_MIPMAPS here.
+
+
+	# load from saved texture -- around ~600 ms
+#	var texture = IO.read(str(USER_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".texture"))
+#	if texture == null:
+#		return false
+	
+	# load from saved image -- around ~650 ms (same as above)
+#	var image = IO.read(str(USER_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".image"))
+#	if image == null:
+#		return false
+#	var texture = ImageTexture.new()
+#	texture.create_from_image(image, 0)
+	
+	
+	# save texture data
+	if !IO.dir_exists(USER_ASSETS_PATH + "/Pharaoh_Terrain"):
+		IO.create_folder(USER_ASSETS_PATH + "/Pharaoh_Terrain")
+	IO.write(str(USER_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".texture"), texture)
+	IO.write(str(USER_ASSETS_PATH, "/Pharaoh_Terrain/", id, ".image"), image)
+	
 	
 #	var tile_size = img.isometric_tile_size
-	var tile_size = (img.width + 2) / TILE_WIDTH_PIXELS
-	if img.width != 58:
-		pass
+#	var tile_size = (img.width + 2) / TILE_WIDTH_PIXELS
+	var tile_size = (texture.get_size().x + 2) / TILE_WIDTH_PIXELS
 	
 	tileset.create_tile(id + 14252)
 	tileset.tile_set_texture(id + 14252, texture)
 	tileset.tile_set_texture_offset(id + 14252, Vector2(0, (15 * (tile_size + 1)) - texture.get_size().y))
+	return true
 
 func editor_debug_translate_labels(node):
 	if Engine.is_editor_hint():
@@ -491,31 +525,38 @@ func load_settings(install_path: String = INSTALL_PATH): # TODO
 	pass
 func load_tilesets(install_path: String = INSTALL_PATH):
 	
-#	if !load_sgx("Pharaoh_Terrain"): return false
+	if !load_sgx("Pharaoh_Terrain"): return false
 #	if !load_sgx("Pharaoh_General"): return false
 #	if !load_sgx("Pharaoh_Unloaded"): return false
 #	if !load_sgx("SprMain"): return false
 #	if !load_sgx("SprMain2"): return false
 	
-	
-	# testing
-#	var tileset = TileSet.new()
-#	for i in range(201, SG.Pharaoh_Terrain.img.size()):
-##	for i in range(201, 240):
-#		tileset_add_tile_from_sg_image(tileset, i)
-#	ResourceSaver.save("res://assets/Tileset_Test4.tres", tileset)
-#	Map.tileset_flat = tileset
-	
-#	var tileset = TileSet.new()
-#	for i in range(201, SG.Pharaoh_Terrain.img.size()):
-#		var img = SG.Pharaoh_Terrain.img[i]
-#		var bmp_name = SG.Pharaoh_Terrain.bmp[img.bmp_record].name
-#		bmp_name = bmp_name.rsplit(".", false, 1)[0]
-#		var path = "D:/PharaohExtract/Pharaoh_Terrain/%s_%05d.png" % [bmp_name, img.idx_in_bmp]
-#		tileset_add_tile_from_sg_image(tileset, i + 14252, path)
-#	ResourceSaver.save("res://assets/Tileset_Test2.tres", tileset)
-#	Map.tileset_flat = tileset
 
-	Map.tileset_flat = load("res://assets/Pharaoh/Tileset_Test2.tres")
-	
+	# ========================== TESTING ========================== #
+	var _t = Stopwatch.start()
+	var tileset = TileSet.new()
+	for i in range(201, SG.Pharaoh_Terrain.img.size()):
+		tileset_add_tile_from_sg_image(tileset, i)
+	Stopwatch.stop(self, _t, "tileset textures load")
+	Map.tileset_flat = tileset
+
+	# save tileset as Resource -- around ~4000 ms !!!!!
+#	_t = Stopwatch.start()
+#	ResourceSaver.save("res://assets/Pharaoh/Tileset_Test4.tres", tileset)
+#	Stopwatch.stop(self, _t, "tileset save to disk")
+
+	# save tileset as raw Variant disk file -- around ~310 ms
+#	_t = Stopwatch.start()
+#	IO.write("res://assets/Pharaoh/Tileset_Test5.tres", tileset)
+#	Stopwatch.stop(self, _t, "tileset save to disk")
+
+	# load tileset from Resource -- around ~4000 ms !!!!!
+#	var _t = Stopwatch.start()
+#	Map.tileset_flat = load("res://assets/Pharaoh/Tileset_Test4.tres")
+#	Stopwatch.stop(self, _t, "tileset textures load")
+
+	# load tileset from Resource -- around 400 ms
+#	var _t = Stopwatch.start()
+#	Map.tileset_flat = IO.read("res://assets/Pharaoh/Tileset_Test5.tres")
+#	Stopwatch.stop(self, _t, "tileset textures load")
 	return true

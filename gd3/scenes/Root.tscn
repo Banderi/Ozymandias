@@ -127,7 +127,7 @@ __meta__ = {
 
 [node name="Map_Flat" type="TileMap" parent="InGame"]
 mode = 1
-cell_size = Vector2( 58, 30 )
+cell_size = Vector2( 60, 30 )
 format = 1
 __meta__ = {
 "_edit_lock_": true
