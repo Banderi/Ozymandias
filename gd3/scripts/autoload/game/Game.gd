@@ -192,14 +192,14 @@ func enscribe_SAV():
 	enscribe_schema()
 	
 #	Scribe.sync_record([Map.grids], TYPE_DICTIONARY)
-	Scribe.put_grid("image", true, ScribeFormat.u32)
+	Scribe.put_grid("images", true, ScribeFormat.u32)
 	Scribe.put_grid("edge", true, ScribeFormat.i8)
-	Scribe.put_grid("building", true, ScribeFormat.i16)
+	Scribe.put_grid("buildings", true, ScribeFormat.i16)
 	Scribe.put_grid("terrain", true, ScribeFormat.u32)
 	Scribe.put_grid("aqueduct", true, ScribeFormat.u8)
-	Scribe.put_grid("figure", true, ScribeFormat.u16)
+	Scribe.put_grid("figures", true, ScribeFormat.u16)
 	Scribe.put_grid("bitfields", true, ScribeFormat.u8)
-	Scribe.put_grid("sprite", true, ScribeFormat.u8)
+	Scribe.put_grid("sprites", true, ScribeFormat.u8)
 	Scribe.put_grid("random", false, ScribeFormat.u8)
 	Scribe.put_grid("desirability", true, ScribeFormat.u8)
 	Scribe.put_grid("elevation", true, ScribeFormat.u8)
@@ -561,7 +561,7 @@ func game_tick(delta):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	yield(Assets, "ready")
+	yield(Assets.load_game_assets("Pharaoh"), "completed")
 	
 	INGAME_ROOT.show()
 	MENUS_ROOT.show()
@@ -598,9 +598,9 @@ func _ready():
 #	var a = load("res://scripts/mono/YourCustomClass.cs").new()
 	
 #	yield(get_tree(), "idle_frame")
-#	Game.load_game("res://../tests/autosave.sav")
+	Game.load_game("res://../tests/autosave.sav")
 #	STATE = States.Ingame
-#	close_all_menus()
+	close_all_menus()
 
 
 onready var debug_label = DEBUG_ROOT.get_node("DEBUG_LABEL")

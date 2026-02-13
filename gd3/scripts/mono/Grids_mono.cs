@@ -25,10 +25,49 @@ public class Grids_mono : Node
 		raw
 	}
 
-	public bool SetGrid(TileMap map, byte[] data, int format)
+	public bool SetGrid(Godot.Collections.Array grid, byte[] data, int format)
 	{
-		// if (map == null)
-		// 	return false;
+		grid.Clear();
+		BinaryReader stream = new BinaryReader(new MemoryStream(data));
+		for (int y = 0; y < PH_MAP_WIDTH; y++)
+		{
+			Godot.Collections.Array row = new Godot.Collections.Array();
+			for (int x = 0; x < PH_MAP_WIDTH; x++)
+			{
+				Int64 value = 0;
+				switch ((ScribeFormat)format)
+				{
+					case ScribeFormat.u8:
+						value = stream.ReadByte();
+						break;
+					case ScribeFormat.i8:
+						value = stream.ReadSByte();
+						break;
+					case ScribeFormat.u16:
+						value = stream.ReadUInt16();
+						break;
+					case ScribeFormat.i16:
+						value = stream.ReadInt16();
+						break;
+					case ScribeFormat.u32:
+						value = stream.ReadUInt32();
+						break;
+					case ScribeFormat.i32:
+						value = stream.ReadInt32();
+						break;
+					default:
+						break;
+				}
+				row.Add(value);
+			}
+			grid.Add(row);
+		}
+		return true;
+	}
+	public bool SetMap(TileMap map, byte[] data, int format)
+	{
+		if (map == null)
+			return false;
 		BinaryReader stream = new BinaryReader(new MemoryStream(data));
 		for (int y = 0; y < PH_MAP_WIDTH; y++)
 		{
@@ -58,8 +97,7 @@ public class Grids_mono : Node
 					default:
 						break;
 				}
-				if (map != null)
-					map.SetCell(x, y, (int)value);
+				map.SetCell(x, y, (int)value);
 			}
 		}
 		return true;

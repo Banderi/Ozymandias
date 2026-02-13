@@ -1,6 +1,15 @@
 tool
 extends Node
 
+# external fallback folder for personal testing purposes 
+const TMP_TESTING_EXTR_PATH = "D:/PharaohExtract/"
+
+# game set
+var GAME_SET = null
+func set_gameset(game): # TODO - for the future
+	GAME_SET = game
+	GAME_FILES = {} # clear cached paths
+
 # generics
 func file_seek(file: File, bytes: PoolByteArray, begin: int = 0): # this REQUIRES a valid file handle 
 	var filesize = file.get_len()
@@ -19,8 +28,8 @@ func file_seek(file: File, bytes: PoolByteArray, begin: int = 0): # this REQUIRE
 
 # user / res & game data paths
 onready var INSTALL_PATH_SELECT_DIALOG = get_tree().root.get_node("Root/Menus/FileDialog") as FileDialog
-const RES_ASSETS_PATH = "res://assets/Pharaoh"
-const USER_ASSETS_PATH = "user://assets_cache/"
+const RES_ASSETS_PATH = "res://assets"
+const USER_ASSETS_PATH = "user://assets_cache"
 var SAVES_PATH = null
 var GAME_FILES = {} # this is the actual cache list of game files paths, when (if) found
 func find_and_record_game_file(file_name: String, subdir: String = ""):
@@ -43,8 +52,9 @@ func ASYNC_get_game_file_path(file_name: String): # this is ASYNCHRONOUS and WIL
 			
 		yield(Engine.get_main_loop(), "idle_frame")
 	yield(Engine.get_main_loop(), "idle_frame")
-func ASYNC_set_game_install_paths(force_user_select: bool, title_text: String, dialog_text: String = "Please select the folder containing Pharaoh game data.\n"):
+func ASYNC_set_game_install_paths(force_user_select: bool, title_text: String, dialog_text: String = "Please select the folder containing %s game data.\n" % [GAME_SET]):
 	if Settings.INSTALL_PATH == null || force_user_select:
+		yield(get_tree(), "idle_frame") # required for tree nodes (e.g. FileDialog) to set up before usage.
 		SAVES_PATH = null
 		Settings.update("INSTALL_PATH", null)
 		var satisfied = false
@@ -60,16 +70,17 @@ func ASYNC_set_game_install_paths(force_user_select: bool, title_text: String, d
 #			if !IO.file_exists(str(path, "/Pharaoh_MM.eng")): satisfied = false
 #			if !IO.file_exists(str(path, "/Data/Pharaoh_Terrain.sg3")): satisfied = false
 			
-			
-			
-			yield(Engine.get_main_loop(), "idle_frame") # this is required because ConfirmationDialogExt continuously fires "chosen" on the same frame
-			
+			if !satisfied:
+				yield(Engine.get_main_loop(), "idle_frame") # relinquish async to allow ConfirmationDialogExt to reset
 		Settings.update("INSTALL_PATH", path)
 	else:
 		yield(get_tree(), "idle_frame")
 	
 	# enumerate game files and record their paths
 	SAVES_PATH = Settings.INSTALL_PATH + "/Save"
+
+func get_game_cache_path():
+	return USER_ASSETS_PATH + "/" + GAME_SET
 
 func load_png(path: String, flags: int):
 	var image = Image.new()
@@ -95,7 +106,7 @@ var SG = {}
 const SGX_HEADER_SIZE = 80
 const SGX_MAX_BMPS = 300
 const SGX_MAX_TAGS = 300
-func load_sgx(sgx_file: String, force_reparse: bool = false): # .sgx head
+func load_sgx(sgx_file: String, force_reparse: bool = false, extract_data: bool = false): # .sgx head
 	# original SG format dissection resources:
 	# https://github.com/bvschaik/julius/blob/master/src/core/image.c
 	# https://github.com/lclarkmichalek/libsg/blob/master/c/sgfile.c
@@ -266,6 +277,11 @@ func load_sgx(sgx_file: String, force_reparse: bool = false): # .sgx head
 		p_data.header.bmp_records_nix_system,
 		p_data.groups.size()
 	])
+	
+	# also extract data
+	if extract_data:
+		return extract_sgx(pak_name + ".555")
+	
 	return true
 func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / actual image data
 	
@@ -339,24 +355,27 @@ func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / a
 		images_failed
 	])
 	return true
-func get_sg_texture(pak_name: String, id: int) -> Texture:
+func get_sg_texture(sgx_file: String, id: int) -> Texture:
 	
 	#  OPTION 1: read cached raw texture streams -- around ~380 ms
-	var path_cached = str(USER_ASSETS_PATH, "/Data/" , pak_name, "/", id, ".texture")
+	var path_cached = str(get_game_cache_path(), "/Data/" , sgx_file, "/", id, ".texture")
 	var texture = IO.read(path_cached, false, true)
 	if texture != null:
 		return texture
 	
 	#  OPTION 2: extract from SG paks -- ?? ms
-	if !load_sgx(pak_name + ".sg3"):
+	var pak_path = load_sgx(sgx_file)
+	if pak_path == null:
 		return null
-	if extract_sgx(pak_name + ".555"): # TODO
+#	if extract_sgx(pak_name + ".555", id >= 201): # TODO
+	else:
 		texture = IO.read(path_cached, false, true)
 		if texture != null:
 			return texture
 	
 	# OPTION 3: loading pngs from res:// -- around ~1050 ms
-	var png_path = str(RES_ASSETS_PATH, "/", pak_name, "/", id, ".png")
+	var pak_name = IO.strip_extension(sgx_file)
+	var png_path = str(RES_ASSETS_PATH, "/", GAME_SET, "/", pak_name, "/", id, ".png")
 	if IO.file_exists(png_path):
 		texture = load_png(png_path, 0) # Texture.FLAG_MIPMAPS breaks TileMap rendering.
 		if texture != null:
@@ -370,7 +389,7 @@ func get_sg_texture(pak_name: String, id: int) -> Texture:
 	var img = SG[pak_name].img[id] # this was enumerated at OPTION 2, so it must be valid.
 	var bmp_name = SG[pak_name].bmp[img.bmp_record].name
 	bmp_name = bmp_name.rsplit(".", false, 1)[0]
-	png_path = "D:/PharaohExtract/%s/%s_%05d.png" % [pak_name, bmp_name, img.idx_in_bmp]
+	png_path = "%s/%s/%s_%05d.png" % [TMP_TESTING_EXTR_PATH, pak_name, bmp_name, img.idx_in_bmp]
 	#
 	# load from png
 	if IO.file_exists(png_path):
@@ -383,17 +402,49 @@ func get_sg_texture(pak_name: String, id: int) -> Texture:
 		Log.error(self, GlobalScope.Error.ERR_FILE_NOT_FOUND, "could not load game texture %d of pak %s" % [id, pak_name])
 	return texture
 
+func get_pharaoh_loaded_enemy_pack(): # TODO
+		return "Assyrian.sg3"
+func get_pharaoh_loaded_monument_pak(): # TODO
+		return "Mastaba.sg3"
+func get_gameset_sg_texture(img_id: int):
+	match GAME_SET:
+		"Pharaoh":
+			if img_id >= 23735:
+				return [get_pharaoh_loaded_monument_pak(), img_id - 23735]
+			if img_id >= 23035:
+				return ["Expansion.sg3", img_id - 23035]
+			
+			
+#			if img_id <= 200:
+#				return ["Pharaoh_Unloaded.sg3", img_id]
+#			if img_id <= 682:
+#				return ["Pharaoh_Unloaded.sg3", img_id]
+#			elif img_id <= 11007:
+#				return ["SprMain.sg3", img_id]
+#			elif img_id <= 11706:
+#				return [get_pharaoh_loaded_enemy_pack(), img_id]
+#			elif img_id <= 14252:
+#				return ["Pharaoh_General.sg3", img_id - 11706]
+#			elif img_id <= 14252:
+#				return ["Pharaoh_Terrain.sg3", img_id - 14252]
+			
+		_:
+			Log.error(self, GlobalScope.Error.ERR_METHOD_NOT_FOUND, "game set '%s' is not implemented" % [GAME_SET])
+
+# construct tile from texture
 const TILE_WIDTH_PIXELS = 60
 const TILE_HEIGHT_PIXELS = 30
 const HALF_TILE_WIDTH_PIXELS = 30
 const HALF_TILE_HEIGHT_PIXELS = 15
-func tileset_add_tile_from_texture(tileset: TileSet, texture: Texture, id: int):
+func tileset_add_tile_from_texture(tileset: TileSet, texture: Texture, id: int): # for some reason, this shows [Null] in editor
+#	if id == 850 + 14252:														 # upon applying certain textures. e.g.:
+#		texture = get_sg_texture("Pharaoh_Terrain.sg3", 850)					 # - Pharaoh_Terrain @ 850 (SPR_B_DOCK_E)
 	var tile_size = (texture.get_size().x + 2) / TILE_WIDTH_PIXELS
 	tileset.create_tile(id)
 	tileset.tile_set_texture(id, texture)
 	tileset.tile_set_texture_offset(id, Vector2(0, (15 * (tile_size + 1)) - texture.get_size().y))
 
-func editor_debug_translate_labels(node):
+func editor_debug_translate_labels(node): # in-editor text localization refresh for labels & buttons
 	if Engine.is_editor_hint():
 		var l_n = node.get_node_or_null("TL_LABEL_DEBUG")
 		if l_n == null:
@@ -545,9 +596,9 @@ func load_tilesets(ignore_cache: bool = false):
 	
 	# load tileset from raw Variant disk file -- around ~400 ms
 	var _t = Stopwatch.start()
-	var path_cached_tileset = USER_ASSETS_PATH + "/Data/Pharaoh_Terrain.tileset"
+	var path_cached_tileset = get_game_cache_path() + "/Pharaoh_Terrain.tileset"
 	if !ignore_cache && IO.file_exists(path_cached_tileset):
-		Map.tileset_image = IO.read(path_cached_tileset)
+		Map.set_tileset(IO.read(path_cached_tileset), null)
 		Stopwatch.stop(self, _t, "tileset textures loaded from cache")
 	else:
 		# construct tileset from extracted sprites -- between 360~1050 ms
@@ -571,7 +622,7 @@ func load_tilesets(ignore_cache: bool = false):
 				continue
 			tileset_add_tile_from_texture(tileset, texture, i + 14252)
 		
-		Map.tileset_image = tileset
+		Map.set_tileset(tileset, null)
 		Stopwatch.stop(self, _t, "tileset textures generated and loaded")
 		
 		# save tileset as raw Variant disk file -- around ~310 ms
@@ -581,10 +632,16 @@ func load_tilesets(ignore_cache: bool = false):
 		
 	return true
 
-func _ready():
-	yield(get_tree(), "idle_frame") # this is required for tree nodes (e.g. FileDialog) to set up before usage.
-	yield(ASYNC_set_game_install_paths(false, "Pharaoh Install Path"), "completed")
+func load_game_assets(game):
+	set_gameset(game)
+	
+	yield(ASYNC_set_game_install_paths(false, "Install Path"), "completed")
 	
 	load_locales()
-	load_tilesets(true)
-	emit_signal("ready") # W H Y is this not automatic ?!??!?!?!?????
+	load_tilesets() # <--- true for forcing texture re-generation
+	
+	load_backdrops()
+	load_animations()
+	load_monuments()
+	load_enemies()
+	load_settings()
