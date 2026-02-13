@@ -222,11 +222,11 @@ func put_grid(key, compressed: bool, format, grid_width: int = Map.PH_MAP_WIDTH,
 		if !GridsMono.SetGrid(Map.grids[key], stream, format):
 			return bail(GlobalScope.Error.FAILED, "(GridsMono) could not fill grid")
 		assert(Map.grids[key].size() == Map.PH_MAP_WIDTH)
-		if key == "images":
-#			Map.TILEMAP_FLAT.clear() # unnecessary
-			Map.TILEMAP_ANIM.clear()
-			if !GridsMono.SetMap(Map.TILEMAP_FLAT, stream, format):
-				return bail(GlobalScope.Error.FAILED, "(GridsMono) could not set TileMap")
+#		if key == "images":
+##			Map.TILEMAP_FLAT.clear() # unnecessary
+#			Map.TILEMAP_ANIM.clear()
+#			if !GridsMono.SetMap(Map.TILEMAP_FLAT, stream, format):
+#				return bail(GlobalScope.Error.FAILED, "(GridsMono) could not set TileMap")
 	else:
 		if compressed:
 			pass

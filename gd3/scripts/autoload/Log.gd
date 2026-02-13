@@ -18,7 +18,7 @@ func limit_array(arr, limit = MAX_LINES_IN_CONSOLE):
 	if arr.size() > limit:
 		arr.pop_front()
 
-func get_enum_string(enums, value):
+func get_enum_string(enums, value): # this ONLY WORKS WITH WELL-ORDERED, FULLY RANGED EXHAUSTIVE ENUMS.
 	return enums.keys()[value]
 func get_timestamp():
 	var d = Time.get_datetime_dict_from_system()

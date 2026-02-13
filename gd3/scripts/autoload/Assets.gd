@@ -384,18 +384,18 @@ func get_sg_texture(sgx_file: String, id: int) -> Texture:
 		return texture
 	
 	# OPTION 4: loading pngs from PharaohExtract -- around ~1050 ms
-	#
-	# compose full path from bmp records
-	var img = SG[pak_name].img[id] # this was enumerated at OPTION 2, so it must be valid.
-	var bmp_name = SG[pak_name].bmp[img.bmp_record].name
-	bmp_name = bmp_name.rsplit(".", false, 1)[0]
-	png_path = "%s/%s/%s_%05d.png" % [TMP_TESTING_EXTR_PATH, pak_name, bmp_name, img.idx_in_bmp]
-	#
-	# load from png
-	if IO.file_exists(png_path):
-		texture = load_png(png_path, 0) # Texture.FLAG_MIPMAPS breaks TileMap rendering.
-		if texture != null:
-			IO.write(path_cached, texture, true) # save to cache
+	if id in SG[pak_name].img:
+		# compose full path from bmp records
+		var img = SG[pak_name].img[id] # this was enumerated at OPTION 2, so it must be valid.
+		var bmp_name = SG[pak_name].bmp[img.bmp_record].name
+		bmp_name = bmp_name.rsplit(".", false, 1)[0]
+		png_path = "%s/%s/%s_%05d.png" % [TMP_TESTING_EXTR_PATH, pak_name, bmp_name, img.idx_in_bmp]
+		#
+		# load from png
+		if IO.file_exists(png_path):
+			texture = load_png(png_path, 0) # Texture.FLAG_MIPMAPS breaks TileMap rendering.
+			if texture != null:
+				IO.write(path_cached, texture, true) # save to cache
 	
 	# return results
 	if texture == null:
@@ -405,14 +405,36 @@ func get_sg_texture(sgx_file: String, id: int) -> Texture:
 func get_pharaoh_loaded_enemy_pack(): # TODO
 		return "Assyrian.sg3"
 func get_pharaoh_loaded_monument_pak(): # TODO
-		return "Mastaba.sg3"
+	return "Mastaba.sg3"
+func get_pharaoh_loaded_temple_complex_pak(): # TODO
+	return "Temple_nile.sg3"
 func get_gameset_sg_texture(img_id: int):
 	match GAME_SET:
 		"Pharaoh":
 			if img_id >= 23735:
-				return [get_pharaoh_loaded_monument_pak(), img_id - 23735]
+				return get_sg_texture(get_pharaoh_loaded_monument_pak(), img_id - 23735)
 			if img_id >= 23035:
-				return ["Expansion.sg3", img_id - 23035]
+				return get_sg_texture("Expansion.sg3", img_id - 23035)
+			if img_id >= 20683:
+				return get_sg_texture("SprMain.sg3", img_id - 20683)
+			if img_id >= 20305:
+				return get_sg_texture("Empire.sg3", img_id - 20305)
+			if img_id >= 18765:
+				return get_sg_texture("Pharaoh_Fonts.sg3", img_id - 18765)
+			if img_id >= 15831:
+				return get_sg_texture("SprAmbient.sg3", img_id - 15831)
+			if img_id >= 15767:
+				return get_sg_texture(get_pharaoh_loaded_temple_complex_pak(), img_id - 15767)
+			if img_id >= 14252:
+				return get_sg_texture("Pharaoh_Terrain.sg3", img_id - 14252)
+			if img_id >= 11706:
+				return get_sg_texture("Pharaoh_General.sg3", img_id - 11706)
+			if img_id >= 11008:
+				return get_sg_texture(get_pharaoh_loaded_enemy_pack(), img_id - 11008)
+			if img_id >= 683:
+				return get_sg_texture("SprMain.sg3", img_id - 683)
+			else:
+				return get_sg_texture("Pharaoh_Unloaded.sg3", img_id)
 			
 			
 #			if img_id <= 200:
@@ -427,6 +449,7 @@ func get_gameset_sg_texture(img_id: int):
 #				return ["Pharaoh_General.sg3", img_id - 11706]
 #			elif img_id <= 14252:
 #				return ["Pharaoh_Terrain.sg3", img_id - 14252]
+			Log.error(self, GlobalScope.Error.ERR_DOES_NOT_EXIST, "image id '%s' could not be resolved" % [img_id])
 			
 		_:
 			Log.error(self, GlobalScope.Error.ERR_METHOD_NOT_FOUND, "game set '%s' is not implemented" % [GAME_SET])

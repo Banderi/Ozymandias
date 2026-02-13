@@ -1619,12 +1619,24 @@ margin_bottom = 24.0
 min_value = -1.0
 max_value = 1e+08
 
+[node name="BtnRedrawMap" type="Button" parent="Debug/DEBUG_BTNS"]
+margin_left = 277.0
+margin_right = 367.0
+margin_bottom = 24.0
+text = "Redraw map"
+
 [node name="TextureRect" type="TextureRect" parent="Debug"]
+margin_left = 218.0
+margin_top = 36.0
+margin_right = 258.0
+margin_bottom = 76.0
+
+[node name="ColorRect" type="ColorRect" parent="Debug/TextureRect"]
 visible = false
-margin_left = 308.0
-margin_top = 146.0
-margin_right = 348.0
-margin_bottom = 186.0
+show_behind_parent = true
+margin_right = 40.0
+margin_bottom = 40.0
+color = Color( 0, 0, 0, 1 )
 
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnPlay" to="Menus/Main" method="_on_BtnPlay_pressed"]
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnWebsite" to="Menus/Main" method="_on_BtnWebsite_pressed"]
@@ -1656,3 +1668,4 @@ margin_bottom = 186.0
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnPKWareTest" to="Debug" method="_on_BtnPKWareTest_pressed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnLoadAutosave" to="Debug" method="_on_BtnLoadAutosave_pressed"]
 [connection signal="value_changed" from="Debug/DEBUG_BTNS/BtnTestTerrainImages" to="Debug" method="_on_BtnTestTerrainImages_value_changed"]
+[connection signal="pressed" from="Debug/DEBUG_BTNS/BtnRedrawMap" to="Debug" method="_on_BtnRedrawMap_pressed"]

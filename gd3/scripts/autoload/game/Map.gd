@@ -72,6 +72,48 @@ enum TerrainFlags {
 	unk_8 =				1073741824,
 	unk_9 =				2147483648
 }
+enum EdgeFlags {
+	MASK_COLUMN = 7,
+	COLUMN_0 = 0,
+	COLUMN_1 = 1,
+	COLUMN_2 = 2,
+	COLUMN_3 = 3,
+	COLUMN_4 = 4,
+	COLUMN_5 = 5,
+	#
+	MASK_ROW = 56,
+	ROW_0 = 0,
+	ROW_1 = 8,
+	ROW_2 = 16,
+	ROW_3 = 24,
+	ROW_4 = 32,
+	ROW_5 = 56,
+	#
+	DRAW_TILE = 64,
+	NATIVE_LAND = 128
+}
+enum BitFlags {
+	MASK_SIZE = 15,
+	SIZE_1 = 0,
+	SIZE_2 = 1,
+	SIZE_3 = 2,
+	SIZE_4 = 3,
+	SIZE_5 = 4,
+	SIZE_6 = 5,
+	SIZE_7 = 6,
+	SIZE_8 = 7,
+	SIZE_9 = 8,
+	#
+	CONSTRUCTION = 16,
+	ALTERNATE_TERRAIN = 32,
+	DELETED = 64,
+#    BIT_NO_PLAZA = 127,
+	PLAZA_OR_EARTHQUAKE = 128,
+#    BIT_NO_CONSTRUCTION_AND_DELETED = 175,
+#    BIT_NO_DELETED = 191,
+#    BIT_NO_CONSTRUCTION = 239,
+#    BIT_NO_SIZES = 240,
+}
 
 func set_tileset(flats: TileSet, anims: TileSet): # does this require node setup in tree..?
 	TILEMAP_FLAT.tile_set = flats
@@ -82,6 +124,12 @@ func set_grid(grid_name, x, y, value):
 #	grids[grid_name].set_cell(x, y, value)
 	# TODO
 	return true
+
+func redraw():
+	var _t = Stopwatch.start()
+	if !GridsMono.RedrawMap(TILEMAP_FLAT, grids): # around ~360 ms (120 ms afterwards)
+		return Log.error(self, GlobalScope.Error.FAILED, "(GridsMono) could not set TileMap")
+	Stopwatch.stop(self, _t, "GridsMono -> RedrawMap")
 
 var city_orientation = 0
 var city_view_camera_x = 0
