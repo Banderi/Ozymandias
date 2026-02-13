@@ -135,7 +135,6 @@ func file_exists(path: String):
 	var file = File.new()
 	return file.file_exists(path)
 func find_file_recursive(path: String, file_name: String, dir = null): # this REQUIRES a naked filename AND path.
-	
 	# open dir at path
 	if dir == null:
 		dir = Directory.new()
