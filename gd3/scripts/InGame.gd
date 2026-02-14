@@ -1,6 +1,6 @@
 extends Node2D
 
-# cursor
+# cursor -- TODO: move to separate Cursor script?
 enum CursorShapes { # TODO
 }
 enum CursorStates {
@@ -8,7 +8,7 @@ enum CursorStates {
 }
 var cursor_state = CursorStates.Nothing
 
-# camera
+# camera inputs
 onready var CAMERA = $Camera2D
 onready var camera_position_target = CAMERA.position
 onready var camera_zoom_target = 1.0
@@ -20,12 +20,22 @@ func camera_movements(event):
 #				pass
 	if event is InputEventMouseButton:
 		if event.pressed:
+			
+			# save previous zoom / position params
+			var pointer_delta_from_center = get_local_mouse_position() - camera_position_target
+			var prev_zoom = camera_zoom_target
+			
+			# zoom?
 			var zstep_coeff = 1.5
 			if event.button_index == BUTTON_WHEEL_DOWN:
 				camera_zoom_target *= zstep_coeff
 			if event.button_index == BUTTON_WHEEL_UP:
 				camera_zoom_target /= zstep_coeff
 			camera_zoom_target = clamp(camera_zoom_target, pow(1/zstep_coeff, 4), pow(zstep_coeff, 4))
+			
+			# adjust camera position so that the zoom is applied around the cursor's aim
+			if camera_zoom_target != prev_zoom:
+				camera_position_target -= pointer_delta_from_center * (camera_zoom_target - prev_zoom) / prev_zoom
 	
 		if event.button_index == BUTTON_MIDDLE || event.button_index == BUTTON_RIGHT: # TODO: use key settings
 			if camera_previous_game_coords == null && event.pressed:
@@ -33,10 +43,12 @@ func camera_movements(event):
 			elif camera_previous_game_coords != null && !event.pressed:
 				camera_previous_game_coords = null
 
+# mouse click position params (saved per button)
 var last_click_game_coords = [null, null, null]
 var last_click_mousepos = [null, null, null]
 var current_click_game_coords = [null, null, null]
 var current_click_mousepos = [null, null, null]
+var mouse_worldpos = null
 func update_mouse_press_coords(button_id):
 	var i = button_id - 1
 	var coords = null
@@ -64,7 +76,9 @@ func _input(event):
 		camera_movements(event)
 
 func _process(delta):
+#	mouse_worldpos = get_local_mouse_position()
 	if Game.STATE == Game.States.Ingame:
+		mouse_worldpos = get_local_mouse_position()
 		
 		# camera zoom - TODO: setting for enabling smooth zoom
 #		CAMERA.zoom = Viewports.clampdamp(CAMERA.zoom, Vector2.ONE * camera_zoom_target, 5.0, delta)
@@ -98,3 +112,6 @@ func _process(delta):
 		camera_position_target.y = clamp(camera_position_target.y, 1250, 5750) # 0, 7000
 		
 		CAMERA.position = Vector2(stepify(camera_position_target.x, camera_zoom_target), stepify(camera_position_target.y, camera_zoom_target))
+	
+	else:
+		mouse_worldpos = null

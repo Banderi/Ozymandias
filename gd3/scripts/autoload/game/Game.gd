@@ -138,7 +138,6 @@ func load_game(path):
 		
 		Map.redraw()
 		
-		
 		STATE = States.Ingame
 		close_all_menus()
 		
@@ -546,14 +545,16 @@ func enscribe_SAV():
 
 #############
 
-
 var tick = 0
 var day = 0
 var month = 0
 var year = 0
 var total_ticks = 0
 var total_days = 0
+
+var t = 0
 func game_loop(delta):
+	t += delta
 #	for i in debug_test_spinbox.value:
 #		ticks += 1
 	pass
@@ -570,7 +571,7 @@ func _ready():
 	MENUS_ROOT.show()
 	DEBUG_ROOT.show()
 	
-	debug_test_button.connect("pressed", self, "_on_DebugTestBtn_Pressed")
+#	debug_test_button.connect("pressed", self, "_on_DebugTestBtn_Pressed")
 	
 #	Assets.load_locales()
 #	Assets.load_tilesets()
@@ -603,57 +604,10 @@ func _ready():
 #	yield(get_tree(), "idle_frame")
 	Game.load_game("res://../tests/autosave.sav")
 #	STATE = States.Ingame
-	close_all_menus()
+#	close_all_menus()
 
 
-onready var debug_label = DEBUG_ROOT.get_node("DEBUG_LABEL")
-onready var debug_fps_label = DEBUG_ROOT.get_node("DEBUG_FPS")
-onready var debug_test_label = DEBUG_ROOT.get_node("DEBUG_LABEL2")
-onready var debug_test_spinbox = debug_test_label.get_node("SpinBox")
-onready var debug_test_button = debug_test_label.get_node("Button")
-
-var last_fps = 60
-var test_adj = 1
-func _on_DebugTestBtn_Pressed():
-	pass
-func tick_maxfps_test(delta):
-	if (1.0 / delta) < 59.8:
-		test_adj = min(test_adj - 10, 0)
-	else:
-		test_adj = max(test_adj + 1, 0)
-	debug_test_spinbox.value += test_adj
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-var t = 0
 func _process(delta):
-	t += delta
-#	if t > 1:
-#		TranslationServer.set_locale("en")
-#	if t > 2:
-#		t = 0
-#		TranslationServer.set_locale("it")
-
 	game_loop(delta)
-
-	# debug prints
-	var debug_text = "[color=#888888]Ozymandias Godot3.6 v0.2[/color]\n"
-	debug_text += "[color=#888888]game_state:[/color]       %s\n" % [Log.get_enum_string(States, STATE)]
-	debug_text += "[color=#888888]last_menu:[/color]        %s\n" % [debug_last_menu]
-	debug_text += "[color=#888888]current_family:[/color]   %s\n" % [Family.current_family]
-	debug_text += "[color=#888888]families:[/color]         %s\n" % [Family.data.size()]
-	#
-	debug_text += "[color=#888888]camera:[/color]              %s\n" % [INGAME_ROOT.camera_position_target]
-	debug_text += "[color=#888888]zoom:[/color]                %s\n" % [INGAME_ROOT.camera_zoom_target]
-	debug_text += "[color=#888888]curr_click_mouse:[/color]    %s\n" % [INGAME_ROOT.current_click_game_coords]
-	debug_text += "[color=#888888]last_click_mouse:[/color]    %s\n" % [INGAME_ROOT.last_click_game_coords]
-	debug_text += "[color=#888888]last_click_camera:[/color]   %s\n" % [INGAME_ROOT.camera_previous_game_coords]
-	
-	if debug_label.bbcode_text != debug_text:
-		debug_label.bbcode_text = debug_text
-	
-	last_fps = Engine.get_frames_per_second()
-	debug_fps_label.text = str(last_fps, " FPS")
-	
-	if debug_test_label.visible:
-		debug_test_label.text = "%s (%s)\n%s" % [delta, 1.0 / delta, total_ticks]
-		tick_maxfps_test(delta)

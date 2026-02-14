@@ -21,13 +21,22 @@ func _on_BtnTestTerrainImages_value_changed(value):
 #	$TextureRect.texture = Assets.get_sg_texture("Pharaoh_Terrain.sg3", value)
 	$TextureRect.texture = Assets.get_gameset_sg_texture(value)
 
-func _ready():
-	yield(Assets, "ready")
-#	$TextureRect.texture = Assets.get_sg_texture("Pharaoh_General.sg3", 260)
-	$DEBUG_LABEL3.bbcode_text = ""
+
+func _on_BtnRedrawMap_pressed():
+	Map.redraw()
+
+onready var DEBUG_FPS = $DEBUG_FPS
+onready var DEBUG_LABEL = $DEBUG_LABEL
+onready var DEBUG_LABEL2 = $DEBUG_LABEL2
 
 onready var CURSOR = Game.INGAME_ROOT.get_node("CURSOR")
+var debug_display_mode = 1
 func _input(event):
+	
+	if Input.is_action_just_pressed("debug_cycle"):
+		debug_display_mode = (debug_display_mode + 1) % 3
+	
+
 	if Game.STATE == Game.States.Ingame:
 		if event is InputEventMouseMotion:
 			var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position()
@@ -35,11 +44,10 @@ func _input(event):
 			
 			var tile_text = ""
 			if Rect2(0, 0, Map.PH_MAP_WIDTH, Map.PH_MAP_WIDTH).has_point(tile_coords):
-				CURSOR.position = Map.TILEMAP_FLAT.map_to_world(tile_coords)
+				CURSOR.position = Map.TILEMAP_FLAT.map_to_world(tile_coords) # TODO: move do InGame / separate Cursor logic
 				CURSOR.show()
 			
 				tile_text += "tile: %s\n" % [tile_coords]
-#				tile_text += "[color=#ffcc00]image:[/color]      %d\n" % [Map.TILEMAP_FLAT.get_cellv(tile_coords)]
 				tile_text += "[color=#ffcc00]image:[/color]      %d\n" % [Map.grids.images[tile_coords.y][tile_coords.x]]
 				tile_text += "[color=#ffcc00]edge:[/color]       %d\n" % [Map.grids.edge[tile_coords.y][tile_coords.x]]
 				tile_text += "[color=#ffcc00]buildings:[/color]  %d\n" % [Map.grids.buildings[tile_coords.y][tile_coords.x]]
@@ -87,6 +95,28 @@ func _input(event):
 				$DEBUG_LABEL3.bbcode_text = tile_text
 			$DEBUG_LABEL3.rect_position = $DEBUG_LABEL3.get_global_mouse_position() - Vector2(100, 200)
 
+var last_fps = 60
+func _process(delta):
+	
+	# debug prints
+	var debug_text = "[color=#888888]Ozymandias Godot3.6 v0.2[/color]\n"
+	debug_text += "[color=#888888]game_state:[/color]       %s\n" % [Log.get_enum_string(Game.States, Game.STATE)]
+	debug_text += "[color=#888888]last_menu:[/color]        %s\n" % [Game.debug_last_menu]
+	debug_text += "[color=#888888]current_family:[/color]   %s\n" % [Family.current_family]
+	debug_text += "[color=#888888]families:[/color]         %s\n" % [Family.data.size()]
+	#
+	debug_text += "[color=#888888]zoom:[/color]                %s\n" % [Game.INGAME_ROOT.camera_zoom_target]
+	debug_text += "[color=#888888]camera:[/color]              %s\n" % [Game.INGAME_ROOT.camera_position_target]
+	debug_text += "[color=#888888]mouse_worldpos:[/color]      %s\n" % [Game.INGAME_ROOT.mouse_worldpos]
+	debug_text += "[color=#888888]curr_click_mouse:[/color]    %s\n" % [Game.INGAME_ROOT.current_click_game_coords]
+	debug_text += "[color=#888888]last_click_mouse:[/color]    %s\n" % [Game.INGAME_ROOT.last_click_game_coords]
+	debug_text += "[color=#888888]last_click_camera:[/color]   %s\n" % [Game.INGAME_ROOT.camera_previous_game_coords]
+	
+	if DEBUG_LABEL.bbcode_text != debug_text:
+		DEBUG_LABEL.bbcode_text = debug_text
+	
+	last_fps = Engine.get_frames_per_second()
+	DEBUG_FPS.text = str(last_fps, " FPS")
 
-func _on_BtnRedrawMap_pressed():
-	Map.redraw()
+func _ready():
+	$DEBUG_LABEL3.bbcode_text = ""
