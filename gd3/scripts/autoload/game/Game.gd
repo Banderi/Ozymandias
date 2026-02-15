@@ -137,6 +137,7 @@ func load_game(path):
 			return false
 		
 		Map.redraw()
+		Figures.spawn_sprites()
 		
 		STATE = States.Ingame
 		close_all_menus()
@@ -586,7 +587,7 @@ func _ready():
 	
 #	go_to_menu("Splash")
 #	go_to_menu("FamilySelection")
-	go_to_menu("GameSelection", "Banhutep")
+#	go_to_menu("GameSelection", "Banhutep")
 #	popup_menu("SavegameSelection", false)
 #	go_to_menu("TextureRect2")
 #	go_to_menu("Control2")

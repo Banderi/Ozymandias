@@ -70,3 +70,102 @@ FE_CustomGame.BMP    : 657  0    200  0    0    1024 768  0        0        0   
 FE_History.BMP       : 658  80   200  0    0    1024 768  0        0        0        1    0    0    0    0    1   0  
 dialougedrawing.bmp  : 659  0    2300 31   18   467  202  0        0        0        0    0    0    0    0    1   0  
 dialougedrawing2.BMP : 682  0    1452 184  2653 164  186  0        0        0        0    0    0    0    0    1   0
+
+
+
+
+
+
+
+
+
+
+
+
+grid 'images'             ms taken:   1  10 (11  total) 
+grid 'edge'               ms taken:   0   7 (6   total) 
+grid 'buildings'          ms taken:   0   9 (8   total) 
+grid 'terrain'            ms taken:   0   8 (8   total) 
+grid 'aqueduct'           ms taken:   0   6 (5   total) 
+grid 'figures'            ms taken:   0   8 (8   total) 
+grid 'bitfields'          ms taken:   0   7 (6   total) 
+grid 'sprites'            ms taken:   0   7 (6   total) 
+grid 'random'             ms taken:   0   6 (5   total) >> not compressed <<
+grid 'desirability'       ms taken:   0   7 (6   total) 
+grid 'elevation'          ms taken:   0   6 (5   total) 
+grid 'building_dmg'       ms taken:   0   7 (7   total) 
+grid 'aqueduct_bak'       ms taken:   0   7 (6   total) 
+grid 'sprite_bak'         ms taken:   0   6 (5   total) 
+grid 'fertility'          ms taken:   0   6 (5   total) >> not compressed <<
+grid 'vegetation_growth'  ms taken:   0   7 (6   total) >> not compressed <<
+grid 'unk_grid03'         ms taken:   0   7 (7   total) 
+grid 'unk_grid04'         ms taken:   0   6 (6   total) 
+grid 'moisture'           ms taken:   0   6 (5   total) 
+2026/02/14 21:58:50 -- [Scribe]: time taken: (216 milliseconds)
+2026/02/14 21:58:51 -- [Map]: GridsMono -> RedrawMap (249 milliseconds)
+
+grid 'images'             ms taken:   2  10 (12  total) 
+grid 'edge'               ms taken:   0   7 (7   total) 
+grid 'buildings'          ms taken:   0   8 (8   total) 
+grid 'terrain'            ms taken:   1   8 (9   total) 
+grid 'aqueduct'           ms taken:   0   6 (5   total) 
+grid 'figures'            ms taken:   0   8 (7   total) 
+grid 'bitfields'          ms taken:   0   7 (7   total) 
+grid 'sprites'            ms taken:   0   6 (6   total) 
+grid 'random'             ms taken:   0   6 (5   total) >> not compressed <<
+grid 'desirability'       ms taken:   0   6 (5   total) 
+grid 'elevation'          ms taken:   0   6 (6   total) 
+grid 'building_dmg'       ms taken:   0   8 (7   total) 
+grid 'aqueduct_bak'       ms taken:   0   8 (7   total) 
+grid 'sprite_bak'         ms taken:   0   6 (5   total) 
+grid 'fertility'          ms taken:   0   6 (5   total) >> not compressed <<
+grid 'vegetation_growth'  ms taken:   0   7 (6   total) >> not compressed <<
+grid 'unk_grid03'         ms taken:   0   8 (8   total) 
+grid 'unk_grid04'         ms taken:   0   7 (7   total) 
+grid 'moisture'           ms taken:   0   6 (6   total) 
+2026/02/14 22:01:06 -- [Scribe]: time taken: (234 milliseconds)
+2026/02/14 22:01:06 -- [Map]: GridsMono -> RedrawMap (273 milliseconds)
+
+grid 'images'             ms taken:   2  11 (13  total) 
+grid 'edge'               ms taken:   0   8 (7   total) 
+grid 'buildings'          ms taken:   0  10 (10  total) 
+grid 'terrain'            ms taken:   0  11 (11  total) 
+grid 'aqueduct'           ms taken:   0   7 (7   total) 
+grid 'figures'            ms taken:   0   9 (8   total) 
+grid 'bitfields'          ms taken:   0   7 (6   total) 
+grid 'sprites'            ms taken:   0   7 (6   total) 
+grid 'random'             ms taken:   0   7 (6   total) >> not compressed <<
+grid 'desirability'       ms taken:   0   7 (7   total) 
+grid 'elevation'          ms taken:   0   8 (7   total) 
+grid 'building_dmg'       ms taken:   0   9 (9   total) 
+grid 'aqueduct_bak'       ms taken:   0   8 (7   total) 
+grid 'sprite_bak'         ms taken:   0   7 (6   total) 
+grid 'fertility'          ms taken:   0  10 (9   total) >> not compressed <<
+grid 'vegetation_growth'  ms taken:   0  10 (9   total) >> not compressed <<
+grid 'unk_grid03'         ms taken:   1   8 (9   total) 
+grid 'unk_grid04'         ms taken:   0   7 (7   total) 
+grid 'moisture'           ms taken:   0   7 (6   total) 
+2026/02/14 21:59:57 -- [Scribe]: time taken: (255 milliseconds)
+2026/02/14 21:59:57 -- [Map]: GridsMono -> RedrawMap (292 milliseconds)
+
+grid 'images'             ms taken:   1  12 (13  total) 
+grid 'edge'               ms taken:   0   8 (7   total) 
+grid 'buildings'          ms taken:   0  10 (9   total) 
+grid 'terrain'            ms taken:   0   9 (9   total) 
+grid 'aqueduct'           ms taken:   0   7 (7   total) 
+grid 'figures'            ms taken:   0   9 (8   total) 
+grid 'bitfields'          ms taken:   0   8 (7   total) 
+grid 'sprites'            ms taken:   0   7 (6   total) 
+grid 'random'             ms taken:   0   7 (6   total) >> not compressed <<
+grid 'desirability'       ms taken:   0   7 (6   total) 
+grid 'elevation'          ms taken:   0   7 (6   total) 
+grid 'building_dmg'       ms taken:   0   8 (8   total) 
+grid 'aqueduct_bak'       ms taken:   0   8 (7   total) 
+grid 'sprite_bak'         ms taken:   0   7 (6   total) 
+grid 'fertility'          ms taken:   0   7 (6   total) >> not compressed <<
+grid 'vegetation_growth'  ms taken:   0   7 (6   total) >> not compressed <<
+grid 'unk_grid03'         ms taken:   0   9 (9   total) 
+grid 'unk_grid04'         ms taken:   0   7 (6   total) 
+grid 'moisture'           ms taken:   0   7 (7   total) 
+2026/02/14 22:00:37 -- [Scribe]: time taken: (237 milliseconds)
+2026/02/14 22:00:37 -- [Map]: GridsMono -> RedrawMap (256 milliseconds)

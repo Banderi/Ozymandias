@@ -25,44 +25,118 @@ public class Grids_mono : Node
 		raw
 	}
 
-	public bool SetGrid(Godot.Collections.Array grid, byte[] data, int format)
+	public bool SetGridFromBytes(Godot.Collections.Array grid, byte[] data, int grid_size, int format)
 	{
 		grid.Clear();
+		grid.Resize(grid_size);
 		BinaryReader stream = new BinaryReader(new MemoryStream(data));
-		for (int y = 0; y < PH_MAP_WIDTH; y++)
-		{
-			Godot.Collections.Array row = new Godot.Collections.Array();
-			for (int x = 0; x < PH_MAP_WIDTH; x++)
-			{
-				Int64 value = 0;
-				switch ((ScribeFormat)format)
+
+		// This BARELY improves the code speeds by any amount -- but I'll leave it here.
+		switch ((ScribeFormat)format){
+			case ScribeFormat.u8:
+				for (int y = 0; y < PH_MAP_WIDTH; y++)
 				{
-					case ScribeFormat.u8:
-						value = stream.ReadByte();
-						break;
-					case ScribeFormat.i8:
-						value = stream.ReadSByte();
-						break;
-					case ScribeFormat.u16:
-						value = stream.ReadUInt16();
-						break;
-					case ScribeFormat.i16:
-						value = stream.ReadInt16();
-						break;
-					case ScribeFormat.u32:
-						value = stream.ReadUInt32();
-						break;
-					case ScribeFormat.i32:
-						value = stream.ReadInt32();
-						break;
-					default:
-						break;
+					Godot.Collections.Array row = new Godot.Collections.Array();
+					row.Resize(grid_size);
+					for (int x = 0; x < PH_MAP_WIDTH; x++)
+						row[x] = stream.ReadByte();
+					grid[y] = row;
 				}
-				row.Add(value);
-			}
-			grid.Add(row);
+				break;
+			case ScribeFormat.i8:
+				for (int y = 0; y < PH_MAP_WIDTH; y++)
+				{
+					Godot.Collections.Array row = new Godot.Collections.Array();
+					row.Resize(grid_size);
+					for (int x = 0; x < PH_MAP_WIDTH; x++)
+						row[x] = stream.ReadSByte();
+					grid[y] = row;
+				}
+				break;
+			case ScribeFormat.u16:
+				for (int y = 0; y < PH_MAP_WIDTH; y++)
+				{
+					Godot.Collections.Array row = new Godot.Collections.Array();
+					row.Resize(grid_size);
+					for (int x = 0; x < PH_MAP_WIDTH; x++)
+						row[x] = stream.ReadUInt16();
+					grid[y] = row;
+				}
+				break;
+			case ScribeFormat.i16:
+				for (int y = 0; y < PH_MAP_WIDTH; y++)
+				{
+					Godot.Collections.Array row = new Godot.Collections.Array();
+					row.Resize(grid_size);
+					for (int x = 0; x < PH_MAP_WIDTH; x++)
+						row[x] = stream.ReadInt16();
+					grid[y] = row;
+				}
+				break;
+			case ScribeFormat.u32:
+				for (int y = 0; y < PH_MAP_WIDTH; y++)
+				{
+					Godot.Collections.Array row = new Godot.Collections.Array();
+					row.Resize(grid_size);
+					for (int x = 0; x < PH_MAP_WIDTH; x++)
+						row[x] = stream.ReadUInt32();
+					grid[y] = row;
+				}
+				break;
+			case ScribeFormat.i32:
+				for (int y = 0; y < PH_MAP_WIDTH; y++)
+				{
+					Godot.Collections.Array row = new Godot.Collections.Array();
+					row.Resize(grid_size);
+					for (int x = 0; x < PH_MAP_WIDTH; x++)
+						row[x] = stream.ReadInt32();
+					grid[y] = row;
+				}
+				break;
+			default:
+				return false;
 		}
+
+		// for (int y = 0; y < PH_MAP_WIDTH; y++)
+		// {
+		// 	Godot.Collections.Array row = new Godot.Collections.Array();
+		// 	row.Resize(grid_size);
+		// 	for (int x = 0; x < PH_MAP_WIDTH; x++)
+		// 	{
+		// 		Int64 value = 0;
+		// 		switch ((ScribeFormat)format)
+		// 		{
+		// 			case ScribeFormat.u8:
+		// 				value = stream.ReadByte();
+		// 				break;
+		// 			case ScribeFormat.i8:
+		// 				value = stream.ReadSByte();
+		// 				break;
+		// 			case ScribeFormat.u16:
+		// 				value = stream.ReadUInt16();
+		// 				break;
+		// 			case ScribeFormat.i16:
+		// 				value = stream.ReadInt16();
+		// 				break;
+		// 			case ScribeFormat.u32:
+		// 				value = stream.ReadUInt32();
+		// 				break;
+		// 			case ScribeFormat.i32:
+		// 				value = stream.ReadInt32();
+		// 				break;
+		// 			default:
+		// 				break;
+		// 		}
+		// 		row[x] = value;
+		// 	}
+		// 	grid[y] = row;
+		// }
 		return true;
+	}
+	public byte[] GetBytesFromGrid(Godot.Collections.Array grid, int grid_size, int format)
+	{
+		// byte[] stream = new byte[0]; // TODO
+		return null;
 	}
 	public bool RedrawMap(TileMap map, Godot.Collections.Dictionary grids)
 	{

@@ -40,7 +40,7 @@ func create_folder(path: String):
 			Log.error(null,err,str("could not create directory at '",path,"'"))
 			return false
 	return true
-func write(path: String, data, create_folder_if_missing = true, suppress_log: bool = false, password: String = ""):
+func write(path: String, data, suppress_log: bool = false, create_folder_if_missing: bool = true, password: String = ""):
 	var err = -1
 
 	# check path

@@ -26,21 +26,25 @@ func format_size(format):
 
 # SCRIBE
 var _path = null
-var _handle: File = null
+var _handle: FileEx = null
 var _filesize = null
 var _flags = null
+var _op_counts = 0 # debugging counter
 func bail(err, msg) -> bool:
 	Log.error(self, err, msg)
 	close()
 	assert(false)
 	return false
 func open(flags, path, offset = 0):
-	_handle = File.new()
+	var f = File.new()
+	f.set_script(preload("res://scripts/classes/FileEx.gd"))
+	_handle = f as FileEx
 	var r = _handle.open(path, flags)
 	if r != OK:
 		return bail(r, str("could not open file handle '",path,"'"))
 	_flags = flags
 	_filesize = _handle.get_len()
+	_op_counts = 0
 	Log.generic("Scribe", "opening \"%s\" (%s bytes)" % [path, _filesize])
 	var _r = goto_offset(offset)
 	return true
@@ -156,34 +160,25 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 	
 	return true
 
-#var __i = 0
-
 # compressed chunk stack ops and I/O helpers
-var _compressed_stack = []
-var _compressed_top = null
-var _compressed_ptr = null
-func push_compressed(expected_size) -> bool: # new bytestream buffer (empty on WRITE, decompress from file handle on READ)
+var _compressed_stack = [] # stack of StreamPeerBuffer objects as interface for BytePoolArrays
+var _compressed_top: StreamPeerBuffer = null # ref to top StreamPeerBuffer (equivalent to _compressed_stack[-1])
+func push_compressed(expected_size: int) -> bool: # new bytestream buffer (empty on WRITE, decompress from file handle on READ)
+	var _stream = StreamPeerBuffer.new()
 	if _flags == File.READ:
 		var c_size = _handle.get_32()
 		if c_size == 0x80000000:
-			var raw = _handle.get_buffer(expected_size)
-			_compressed_stack.push_back(raw)
+			_stream.data_array = _handle.get_buffer(expected_size)
 		else:
 			var raw = _handle.get_buffer(c_size)
-			
-#			var fp = IO.open("G:/tests2/"+str(__i), File.WRITE) as File
-#			fp.store_buffer(raw)
-#			__i += 1
-			
 			var uncompressed = PKWareMono.Inflate(raw, expected_size)
 			if uncompressed == null || uncompressed.size() != expected_size:
 				return bail(GlobalScope.Error.ERR_SCRIPT_FAILED, "PKWare decompression failed")
-			_compressed_stack.push_back(uncompressed)
-	else:
-		_compressed_stack.push_back([] as PoolByteArray)
+			IO.write("user://DEV_TESTING/zip/%d" % [_op_counts], uncompressed, true)
+			_stream.data_array = uncompressed
 	# -------------- stack pointers
+	_compressed_stack.push_back(_stream)
 	_compressed_top = _compressed_stack[-1]
-	_compressed_ptr = 0
 	return true
 func pop_compressed() -> bool: # compress and write top bytestream to file on WRITE, or discard on READ
 	var bytes = _compressed_stack.pop_back()
@@ -196,56 +191,60 @@ func pop_compressed() -> bool: # compress and write top bytestream to file on WR
 	# -------------- stack pointers
 	if _compressed_stack.size() > 0:
 		_compressed_top = _compressed_stack[-1]
-		_compressed_ptr = 0
 	else:
 		_compressed_top = null
-		_compressed_ptr = null
 	return true
 
 # helper I/O for grids (encapsulates push/pop_compressed and put ops)
-func put_grid(key, compressed: bool, format, grid_width: int = Map.PH_MAP_WIDTH, default = 0) -> bool:
+func put_grid(grid_name: String, compressed: bool, format, grid_width: int = Map.PH_MAP_WIDTH, default = 0) -> bool:
 	var _t = Stopwatch.start()
+	
+	# prepare stack buffer
 	var grid_size = grid_width * grid_width
 	var raw_size = grid_size * format_size(format)
 	if compressed && !push_compressed(raw_size):
 		return false # the above already bails on fail
-	var _t_1 = Stopwatch.query(_t, Stopwatch.Milliseconds)
-	# expected: between 30-60 (smaller ones) and ~140-240 (larger ones)
+	var _t_1 = Stopwatch.query(_t, Stopwatch.Milliseconds) # expected: 0~2 ms
 	
+	# grid bytestream conversion
 	if _flags == File.READ:
-		var stream = null
+		var bytes = null
 		if compressed:
-			stream = _compressed_top
+			var r = _compressed_top.get_partial_data(raw_size)
+			if r[0] != OK:
+				return bail(r[0], "could not read from _compressed_top (StreamBuffer)")
+			bytes = r[1]
+			if bytes.size() != raw_size: # how would this even happen ????
+				return bail(GlobalScope.Error.FAILED, "read %d bytes from StreamBuffer but expected %d" % [bytes.size(), raw_size])
 		else:
-			stream = _handle.get_buffer(raw_size)
-		
-		if !GridsMono.SetGrid(Map.grids[key], stream, format):
+			bytes = _handle.get_buffer(raw_size)
+		if !GridsMono.SetGridFromBytes(Map.grids[grid_name], bytes, Map.PH_MAP_WIDTH, format):
 			return bail(GlobalScope.Error.FAILED, "(GridsMono) could not fill grid")
-		assert(Map.grids[key].size() == Map.PH_MAP_WIDTH)
-#		if key == "images":
-##			Map.TILEMAP_FLAT.clear() # unnecessary
-#			Map.TILEMAP_ANIM.clear()
-#			if !GridsMono.SetMap(Map.TILEMAP_FLAT, stream, format):
-#				return bail(GlobalScope.Error.FAILED, "(GridsMono) could not set TileMap")
 	else:
+		var bytes = GridsMono.GetBytesFromGrid(Map.grids[grid_name], Map.PH_MAP_WIDTH, format) # TODO
+		if bytes == null:
+			return bail(GlobalScope.Error.FAILED, "(GridsMono) could not dump grid")
 		if compressed:
-			pass
+			var r =_compressed_top.put_data(bytes)
+			if r != OK:
+				return bail(r, "could not push into _compressed_top (StreamBuffer)")
 		else:
-			pass
-	var _t_2 = Stopwatch.query(_t, Stopwatch.Milliseconds)
-	# expected: ??
+			_handle.store_buffer(bytes)
+	var _t_2 = Stopwatch.query(_t, Stopwatch.Milliseconds) # expected: 5~10 ms
 	
+	# pop stack buffer
 	if compressed && !pop_compressed():
 		return false # the above already bails on fail
-	
 	var _t_3 = Stopwatch.query(_t, Stopwatch.Milliseconds)
+	
 	print("grid %-20s ms taken: %3d %3d (%-3d total) %s" % [
-		"'" + key + "'",
+		"'" + grid_name + "'",
 		_t_1 + (_t_3 - _t_2),	# push & pop
 		_t_2 - _t_1,			# SetGrid loop
 		_t_3,					# final tally
 		"" if compressed else ">> not compressed <<"
 	])
+	_op_counts += 1
 	return true
 
 # primary I/O
@@ -268,9 +267,9 @@ func put(key, format, format_extra = null, default = 0) -> bool:
 		if _curr_record_ref.size() <= key:
 			_curr_record_ref.push_back(default)
 	
-	if _compressed_top == null:
+	if _compressed_top == null: # uncompressed data
 		if _flags == File.READ:
-			if _handle.eof_reached() || _handle.get_position() >= _handle.get_len():
+			if _handle.end_reached():
 				return bail(GlobalScope.Error.ERR_FILE_EOF, "file end reached")
 			match format: # Godot File ops, by default, are UNSIGNED
 				ScribeFormat.i8:
@@ -309,9 +308,51 @@ func put(key, format, format_extra = null, default = 0) -> bool:
 					_handle.store_buffer(buffer_padded(_curr_record_ref[key].to_utf8(), format_extra)) # same as store_string()...?
 				ScribeFormat.raw:
 					_handle.store_buffer(_curr_record_ref[key])
-	else:
-		print("[Scribe]: tried to '%s' for '%s' bytes (%s)" % [_flags, format_size(format), format])
-	
+	else: # compressed buffer I/O
+		if _flags == File.READ:
+			if _compressed_top.get_available_bytes() < max(format_size(format), format_extra):
+				return bail(GlobalScope.Error.ERR_FILE_EOF, "compressed buffer end reached")
+			match format: # Godot File ops, by default, are UNSIGNED
+				ScribeFormat.i8:
+					_curr_record_ref[key] = (_compressed_top.get_8() + 128) % 256 - 128
+				ScribeFormat.u8:
+					_curr_record_ref[key] = _compressed_top.get_8()
+				ScribeFormat.i16:
+					_curr_record_ref[key] = (_compressed_top.get_16() + 256) % 512 - 256
+				ScribeFormat.u16:
+					_curr_record_ref[key] = _compressed_top.get_16()
+				ScribeFormat.i32:
+					_curr_record_ref[key] = (_compressed_top.get_32() + 512) % 1024 - 512
+				ScribeFormat.u32:
+					_curr_record_ref[key] = _compressed_top.get_32()
+				
+				# BUG / DISCREPANCY: these will read as null-terminated, thus rewrites are NOT byte-matching past valid text data
+				ScribeFormat.ascii:
+					_curr_record_ref[key] = PoolByteArray(_compressed_top.get_partial_data(format_extra)).get_string_from_ascii()
+				ScribeFormat.utf8:
+					_curr_record_ref[key] = PoolByteArray(_compressed_top.get_partial_data(format_extra)).get_string_from_utf8()
+				ScribeFormat.raw:
+					_curr_record_ref[key] = PoolByteArray(_compressed_top.get_partial_data(format_extra))
+		else:
+			match format:
+				# these do not have an unsigned version (TODO?)
+				ScribeFormat.i8, ScribeFormat.u8:
+					_compressed_top.put_8(_curr_record_ref[key])
+				ScribeFormat.i16, ScribeFormat.u16:
+					_compressed_top.put_16(_curr_record_ref[key])
+				ScribeFormat.i32, ScribeFormat.u32:
+					_compressed_top.put_32(_curr_record_ref[key])
+
+				ScribeFormat.ascii:
+					_compressed_top.put_data(buffer_padded(_curr_record_ref[key].to_ascii(), format_extra))
+				ScribeFormat.utf8:
+					_compressed_top.put_data(buffer_padded(_curr_record_ref[key].to_utf8(), format_extra)) # same as store_string()...?
+				ScribeFormat.raw:
+					_compressed_top.put_data(_curr_record_ref[key])
+#		print("[Scribe]: tried to '%s' for '%s' bytes (%s)" % [_flags, format_size(format), format])
+		
+		
+	_op_counts += 1
 	return true
 
 func enscribe(path, operation, create_backup, enscriber_proc: FuncRef, enscriber_args: Array = []):
