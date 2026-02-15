@@ -162,20 +162,20 @@ func set_schema(): # TODO
 	pass
 func enscribe_schema():
 	Scribe.sync_record([debug_schema], TYPE_DICTIONARY)
-	Scribe.put("file_version", ScribeFormat.i32)
-	Scribe.put("chunks_schema", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "file_version")
+	Scribe.put(ScribeFormat.i32, "chunks_schema")
 	var chunks_beginning = Scribe._handle.get_position()
 	for i in range(debug_schema.chunks_schema):
 		var s = Scribe._handle.get_position()
 		Scribe.sync_record([debug_schema, "chunks", i], TYPE_DICTIONARY)
-		Scribe.put("compressed", ScribeFormat.u32)
-		Scribe.put("memory_offset", ScribeFormat.u8)
-		Scribe.put("memory_location", ScribeFormat.u16)
-		Scribe.put("unk03", ScribeFormat.u8)
-		Scribe.put("fields_size", ScribeFormat.u32)
-		Scribe.put("fields_num", ScribeFormat.u32)
-		Scribe.put("unk06", ScribeFormat.u16)
-		Scribe.put("unk07", ScribeFormat.u16)
+		Scribe.put(ScribeFormat.u32, "compressed")
+		Scribe.put(ScribeFormat.u8, "memory_offset")
+		Scribe.put(ScribeFormat.u16, "memory_location")
+		Scribe.put(ScribeFormat.u8, "unk03")
+		Scribe.put(ScribeFormat.u32, "fields_size")
+		Scribe.put(ScribeFormat.u32, "fields_num")
+		Scribe.put(ScribeFormat.u16, "unk06")
+		Scribe.put(ScribeFormat.u16, "unk07")
 		assert(Scribe._handle.get_position() == s + 20)
 		print("%03d: %s %6d %4d : %-6d %-5d %2d : %6d * %5d" % [
 			i,
@@ -188,33 +188,30 @@ func enscribe_schema():
 
 func enscribe_SAV():
 	Scribe.sync_record([Campaign.data, "headers"], TYPE_DICTIONARY) # TODO: move to "Scenario" singleton
-	Scribe.put("map_index", ScribeFormat.u8)
-	Scribe.put("campaign_index", ScribeFormat.u8)
-	Scribe.put("prev_progress_pointer", ScribeFormat.i8)
-	Scribe.put("mission_progress_pointer", ScribeFormat.i8)
+	Scribe.put(ScribeFormat.u8, "map_index")
+	Scribe.put(ScribeFormat.u8, "campaign_index")
+	Scribe.put(ScribeFormat.i8, "prev_progress_pointer")
+	Scribe.put(ScribeFormat.i8, "mission_progress_pointer")
 	enscribe_schema()
 	
 #	Scribe.sync_record([Map.grids], TYPE_DICTIONARY)
-	Scribe.put_grid("images", true, ScribeFormat.u32)
-	Scribe.put_grid("edge", true, ScribeFormat.i8)
-	Scribe.put_grid("buildings", true, ScribeFormat.i16)
-	Scribe.put_grid("terrain", true, ScribeFormat.u32)
-	Scribe.put_grid("aqueduct", true, ScribeFormat.u8)
-	Scribe.put_grid("figures", true, ScribeFormat.u16)
-	Scribe.put_grid("bitfields", true, ScribeFormat.u8)
-	Scribe.put_grid("sprites", true, ScribeFormat.u8)
-	Scribe.put_grid("random", false, ScribeFormat.u8)
-	Scribe.put_grid("desirability", true, ScribeFormat.u8)
-	Scribe.put_grid("elevation", true, ScribeFormat.u8)
-	Scribe.put_grid("building_dmg", true, ScribeFormat.i16)
-	Scribe.put_grid("aqueduct_bak", true, ScribeFormat.u8)
-	Scribe.put_grid("sprite_bak", true, ScribeFormat.u8)
+	Scribe.put_grid(ScribeFormat.u32, "images", true)
+	Scribe.put_grid(ScribeFormat.i8, "edge", true)
+	Scribe.put_grid(ScribeFormat.i16, "buildings", true)
+	Scribe.put_grid(ScribeFormat.u32, "terrain", true)
+	Scribe.put_grid(ScribeFormat.u8, "aqueduct", true)
+	Scribe.put_grid(ScribeFormat.u16, "figures", true)
+	Scribe.put_grid(ScribeFormat.u8, "bitfields", true)
+	Scribe.put_grid(ScribeFormat.u8, "sprites", true)
+	Scribe.put_grid(ScribeFormat.u8, "random", false)
+	Scribe.put_grid(ScribeFormat.u8, "desirability", true)
+	Scribe.put_grid(ScribeFormat.u8, "elevation", true)
+	Scribe.put_grid(ScribeFormat.i16, "building_dmg", true)
+	Scribe.put_grid(ScribeFormat.u8, "aqueduct_bak", true)
+	Scribe.put_grid(ScribeFormat.u8, "sprite_bak", true)
 	
-	Scribe.push_compressed(Figures.MAX_FIGURES * 388) # <---------------------------------- TODO
-#	for i in Figures.MAX_FIGURES:
-#		Scribe.sync_record([Figures.figures, i], TYPE_DICTIONARY)
-#		pass
-	Scribe.pop_compressed()
+	Figures.enscribe_figures()
+	
 	Scribe.push_compressed(Figures.MAX_ROUTES * 2) # <---------------------------------- TODO
 #	for i in Figures.MAX_ROUTES:
 #		Scribe.sync_record([Figures.routes, i], TYPE_DICTIONARY)
@@ -227,19 +224,19 @@ func enscribe_SAV():
 	Scribe.push_compressed(Figures.MAX_FORMATIONS * 144) # <---------------------------- TODO
 	Scribe.pop_compressed()
 	Scribe.sync_record([Figures], TYPE_OBJECT)
-	Scribe.put("last_used_formation", ScribeFormat.i32)
-	Scribe.put("last_formation_id", ScribeFormat.i32)
-	Scribe.put("total_formations", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "last_used_formation")
+	Scribe.put(ScribeFormat.i32, "last_formation_id")
+	Scribe.put(ScribeFormat.i32, "total_formations")
 	
 	# city data
 	Scribe.sync_record([City], TYPE_OBJECT)
 	Scribe.push_compressed(37808) # <----------------------------- TODO
 	Scribe.pop_compressed()
-	Scribe.put("unused_faction_flags1", ScribeFormat.i16)
-	Scribe.put("unused_faction_flags2", ScribeFormat.i16)
-	Scribe.put("player_name1", ScribeFormat.ascii, 32)
-	Scribe.put("player_name2", ScribeFormat.ascii, 32)
-	Scribe.put("city_faction", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i16, "unused_faction_flags1")
+	Scribe.put(ScribeFormat.i16, "unused_faction_flags2")
+	Scribe.put(ScribeFormat.ascii, "player_name1", 32)
+	Scribe.put(ScribeFormat.ascii, "player_name2", 32)
+	Scribe.put(ScribeFormat.i32, "city_faction")
 	
 	# buildings
 	Scribe.sync_record([Buildings], TYPE_OBJECT)
@@ -248,117 +245,117 @@ func enscribe_SAV():
 	
 	# camera orientation
 	Scribe.sync_record([Map], TYPE_OBJECT)
-	Scribe.put("city_orientation", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "city_orientation")
 	
 	# game time
 	Scribe.sync_record([self], TYPE_OBJECT)
-	Scribe.put("tick", ScribeFormat.i32)
-	Scribe.put("day", ScribeFormat.i32)
-	Scribe.put("month", ScribeFormat.i32)
-	Scribe.put("year", ScribeFormat.i32)
-	Scribe.put("total_days", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "tick")
+	Scribe.put(ScribeFormat.i32, "day")
+	Scribe.put(ScribeFormat.i32, "month")
+	Scribe.put(ScribeFormat.i32, "year")
+	Scribe.put(ScribeFormat.i32, "total_days")
 	
 	Scribe.sync_record([Buildings], TYPE_OBJECT)
-	Scribe.put("highest_id_ever", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "highest_id_ever")
 	
 	Scribe.sync_record([Gods], TYPE_OBJECT)
-	Scribe.put("tick_countdown_locusts", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "tick_countdown_locusts")
 	
 	# random
 	Scribe.sync_record([Random], TYPE_OBJECT)
-	Scribe.put("random_iv_1", ScribeFormat.i32)
-	Scribe.put("random_iv_2", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "random_iv_1")
+	Scribe.put(ScribeFormat.i32, "random_iv_2")
 	
 	Scribe.sync_record([Map], TYPE_OBJECT)
-	Scribe.put("city_view_camera_x", ScribeFormat.i32)
-	Scribe.put("city_view_camera_y", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "city_view_camera_x")
+	Scribe.put(ScribeFormat.i32, "city_view_camera_y")
 	
 	Scribe.sync_record([City], TYPE_OBJECT)
-	Scribe.put("city_graph_order", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "city_graph_order")
 	
 	Scribe.sync_record([Gods], TYPE_OBJECT)
-	Scribe.put("tick_countdown_hailstorm", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "tick_countdown_hailstorm")
 	
 	# empire
 	Scribe.sync_record([Empire], TYPE_OBJECT)
-	Scribe.put("empire_map_x", ScribeFormat.i32)
-	Scribe.put("empire_map_y", ScribeFormat.i32)
-	Scribe.put("empire_selected_object", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "empire_map_x")
+	Scribe.put(ScribeFormat.i32, "empire_map_y")
+	Scribe.put(ScribeFormat.i32, "empire_selected_object")
 	Scribe.push_compressed(Empire.MAX_EMPIRE_CITIES * 106) # <----------------------------- TODO
 	Scribe.pop_compressed()
 	
 	# industry buildings
 	Scribe.sync_record([City, "industry_buildings_total"], TYPE_ARRAY)
 	for i in INDUSTRY_RESOURCES:
-		Scribe.put(i, ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, i)
 	Scribe.sync_record([City, "industry_buildings_active"], TYPE_ARRAY)
 	for i in INDUSTRY_RESOURCES:
-		Scribe.put(i, ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, i)
 	
 	# trade prices
 	for i in INDUSTRY_RESOURCES:
 		Scribe.sync_record([Empire, "trade_prices", i], TYPE_DICTIONARY)
-		Scribe.put("selling", ScribeFormat.i32)
-		Scribe.put("buying", ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, "selling")
+		Scribe.put(ScribeFormat.i32, "buying")
 	
 	# figure names (1)	
 	Scribe.sync_record([Figures, "figure_names_1"], TYPE_ARRAY)
 	for i in 21:
-		Scribe.put(i, ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, i)
 	
 	# scenario data
 	Scribe.sync_record([Scenario, "info"], TYPE_DICTIONARY)
-	Scribe.put("TEMP_RAW", ScribeFormat.raw, 1592) # <---------------------------- TODO
-	Scribe.put("max_year", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.raw, "TEMP_RAW", 1592) # <---------------------------- TODO
+	Scribe.put(ScribeFormat.i32, "max_year")
 	
 	# messages
 	Scribe.sync_record([Messages], TYPE_OBJECT)
 	Scribe.push_compressed(Messages.MAX_MESSAGES * 48) # <----------------------------- TODO
 	Scribe.pop_compressed()
-	Scribe.put("total_messages_passed", ScribeFormat.i32)
-	Scribe.put("total_messages_current", ScribeFormat.i32)
-	Scribe.put("last_message_id_highlighted", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "total_messages_passed")
+	Scribe.put(ScribeFormat.i32, "total_messages_current")
+	Scribe.put(ScribeFormat.i32, "last_message_id_highlighted")
 	Scribe.sync_record([Messages, "census_messages_received"], TYPE_ARRAY)
 	for i in 10:
-		Scribe.put(i, ScribeFormat.u8)
+		Scribe.put(ScribeFormat.u8, i)
 	Scribe.sync_record([Messages, "message_counts"], TYPE_ARRAY)
 	for i in Messages.MESSAGE_CATEGORIES:
-		Scribe.put(i, ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, i)
 	Scribe.sync_record([Messages, "message_delays"], TYPE_ARRAY)
 	for i in Messages.MESSAGE_CATEGORIES:
-		Scribe.put(i, ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, i)
 	
 	# burning buildings
 	Scribe.sync_record([Buildings], TYPE_OBJECT)
-	Scribe.put("burning_buildings_list_info", ScribeFormat.i32)
-	Scribe.put("burning_buildings_size", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "burning_buildings_list_info")
+	Scribe.put(ScribeFormat.i32, "burning_buildings_size")
 	
 	Scribe.sync_record([Figures], TYPE_OBJECT)
-	Scribe.put("figure_sequence", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "figure_sequence")
 	
 	Scribe.sync_record([Scenario], TYPE_OBJECT)
-	Scribe.put("starting_kingdom", ScribeFormat.i32)
-	Scribe.put("starting_savings", ScribeFormat.i32)
-	Scribe.put("starting_rank", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "starting_kingdom")
+	Scribe.put(ScribeFormat.i32, "starting_savings")
+	Scribe.put(ScribeFormat.i32, "starting_rank")
 	Scribe.push_compressed(101 * 32) # <--------------------------------------------------- TODO
-#	Scribe.put("invasion_warnings", ScribeFormat.i32)
+#	Scribe.put(ScribeFormat.i32, "invasion_warnings")
 	Scribe.pop_compressed()
-	Scribe.put("scenario_is_custom", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "scenario_is_custom")
 	
 	# city sound channels
 	Scribe.sync_record([Sounds, "city_sounds"], TYPE_OBJECT)
 	for i in Sounds.MAX_CITY_SOUNDS:
-		Scribe.put(i, ScribeFormat.raw, 128) # <------------------- TODO
+		Scribe.put(ScribeFormat.raw, i, 128) # <------------------- TODO
 	
 	Scribe.sync_record([Buildings], TYPE_OBJECT)
-	Scribe.put("highest_id", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "highest_id")
 	
 	# traders
 	Scribe.sync_record([Figures, "figure_traders"], TYPE_ARRAY)
 	for i in Figures.MAX_TRADERS:
-		Scribe.put(i, ScribeFormat.raw, 88)
+		Scribe.put(ScribeFormat.raw, i, 88)
 	Scribe.sync_record([Figures], TYPE_OBJECT)
-	Scribe.put("next_free_trader_index", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "next_free_trader_index")
 
 	# buildings lists
 	Scribe.sync_record([Buildings], TYPE_OBJECT)
@@ -370,22 +367,22 @@ func enscribe_SAV():
 	Scribe.pop_compressed()
 	
 	Scribe.sync_record([Scenario], TYPE_OBJECT)
-	Scribe.put("is_campaign_mission_first", ScribeFormat.i32)
-	Scribe.put("is_campaign_mission_first_four", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "is_campaign_mission_first")
+	Scribe.put(ScribeFormat.i32, "is_campaign_mission_first_four")
 	
 	Scribe.sync_record([Figures, "figure_names_3"], TYPE_ARRAY)
 	for i in 4:
-		Scribe.put(i, ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, i)
 	
 	Scribe.sync_record([Gods], TYPE_OBJECT)
-	Scribe.put("tick_countdown_frogs", ScribeFormat.i32)
-	Scribe.put("tick_countdown_pyramid_speedup", ScribeFormat.i32)
-	Scribe.put("tick_countdown_blood1", ScribeFormat.i32)
-	Scribe.put("unkn_06", ScribeFormat.raw, 5*4) # ????
+	Scribe.put(ScribeFormat.i32, "tick_countdown_frogs")
+	Scribe.put(ScribeFormat.i32, "tick_countdown_pyramid_speedup")
+	Scribe.put(ScribeFormat.i32, "tick_countdown_blood1")
+	Scribe.put(ScribeFormat.raw, "unkn_06", 5*4) # ????
 	
 	Scribe.sync_record([Buildings, "storage_yards_settings"], TYPE_ARRAY)
 	for i in Buildings.MAX_STORAGE_YARDS:
-		Scribe.put(i, ScribeFormat.raw, 196) # <--------------------------------------- TODO
+		Scribe.put(ScribeFormat.raw, i, 196) # <--------------------------------------- TODO
 	
 	Scribe.sync_record([Empire], TYPE_OBJECT)
 	Scribe.push_compressed(Empire.MAX_TRADE_ROUTES * INDUSTRY_RESOURCES * 4) # trade_routes_limits <------------------ TODO
@@ -394,80 +391,80 @@ func enscribe_SAV():
 	Scribe.pop_compressed()
 	
 	Scribe.sync_record([Military], TYPE_OBJECT)
-	Scribe.put("working_towers", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "working_towers")
 	
 	Scribe.sync_record([Buildings], TYPE_OBJECT)
-	Scribe.put("creation_highest_id", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "creation_highest_id")
 	
 	Scribe.sync_record([Routing], TYPE_OBJECT)
-	Scribe.put("routing_debug", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "routing_debug")
 
 	## ============== unknown / debug stuff ============== ##
 	Scribe.sync_record([self], TYPE_OBJECT)
-	Scribe.put("unkn_debug_00", ScribeFormat.i32)
-	Scribe.put("unkn_debug_01", ScribeFormat.i32)
-	Scribe.put("unkn_debug_02", ScribeFormat.i32)
-	Scribe.put("unkn_debug_03_a", ScribeFormat.i32)
-	Scribe.put("unkn_debug_03_b", ScribeFormat.i32)
-	Scribe.put("unkn_debug_04_a", ScribeFormat.i32)
-	Scribe.put("unkn_debug_04_b", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "unkn_debug_00")
+	Scribe.put(ScribeFormat.i32, "unkn_debug_01")
+	Scribe.put(ScribeFormat.i32, "unkn_debug_02")
+	Scribe.put(ScribeFormat.i32, "unkn_debug_03_a")
+	Scribe.put(ScribeFormat.i32, "unkn_debug_03_b")
+	Scribe.put(ScribeFormat.i32, "unkn_debug_04_a")
+	Scribe.put(ScribeFormat.i32, "unkn_debug_04_b")
 	
 	Scribe.sync_record([Military], TYPE_OBJECT)
-	Scribe.put("invasions_creation_sequence", ScribeFormat.i16)
+	Scribe.put(ScribeFormat.i16, "invasions_creation_sequence")
 	
 	Scribe.sync_record([Buildings], TYPE_OBJECT)
-	Scribe.put("corrupt_house_coords_repaired", ScribeFormat.u32)
-	Scribe.put("corrupt_house_coords_deleted", ScribeFormat.u32)
+	Scribe.put(ScribeFormat.u32, "corrupt_house_coords_repaired")
+	Scribe.put(ScribeFormat.u32, "corrupt_house_coords_deleted")
 	
 	Scribe.sync_record([Scenario], TYPE_OBJECT)
-	Scribe.put("scenario_map_name", ScribeFormat.ascii, 65)
+	Scribe.put(ScribeFormat.ascii, "scenario_map_name", 65)
 	
 	for i in Map.MAX_BOOKMARKS:
 		Scribe.sync_record([Map, "bookmarks", i], TYPE_DICTIONARY)
-		Scribe.put("x", ScribeFormat.i8)
-		Scribe.put("y", ScribeFormat.i8)
+		Scribe.put(ScribeFormat.i8, "x")
+		Scribe.put(ScribeFormat.i8, "y")
 	
 	Scribe.sync_record([Gods], TYPE_OBJECT)
-	Scribe.put("tick_countdown_blood2", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "tick_countdown_blood2")
 
 	# ============== ????
 	Scribe.sync_record([self], TYPE_OBJECT)
-	Scribe.put("unk_05", ScribeFormat.i32)
-	Scribe.put("unk_06", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "unk_05")
+	Scribe.put(ScribeFormat.i32, "unk_06")
 	
 	# ============== ????
 	Scribe.sync_record([Scenario, "unk_fields"], TYPE_ARRAY)
 	for i in 99:
-		Scribe.put(i, ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, i)
 
-	Scribe.put_grid("fertility", false, ScribeFormat.u8)
+	Scribe.put_grid(ScribeFormat.u8, "fertility", false)
 	
 	for i in Scenario.MAX_EVENTS:
 		Scribe.sync_record([Scenario, "events", i], TYPE_DICTIONARY)
-		Scribe.put("TEMP", ScribeFormat.raw, 124) # <---------------------------- TODO
+		Scribe.put(ScribeFormat.raw, "TEMP", 124) # <---------------------------- TODO
 	Scribe.sync_record([Scenario, "events_extra"], TYPE_DICTIONARY)
-	Scribe.put("unk00", ScribeFormat.i32)
-	Scribe.put("unk01", ScribeFormat.i32)
-	Scribe.put("unk02", ScribeFormat.i32)
-	Scribe.put("unk03", ScribeFormat.i32)
-	Scribe.put("unk04", ScribeFormat.i32)
-	Scribe.put("unk05", ScribeFormat.i32)
-	Scribe.put("unk06", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "unk00")
+	Scribe.put(ScribeFormat.i32, "unk01")
+	Scribe.put(ScribeFormat.i32, "unk02")
+	Scribe.put(ScribeFormat.i32, "unk03")
+	Scribe.put(ScribeFormat.i32, "unk04")
+	Scribe.put(ScribeFormat.i32, "unk05")
+	Scribe.put(ScribeFormat.i32, "unk06")
 	
 	# ferries
 	for i in Figures.MAX_FERRIES:
 		Scribe.sync_record([Figures, "ferry_queues", i], TYPE_ARRAY)
 		for j in Figures.MAX_FIGURES_WAITING_PER_FERRY:
-			Scribe.put(j, ScribeFormat.i32)
+			Scribe.put(ScribeFormat.i32, j)
 	for i in Figures.MAX_FERRIES:
 		Scribe.sync_record([Figures, "ferry_transiting", i], TYPE_ARRAY)
 		for j in Figures.MAX_FIGURES_PER_FERRY:
-			Scribe.put(j, ScribeFormat.i32)
+			Scribe.put(ScribeFormat.i32, j)
 	
 	# ============== ????
 	Scribe.sync_record([self], TYPE_OBJECT)
-	Scribe.put("unused_figure_sequences", ScribeFormat.raw, 4 * 4)
-	Scribe.put("unused_10_x_820", ScribeFormat.raw, 10 * 820)
+	Scribe.put(ScribeFormat.raw, "unused_figure_sequences", 4 * 4)
+	Scribe.put(ScribeFormat.raw, "unused_10_x_820", 10 * 820)
 	
 	Scribe.sync_record([Empire], TYPE_OBJECT)
 	Scribe.push_compressed(40 * 32) # unused multiple-empires leftover stuff from C3
@@ -477,70 +474,70 @@ func enscribe_SAV():
 	Scribe.push_compressed(Empire.MAX_EMPIRE_ROUTES * 324) # empire_map_routes <-------------------------------- TODO
 	Scribe.pop_compressed()
 	
-	Scribe.put_grid("vegetation_growth", false, ScribeFormat.u8)
+	Scribe.put_grid(ScribeFormat.u8, "vegetation_growth", false)
 	
 	# ============== ????
 	Scribe.sync_record([self], TYPE_OBJECT)
-	Scribe.put("unk_junk14_a_1", ScribeFormat.i32)
-	Scribe.put("unk_junk14_a_2", ScribeFormat.i32)
-	Scribe.put("unk_junk14_a_3", ScribeFormat.i32)
-	Scribe.put("unk_junk14_a_4", ScribeFormat.i32)
-	Scribe.put("unk_junk14_b_1", ScribeFormat.u8)
-	Scribe.put("unk_junk14_b_2", ScribeFormat.u8)
-	Scribe.put("unk_junk14_b_3", ScribeFormat.u8)
-	Scribe.put("unk_junk14_b_4", ScribeFormat.u8)
-	Scribe.put("bizarre_ordered_fields_1", ScribeFormat.raw, 22 * 24)
+	Scribe.put(ScribeFormat.i32, "unk_junk14_a_1")
+	Scribe.put(ScribeFormat.i32, "unk_junk14_a_2")
+	Scribe.put(ScribeFormat.i32, "unk_junk14_a_3")
+	Scribe.put(ScribeFormat.i32, "unk_junk14_a_4")
+	Scribe.put(ScribeFormat.u8, "unk_junk14_b_1")
+	Scribe.put(ScribeFormat.u8, "unk_junk14_b_2")
+	Scribe.put(ScribeFormat.u8, "unk_junk14_b_3")
+	Scribe.put(ScribeFormat.u8, "unk_junk14_b_4")
+	Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_1", 22 * 24)
 	
 	# floodplain data
 	Scribe.push_compressed(36) # floodplain_settings <-------------------------------- TODO
 	Scribe.pop_compressed()
 	
-	Scribe.put_grid("unk_grid03", true, ScribeFormat.i32) # routing cache...?
+	Scribe.put_grid(ScribeFormat.i32, "unk_grid03", true) # routing cache...?
 	
 	
 	Scribe.sync_record([self], TYPE_OBJECT)
-	Scribe.put("bizarre_ordered_fields_4", ScribeFormat.raw, 13 * 24)
+	Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_4", 13 * 24)
 
 	Scribe.sync_record([Figures, "figure_names_2"], TYPE_ARRAY)
 	for i in 16:
-		Scribe.put(i, ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, i)
 	
 	Scribe.sync_record([Scenario, "tutorial_flags_1"], TYPE_ARRAY)
 	for i in 26:
-		Scribe.put(i, ScribeFormat.u8)
+		Scribe.put(ScribeFormat.u8, i)
 	Scribe.sync_record([Scenario, "tutorial_flags_2"], TYPE_ARRAY)
 	for i in 15:
-		Scribe.put(i, ScribeFormat.u8)
+		Scribe.put(ScribeFormat.u8, i)
 	
-	Scribe.put_grid("unk_grid04", true, ScribeFormat.u8) # deleted buildings...?
+	Scribe.put_grid(ScribeFormat.u8, "unk_grid04", true) # deleted buildings...?
 	
 	Scribe.sync_record([Scenario], TYPE_OBJECT)
-	Scribe.put("mission_play_type", ScribeFormat.u8)
+	Scribe.put(ScribeFormat.u8, "mission_play_type")
 	
-	Scribe.put_grid("moisture", true, ScribeFormat.u8)
+	Scribe.put_grid(ScribeFormat.u8, "moisture", true)
 	
 	Scribe.sync_record([self], TYPE_OBJECT)
-	Scribe.put("bizarre_ordered_fields_2", ScribeFormat.raw, 10 * 24)
-	Scribe.put("bizarre_ordered_fields_3", ScribeFormat.raw, 18 * 24)
-	Scribe.put("unk_junk18", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_2", 10 * 24)
+	Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_3", 18 * 24)
+	Scribe.put(ScribeFormat.i32, "unk_junk18")
 	
 	Scribe.sync_record([Scenario], TYPE_OBJECT)
-	Scribe.put("difficulty", ScribeFormat.i32)
+	Scribe.put(ScribeFormat.i32, "difficulty")
 	
 	### ======================= POST-FILE VERSION 160 ======================= ###
 	
 	if debug_schema.file_version >= 160:
 		Scribe.sync_record([Military, "campaign_company_rejoin"], TYPE_ARRAY)
 		for i in 3:
-			Scribe.put(i, ScribeFormat.u32)
+			Scribe.put(ScribeFormat.u32, i)
 
 		Scribe.sync_record([self], TYPE_OBJECT)
-		Scribe.put("bizarre_ordered_fields_5", ScribeFormat.raw, 27 * 24)
-		Scribe.put("bizarre_ordered_fields_6", ScribeFormat.raw, 27 * 24)
-		Scribe.put("bizarre_ordered_fields_7", ScribeFormat.raw, 15 * 24)
-		Scribe.put("bizarre_ordered_fields_8", ScribeFormat.raw, 56 * 24)
-#		Scribe.put("bizarre_ordered_fields_9", ScribeFormat.raw, 74 * 24)
-		Scribe.put("bizarre_ordered_fields_9", ScribeFormat.raw, 75 * 24) # schema says 75, but sometimes it's 74?
+		Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_5", 27 * 24)
+		Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_6", 27 * 24)
+		Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_7", 15 * 24)
+		Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_8", 56 * 24)
+#		Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_9", 74 * 24)
+		Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_9", 75 * 24) # schema says 75, but sometimes it's 74?
 
 	return Scribe.assert_eof()
 

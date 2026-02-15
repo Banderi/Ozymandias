@@ -38,18 +38,19 @@ func has_beaten_any_mission(og = true): # in OG Pharaoh, the game simply checks 
 
 # family scores chunk
 func enscribe_highscore_chunk():
-	Scribe.put("score", ScribeFormat.u32)
-	Scribe.put("mission_idx", ScribeFormat.u32)
-	Scribe.put("player_name", ScribeFormat.ascii, 32, "")
-	Scribe.put("rating_culture", ScribeFormat.u32)
-	Scribe.put("rating_prosperity", ScribeFormat.u32)
-	Scribe.put("rating_kingdom", ScribeFormat.u32)
-	Scribe.put("final_population", ScribeFormat.u32)
-	Scribe.put("final_funds", ScribeFormat.u32)
-	Scribe.put("completion_months", ScribeFormat.u32)
-	Scribe.put("difficulty", ScribeFormat.u32)
-	Scribe.put("unk09", ScribeFormat.u32)
-	Scribe.put("unk10_nonempty", ScribeFormat.u32)
+	Scribe.put(ScribeFormat.u32, "score")
+	Scribe.put(ScribeFormat.u32, "mission_idx")
+	Scribe.put(ScribeFormat.ascii, "player_name", 32, "")
+	Scribe.put(ScribeFormat.u32, "rating_culture")
+	Scribe.put(ScribeFormat.u32, "rating_prosperity")
+	Scribe.put(ScribeFormat.u32, "rating_kingdom")
+	Scribe.put(ScribeFormat.u32, "final_population")
+	Scribe.put(ScribeFormat.u32, "final_funds")
+	Scribe.put(ScribeFormat.u32, "completion_months")
+	Scribe.put(ScribeFormat.u32, "difficulty")
+	Scribe.put(ScribeFormat.u32, "unk09")
+	Scribe.put(ScribeFormat.u32, "unk10_nonempty")
+	Scribe.put(ScribeFormat.ascii, "player_name", 32, "")
 func enscribe_JAS():
 	for i in range(100):
 		Scribe.sync_record([highscores, i], TYPE_DICTIONARY)
@@ -57,44 +58,44 @@ func enscribe_JAS():
 func enscribe_DAT(family_name):
 	for i in range(100):											# unused(?) scenario data chunks
 		Scribe.sync_record([data, family_name, "chunks", i], TYPE_DICTIONARY)
-		Scribe.put("campaign_idx", ScribeFormat.i8)
-		Scribe.put("campaign_idx_2", ScribeFormat.u8)
-		Scribe.put("unk02", ScribeFormat.u16)
-		Scribe.put("unk03", ScribeFormat.u32)
+		Scribe.put(ScribeFormat.i8, "campaign_idx")
+		Scribe.put(ScribeFormat.u8, "campaign_idx_2")
+		Scribe.put(ScribeFormat.u16, "unk02")
+		Scribe.put(ScribeFormat.u32, "unk03")
 
-		Scribe.put("mission_n_200", ScribeFormat.i32)
-		Scribe.put("mission_n_A", ScribeFormat.i32)
-		Scribe.put("mission_n_B", ScribeFormat.i32)
-		Scribe.put("mission_n_unk", ScribeFormat.i32)
+		Scribe.put(ScribeFormat.i32, "mission_n_200")
+		Scribe.put(ScribeFormat.i32, "mission_n_A")
+		Scribe.put(ScribeFormat.i32, "mission_n_B")
+		Scribe.put(ScribeFormat.i32, "mission_n_unk")
 
-		Scribe.put("unk08", ScribeFormat.i32)
-		Scribe.put("unk09", ScribeFormat.i32)
-		Scribe.put("unk10", ScribeFormat.u32)
-		Scribe.put("unk11", ScribeFormat.u32)
-		Scribe.put("unk12", ScribeFormat.i16)
-		Scribe.put("unk13", ScribeFormat.u16)
-		Scribe.put("unk14", ScribeFormat.u32)
-		Scribe.put("unk15", ScribeFormat.u32)
-		Scribe.put("unk16", ScribeFormat.i16)
-		Scribe.put("unk17", ScribeFormat.u16)
+		Scribe.put(ScribeFormat.i32, "unk08")
+		Scribe.put(ScribeFormat.i32, "unk09")
+		Scribe.put(ScribeFormat.u32, "unk10")
+		Scribe.put(ScribeFormat.u32, "unk11")
+		Scribe.put(ScribeFormat.i16, "unk12")
+		Scribe.put(ScribeFormat.u16, "unk13")
+		Scribe.put(ScribeFormat.u32, "unk14")
+		Scribe.put(ScribeFormat.u32, "unk15")
+		Scribe.put(ScribeFormat.i16, "unk16")
+		Scribe.put(ScribeFormat.u16, "unk17")
 
-		Scribe.put("unk18", ScribeFormat.u32)
-		Scribe.put("mission_completed", ScribeFormat.u8)
-		Scribe.put("unk19", ScribeFormat.u16)
-		Scribe.put("unk20", ScribeFormat.u8)
+		Scribe.put(ScribeFormat.u32, "unk18")
+		Scribe.put(ScribeFormat.u8, "mission_completed")
+		Scribe.put(ScribeFormat.u16, "unk19")
+		Scribe.put(ScribeFormat.u8, "unk20")
 	
 	Scribe.sync_record([data, family_name], TYPE_DICTIONARY)
-	Scribe.put("unk38", ScribeFormat.i32)							# number of fields for the Pharaoh main campaign? (38)
+	Scribe.put(ScribeFormat.i32, "unk38")							# number of fields for the Pharaoh main campaign? (38)
 
 	Scribe.sync_record([data, family_name, "scenario_names"], TYPE_ARRAY)
 	for i in range(100):
-		Scribe.put(i, ScribeFormat.ascii, 50, "")					# map names
+		Scribe.put(ScribeFormat.ascii, i, 50, "")					# map names
 
 	Scribe.sync_record([data, family_name], TYPE_DICTIONARY)
-	Scribe.put("unk35", ScribeFormat.i32)							# unknown 32-bit field (35)
-	Scribe.put("raw_autosave_path", ScribeFormat.ascii, 64, "")		# path to last autosave_replay.sav file
+	Scribe.put(ScribeFormat.i32, "unk35")							# unknown 32-bit field (35)
+	Scribe.put(ScribeFormat.ascii, "raw_autosave_path", 64, "")		# path to last autosave_replay.sav file
 
-	Scribe.put("unk00", ScribeFormat.i32)							# unknown 32-bit field (0)
+	Scribe.put(ScribeFormat.i32, "unk00")							# unknown 32-bit field (0)
 	
 	for i in range(100):
 		Scribe.sync_record([data, family_name, "scenario_highscores", i], TYPE_DICTIONARY)
@@ -102,7 +103,7 @@ func enscribe_DAT(family_name):
 		
 	Scribe.sync_record([data, family_name, "unkarr12"], TYPE_ARRAY)
 	for i in range(12):
-		Scribe.put(i, ScribeFormat.i16)								# unknown twelve 2-byte fields?
+		Scribe.put(ScribeFormat.i16, i)								# unknown twelve 2-byte fields?
 
 # highscore.jas
 func JAS_load(path):

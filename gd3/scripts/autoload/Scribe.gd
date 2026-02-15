@@ -196,7 +196,7 @@ func pop_compressed() -> bool: # compress and write top bytestream to file on WR
 	return true
 
 # helper I/O for grids (encapsulates push/pop_compressed and put ops)
-func put_grid(grid_name: String, compressed: bool, format, grid_width: int = Map.PH_MAP_WIDTH, default = 0) -> bool:
+func put_grid(format, grid_name: String, compressed: bool, grid_width: int = Map.PH_MAP_WIDTH, default = 0) -> bool:
 	var _t = Stopwatch.start()
 	
 	# prepare stack buffer
@@ -248,8 +248,8 @@ func put_grid(grid_name: String, compressed: bool, format, grid_width: int = Map
 	return true
 
 # primary I/O
-func put(key, format, format_extra = null, default = 0) -> bool:
-	if _curr_record_ref == null || !(_curr_record_ref is Dictionary || _curr_record_ref is Array || _curr_record_ref is Node):
+func put(format, key, format_extra = null, default = 0) -> bool:
+	if _curr_record_ref == null || !(_curr_record_ref is Dictionary || _curr_record_ref is Array || _curr_record_ref is Object):
 		return bail(GlobalScope.Error.ERR_INVALID_DATA, "the last synced chunk is invalid (%s)" % [_curr_record_ref])
 	if _curr_record_ref is Dictionary:
 		if !(key is String):
@@ -267,10 +267,16 @@ func put(key, format, format_extra = null, default = 0) -> bool:
 		if _curr_record_ref.size() <= key:
 			_curr_record_ref.push_back(default)
 	
+	var req_size = format_size(format)
+	if req_size == null:
+		req_size = format_extra
+	if req_size == null:
+		return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "cannot determine requested format size")
+	
 	if _compressed_top == null: # uncompressed data
+		if _handle.end_reached() || _handle.get_position() > _handle.get_len() - req_size:
+			return bail(GlobalScope.Error.ERR_FILE_EOF, "file end reached")
 		if _flags == File.READ:
-			if _handle.end_reached():
-				return bail(GlobalScope.Error.ERR_FILE_EOF, "file end reached")
 			match format: # Godot File ops, by default, are UNSIGNED
 				ScribeFormat.i8:
 					_curr_record_ref[key] = (_handle.get_8() + 128) % 256 - 128
@@ -309,9 +315,10 @@ func put(key, format, format_extra = null, default = 0) -> bool:
 				ScribeFormat.raw:
 					_handle.store_buffer(_curr_record_ref[key])
 	else: # compressed buffer I/O
+#		print("[Scribe]: tried to '%s' for '%s' bytes (%s)" % [_flags, format_size(format), format])
+		if _compressed_top.get_available_bytes() < req_size:
+			return bail(GlobalScope.Error.ERR_FILE_EOF, "compressed buffer end reached")
 		if _flags == File.READ:
-			if _compressed_top.get_available_bytes() < max(format_size(format), format_extra):
-				return bail(GlobalScope.Error.ERR_FILE_EOF, "compressed buffer end reached")
 			match format: # Godot File ops, by default, are UNSIGNED
 				ScribeFormat.i8:
 					_curr_record_ref[key] = (_compressed_top.get_8() + 128) % 256 - 128
@@ -349,11 +356,18 @@ func put(key, format, format_extra = null, default = 0) -> bool:
 					_compressed_top.put_data(buffer_padded(_curr_record_ref[key].to_utf8(), format_extra)) # same as store_string()...?
 				ScribeFormat.raw:
 					_compressed_top.put_data(_curr_record_ref[key])
-#		print("[Scribe]: tried to '%s' for '%s' bytes (%s)" % [_flags, format_size(format), format])
-		
 		
 	_op_counts += 1
 	return true
+func skip(n):
+	if _compressed_top == null: # uncompressed data
+		if _handle.end_reached() || _handle.get_position() > _handle.get_len() - n:
+			return bail(GlobalScope.Error.ERR_FILE_EOF, "file end reached")
+		_handle.seek(_handle.get_position() + n)
+	else:
+		if _compressed_top.get_available_bytes() < n:
+			return bail(GlobalScope.Error.ERR_FILE_EOF, "compressed buffer end reached")
+		_compressed_top.seek(_compressed_top.get_position() + n)
 
 func enscribe(path, operation, create_backup, enscriber_proc: FuncRef, enscriber_args: Array = []):
 	if create_backup && operation != File.READ && IO.file_exists(path) && !IO.copy_file(path, path + ".bak", true):
