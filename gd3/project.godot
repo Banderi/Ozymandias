@@ -94,6 +94,7 @@ run/main_loop_type="CustomMainLoop"
 
 [autoload]
 
+Globals="*res://scripts/mono/Globals.cs"
 Debug="*res://scripts/autoload/Debug.gd"
 IO="*res://scripts/autoload/IO.gd"
 Log="*res://scripts/autoload/Log.gd"

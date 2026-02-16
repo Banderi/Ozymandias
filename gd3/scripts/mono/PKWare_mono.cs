@@ -9,21 +9,19 @@ using System.Runtime.InteropServices;
 public class PKWare_mono : Node
 {
 	// Log.error(...)
-	Node Log;
 	Dictionary Errors;
 	byte[] error(string Err, string Message)
 	{
-		Log.Call("error", "", Errors[Err], Message);
+		Globals.Log.Call("error", "", Errors[Err], Message);
 		return new byte[0];
 	}
 	
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		GD.Print("PKWareMono loaded: " + this);
+		GD.Print("*** MONO: PKWareMono loaded: " + this);
 		
-		// Log.error(...)
-		Log = GetNode("/root/Log");
+		// GlobalScope.Errors
 		var script = ResourceLoader.Load("res://scripts/classes/GlobalScope.gd") as Script;
 		Dictionary consts = script.GetScriptConstantMap();
 		Errors = consts["Error"] as Dictionary;

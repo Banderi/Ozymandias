@@ -1,25 +1,24 @@
 using Godot;
 using System;
+using System.IO;
 
 public class Scribe_mono : Node
 {
-	// GDScript Scribe autoload
-	Node Scribe;
-	Node Log;
+	// Log.error(...)
 	Godot.Collections.Dictionary Errors;
 	bool bail(string Err, string Message)
 	{
-		Log.Call("error", "", Errors[Err], Message);
+		Globals.Log.Call("error", "", Errors[Err], Message);
 		return false;
 	}
 
 	// Called when the node enters the scene tree for the first time.
+	Node Scribe;
 	public override void _Ready()
 	{
-		GD.Print("ScribeMono loaded: " + this);
+		GD.Print("*** MONO: ScribeMono loaded: " + this);
 		
-		// Log.error(...)
-		Log = GetNode("/root/Log");
+		// GlobalScope.Errors
 		var script = ResourceLoader.Load("res://scripts/classes/GlobalScope.gd") as Script;
 		Godot.Collections.Dictionary consts = script.GetScriptConstantMap();
 		Errors = consts["Error"] as Godot.Collections.Dictionary;
@@ -29,6 +28,33 @@ public class Scribe_mono : Node
 	}
 
 	// ------------------------ SCRIBE ------------------------ //
+
+	public Godot.File _handle;
+	public Godot.StreamPeerBuffer _compressed_top;
+	public int _flags;
+	public object _curr_record_ref;
+
+	private BinaryReader _bin_reader;
+
+	public void setOpenFile(Godot.File __handle, int __flags)
+	{
+		_handle = __handle;
+		_flags = __flags;
+		_curr_record_ref = null;
+		_compressed_top = null;
+		if (_flags == 1) { // File.READ
+			// _bin_reader = new BinaryReader(_handle);
+		} else { // File.WRITE
+			
+		}
+	}
+	public void setClosedFile()
+	{
+		_handle = null;
+		_flags = -1;
+		_curr_record_ref = null;
+		_compressed_top = null;
+	}
 
 	enum ScribeFormat {
 		i8 = 0,
@@ -224,7 +250,7 @@ public class Scribe_mono : Node
 		int _flags = (int)Scribe.Get("_flags");
 		if (_compressed_top == null) { // (_handle)
 
-			Godot.File _handle = (File)Scribe.Get("_handle");
+			// Godot.File _handle = (File)Scribe.Get("_handle");
 			// if (_handle.GetPosition() > _handle.GetLen() - (ulong)req_size)
 			// 	return bail("ERR_FILE_EOF", "file end reached");
 				
@@ -254,16 +280,16 @@ public class Scribe_mono : Node
 		// if (req_size == -1)
 		// 	return bail("ERR_INVALID_PARAMETER", "cannot determine requested format size");
 		
-		object _curr_record_ref = Scribe.Get("_curr_record_ref");
-		Godot.StreamPeerBuffer _compressed_top = (Godot.StreamPeerBuffer)Scribe.Get("_compressed_top");
+		// object _curr_record_ref = Scribe.Get("_curr_record_ref");
+		// Godot.StreamPeerBuffer _compressed_top = (Godot.StreamPeerBuffer)Scribe.Get("_compressed_top");
 
 		
 		// Scribe.Set("_op_counts", (int)Scribe.Get("_op_counts") + 1);
 
-		int _flags = (int)Scribe.Get("_flags");
+		// int _flags = (int)Scribe.Get("_flags");
 		if (_compressed_top == null) { // (_handle)
 
-			Godot.File _handle = (File)Scribe.Get("_handle");
+			// Godot.File _handle = (File)Scribe.Get("_handle");
 			// if (_handle.GetPosition() > _handle.GetLen() - (ulong)req_size)
 			// 	return bail("ERR_FILE_EOF", "file end reached");
 				

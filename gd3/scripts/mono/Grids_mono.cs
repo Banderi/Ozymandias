@@ -7,7 +7,7 @@ public class Grids_mono : Node
 	// Member variables here, example:
 	public override void _Ready()
 	{
-		GD.Print("GridsMono loaded: " + this);
+		GD.Print("*** MONO: GridsMono loaded: " + this);
 	}
 
 	const int PH_MAP_WIDTH = 228;

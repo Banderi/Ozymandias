@@ -46,6 +46,10 @@ func open(flags, path, offset = 0):
 	_flags = flags
 	_filesize = _handle.get_len()
 	_op_counts = 0
+	
+	# Mono
+	ScribeMono.setOpenFile(_handle, _flags)
+	
 	Log.generic("Scribe", "opening \"%s\" (%s bytes)" % [path, _filesize])
 	var _r = goto_offset(offset)
 	return true
@@ -63,6 +67,9 @@ func close():
 	_filesize = null
 	_flags = null
 	_curr_record_ref = null
+	
+	# Mono
+	ScribeMono.setClosedFile()
 func assert_eof():
 	if _handle.get_position() != _handle.get_len():
 		return bail(GlobalScope.Error.ERR_FILE_EOF, "EOF mismatch")
@@ -159,6 +166,8 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 		# move the leaf ref along
 		_curr_record_ref = _curr_record_ref[key]
 	
+	# Mono
+	ScribeMono._curr_record_ref = _curr_record_ref
 	return true
 
 # compressed chunk stack ops and I/O helpers
@@ -180,6 +189,9 @@ func push_compressed(expected_size: int) -> bool: # new bytestream buffer (empty
 	# -------------- stack pointers
 	_compressed_stack.push_back(_stream)
 	_compressed_top = _compressed_stack[-1]
+	
+	# Mono
+	ScribeMono._compressed_top = _compressed_top
 	return true
 func pop_compressed() -> bool: # compress and write top bytestream to file on WRITE, or discard on READ
 	var bytes = _compressed_stack.pop_back()
@@ -194,6 +206,9 @@ func pop_compressed() -> bool: # compress and write top bytestream to file on WR
 		_compressed_top = _compressed_stack[-1]
 	else:
 		_compressed_top = null
+	
+	# Mono
+	ScribeMono._compressed_top = _compressed_top
 	return true
 
 # helper I/O for grids (encapsulates push/pop_compressed and put ops)
