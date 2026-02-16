@@ -189,6 +189,7 @@ func enscribe_schema():
 func enscribe_SAV():
 	Scribe.sync_record([Campaign.data, "headers"], TYPE_DICTIONARY) # TODO: move to "Scenario" singleton
 	Scribe.put(ScribeFormat.u8, "map_index")
+#	ScribeMono.put(ScribeFormat.u8, "map_index")
 	Scribe.put(ScribeFormat.u8, "campaign_index")
 	Scribe.put(ScribeFormat.i8, "prev_progress_pointer")
 	Scribe.put(ScribeFormat.i8, "mission_progress_pointer")

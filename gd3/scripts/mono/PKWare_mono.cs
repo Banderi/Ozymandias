@@ -13,7 +13,7 @@ public class PKWare_mono : Node
 	Dictionary Errors;
 	byte[] error(string Err, string Message)
 	{
-		GetNode("/root/Log").Call("error", "", Errors[Err], Message);
+		Log.Call("error", "", Errors[Err], Message);
 		return new byte[0];
 	}
 	

@@ -1,12 +1,12 @@
 class_name ScribeFormat
 enum {
-	i8,
-	i16,
-	i32,
-	u8,
-	u16,
-	u32,
-	ascii,
-	utf8,
-	raw
+	i8 = 0,
+	i16 = 1,
+	i32 = 2,
+	u8 = 3,
+	u16 = 4,
+	u32 = 5,
+	ascii = 6,
+	utf8 = 7,
+	raw = 8
 }

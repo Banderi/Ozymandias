@@ -60,10 +60,10 @@ func enscribe_figures():
 		Scribe.put(ScribeFormat.i16, "next_figure")
 		Scribe.put(ScribeFormat.u8, "type")
 		
-		if figures[i].type == 0:
-			_skipped += 1
-			Scribe.skip(388 - 11)
-			continue
+#		if figures[i].type == 0:
+#			_skipped += 1
+#			Scribe.skip(388 - 11)
+#			continue
 		
 		Scribe.put(ScribeFormat.u8, "resource_id")
 		Scribe.put(ScribeFormat.u8, "use_cross_country")

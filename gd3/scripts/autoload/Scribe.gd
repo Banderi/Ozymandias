@@ -249,6 +249,10 @@ func put_grid(format, grid_name: String, compressed: bool, grid_width: int = Map
 
 # primary I/O
 func put(format, key, format_extra = null, default = 0) -> bool:
+	
+	return ScribeMono.put(format, key, format_extra)
+	
+	
 	if _curr_record_ref == null || !(_curr_record_ref is Dictionary || _curr_record_ref is Array || _curr_record_ref is Object):
 		return bail(GlobalScope.Error.ERR_INVALID_DATA, "the last synced chunk is invalid (%s)" % [_curr_record_ref])
 	if _curr_record_ref is Dictionary:
