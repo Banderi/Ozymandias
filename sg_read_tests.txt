@@ -71,17 +71,6 @@ FE_History.BMP       : 658  80   200  0    0    1024 768  0        0        0   
 dialougedrawing.bmp  : 659  0    2300 31   18   467  202  0        0        0        0    0    0    0    0    1   0  
 dialougedrawing2.BMP : 682  0    1452 184  2653 164  186  0        0        0        0    0    0    0    0    1   0
 
-
-
-
-
-
-
-
-
-
-
-
 grid 'images'             ms taken:   1  10 (11  total) 
 grid 'edge'               ms taken:   0   7 (6   total) 
 grid 'buildings'          ms taken:   0   9 (8   total) 
@@ -169,3 +158,142 @@ grid 'unk_grid04'         ms taken:   0   7 (6   total)
 grid 'moisture'           ms taken:   0   7 (7   total) 
 2026/02/14 22:00:37 -- [Scribe]: time taken: (237 milliseconds)
 2026/02/14 22:00:37 -- [Map]: GridsMono -> RedrawMap (256 milliseconds)
+
+
+-------------------------------------
+i:10268        RAW        COMPR
+Scribe:u8      39         22  
+Scribe:i8      21         8   
+Scribe:u16     23         10  
+Scribe:i16     22         9   
+Scribe:u32     24         11  
+Scribe:i32     24         10  
+Scribe:ascii   28         19  
+Scribe:utf8    27         15  
+Scribe:raw     27         14  
+
+Mono:u8        21         56  
+Mono:i8        7          8   
+Mono:u16       7          7   
+Mono:i16       8          8   
+Mono:u32       7          6   
+Mono:i32       7          7   
+Mono:ascii     16         9   
+Mono:utf8      19         7   
+Mono:raw       9          12  
+
+push_compressed   3201
+pop_compressed    6
+File.seek         12
+
+-------------------------------------
+i:2544         RAW        COMPR
+Scribe:u8      37         19  
+Scribe:i8      21         7   
+Scribe:u16     22         9   
+Scribe:i16     22         8   
+Scribe:u32     24         12  
+Scribe:i32     24         10  
+Scribe:ascii   27         19  
+Scribe:utf8    54         15  
+Scribe:raw     27         14  
+
+Mono:u8        20         7   
+Mono:i8        19         7   
+Mono:u16       21         9   
+Mono:i16       21         8   
+Mono:u32       23         10  
+Mono:i32       23         10  
+Mono:ascii     26         14  
+Mono:utf8      40         15  
+Mono:raw       27         15  
+
+push_compressed   3020
+pop_compressed    8
+File.seek         11
+
+-------------------------------------
+i:10116        RAW        COMPR
+Scribe:u8      19         7   
+Scribe:i8      18         6   
+Scribe:u16     19         7   
+Scribe:i16     19         8   
+Scribe:u32     21         9   
+Scribe:i32     21         9   
+Scribe:ascii   0          0   
+Scribe:utf8    0          0   
+Scribe:raw     0          0   
+
+Mono:u8        17         6   
+Mono:i8        17         6   
+Mono:u16       19         7   
+Mono:i16       19         8   
+Mono:u32       21         9   
+Mono:i32       21         9   
+Mono:ascii     0          0   
+Mono:utf8      0          0   
+Mono:raw       0          0   
+
+push_compressed   2847
+pop_compressed    10
+File.seek         11
+
+-------------------------------------
+i:3732         RAW        COMPR
+Scribe:u8      19         7   
+Scribe:i8      17         6   
+Scribe:u16     19         7   
+Scribe:i16     19         7   
+Scribe:u32     20         9   
+Scribe:i32     20         9   
+Scribe:ascii   23         13  
+Scribe:utf8    26         12  
+Scribe:raw     23         12  
+
+Mono:u8        17         6   
+Mono:i8        17         6   
+Mono:u16       19         7   
+Mono:i16       19         7   
+Mono:u32       20         9   
+Mono:i32       20         9   
+Mono:ascii     23         12  
+Mono:utf8      27         12  
+Mono:raw       23         12  
+
+push_compressed   2746
+pop_compressed    11
+File.seek         12
+
+-------------------------------------
+i:10000        GDScript   Mono
+               R / C      R / C
+Scribe:u8      20  7      18  6  
+Scribe:i8      18  6      17  6  
+Scribe:u16     19  8      19  8  
+Scribe:i16     19  8      19  8  
+Scribe:u32     21  9      21  9  
+Scribe:i32     21  9      21  9  
+Scribe:ascii   24  13     23  13 
+Scribe:utf8    27  13     29  13 
+Scribe:raw     23  13     24  13 
+
+push_compressed   2750
+pop_compressed    10
+File.seek         13
+
+-------------------------------------
+i:10000        GDScript         Mono
+               R / C            R / C
+Scribe:u8      20.71  7.83      18.40  6.87  
+Scribe:i8      18.35  6.70      18.15  6.63  
+Scribe:u16     19.98  8.29      19.72  8.19  
+Scribe:i16     19.80  8.28      19.77  8.27  
+Scribe:u32     21.60  10.02     21.55  9.97  
+Scribe:i32     21.63  9.99      21.58  10.04 
+Scribe:ascii   24.21  13.69     24.08  13.32 
+Scribe:utf8    27.30  13.50     29.24  13.38 
+Scribe:raw     24.19  13.43     24.46  13.43 
+
+push_compressed   2738
+pop_compressed    10
+File.seek         13

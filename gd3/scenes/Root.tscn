@@ -1585,6 +1585,39 @@ __meta__ = {
 "_edit_lock_": true
 }
 
+[node name="DEBUG_LABEL4" type="RichTextLabel" parent="Debug"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = 470.0
+margin_top = 57.0
+margin_right = -128.0
+margin_bottom = -136.0
+rect_clip_content = false
+custom_colors/font_color_shadow = Color( 0, 0, 0, 0.54902 )
+custom_constants/shadow_offset_y = 1
+custom_constants/line_separation = -3
+custom_constants/shadow_as_outline = 1
+custom_fonts/normal_font = ExtResource( 28 )
+bbcode_enabled = true
+bbcode_text = "-"
+text = "-"
+scroll_active = false
+selection_enabled = true
+
+[node name="BtnTestScribe" type="Button" parent="Debug/DEBUG_LABEL4"]
+margin_top = -28.0
+margin_right = 46.0
+margin_bottom = -8.0
+toggle_mode = true
+text = "test"
+
+[node name="BtnTestScribe2" type="Button" parent="Debug/DEBUG_LABEL4"]
+margin_left = 56.0
+margin_top = -28.0
+margin_right = 113.0
+margin_bottom = -8.0
+text = "reset"
+
 [node name="DEBUG_FPS" type="Label" parent="Debug"]
 anchor_left = 1.0
 anchor_right = 1.0
@@ -1671,6 +1704,8 @@ color = Color( 0, 0, 0, 1 )
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnYes" to="Menus/QuitGameConfirm" method="_on_BtnYes_pressed"]
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnNo" to="Menus/QuitGameConfirm" method="_on_BtnNo_pressed"]
 [connection signal="focus_entered" from="Menus/Splash" to="Menus/Splash" method="_on_Splash_focus_entered"]
+[connection signal="toggled" from="Debug/DEBUG_LABEL4/BtnTestScribe" to="Debug" method="_on_BtnTestScribe_toggled"]
+[connection signal="pressed" from="Debug/DEBUG_LABEL4/BtnTestScribe2" to="Debug" method="_on_BtnTestScribe2_pressed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnPKWareTest" to="Debug" method="_on_BtnPKWareTest_pressed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnLoadAutosave" to="Debug" method="_on_BtnLoadAutosave_pressed"]
 [connection signal="value_changed" from="Debug/DEBUG_BTNS/BtnTestTerrainImages" to="Debug" method="_on_BtnTestTerrainImages_value_changed"]

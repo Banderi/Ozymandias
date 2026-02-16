@@ -25,13 +25,151 @@ func _on_BtnTestTerrainImages_value_changed(value):
 func _on_BtnRedrawMap_pressed():
 	Map.redraw()
 
+
+var test_scribe_enabled = false
+var test_scribe_temp = {
+	"a": 0
+}
+var test_scribe_stamps = [
+	0, 0, 0, 0, 0, 0,    0, 0, 0,
+	0, 0, 0, 0, 0, 0,    0, 0, 0,
+	0, 0, 0,
+	0, 0, 0, 0, 0, 0,    0, 0, 0,
+	0, 0, 0, 0, 0, 0,    0, 0, 0,
+]
+var test_scribe_indiv_i = [
+	0, 0, 0, 0, 0, 0,    0, 0, 0,
+	0, 0, 0, 0, 0, 0,    0, 0, 0,
+	0, 0, 0,
+	0, 0, 0, 0, 0, 0,    0, 0, 0,
+	0, 0, 0, 0, 0, 0,    0, 0, 0,
+]
+var test_scribe_formats = [
+	ScribeFormat.u8, ScribeFormat.i8, ScribeFormat.u16, ScribeFormat.i16, ScribeFormat.u32, ScribeFormat.i32, ScribeFormat.ascii, ScribeFormat.utf8, ScribeFormat.raw,
+	ScribeFormat.u8, ScribeFormat.i8, ScribeFormat.u16, ScribeFormat.i16, ScribeFormat.u32, ScribeFormat.i32, ScribeFormat.ascii, ScribeFormat.utf8, ScribeFormat.raw,
+	0, 0, 0,
+	ScribeFormat.u8, ScribeFormat.i8, ScribeFormat.u16, ScribeFormat.i16, ScribeFormat.u32, ScribeFormat.i32, ScribeFormat.ascii, ScribeFormat.utf8, ScribeFormat.raw,
+	ScribeFormat.u8, ScribeFormat.i8, ScribeFormat.u16, ScribeFormat.i16, ScribeFormat.u32, ScribeFormat.i32, ScribeFormat.ascii, ScribeFormat.utf8, ScribeFormat.raw,
+]
+var test_scribe_i = 0
+func _on_BtnTestScribe_toggled(button_pressed):
+	test_scribe_enabled = button_pressed
+	if !test_scribe_enabled:
+		Scribe.close()
+func _on_BtnTestScribe2_pressed():
+	for i in test_scribe_stamps.size():
+		test_scribe_stamps[i] = 0
+	for i in test_scribe_indiv_i.size():
+		test_scribe_indiv_i[i] = 0
+	test_scribe_i = 0
+	DEBUG_LABEL4.text = "-"
+func test_scribe_perform_random(i):
+	var format = test_scribe_formats[i]
+	if format == ScribeFormat.ascii || format == ScribeFormat.utf8 || format == ScribeFormat.raw:
+#		test_scribe_indiv_i[i] = 1
+#		return # ignore these for now
+		
+		
+		var _t = Stopwatch.start()
+		Scribe.put(format, "a", 64)
+		test_scribe_stamps[i] += Stopwatch.query(_t, Stopwatch.Microsecond)
+	else:
+		var _t = Stopwatch.start()
+		Scribe.put(format, "a")
+		test_scribe_stamps[i] += Stopwatch.query(_t, Stopwatch.Microsecond)
+	test_scribe_indiv_i[i] += 1
+func test_scribe_get_r(i):
+	if i == 18 || i == 19 || i == 20:
+		return float(test_scribe_stamps[i]) / float(test_scribe_i)
+#		return test_scribe_stamps[i] / test_scribe_i
+	else:
+		return float(test_scribe_stamps[i]) / float(test_scribe_indiv_i[i])
+#		return test_scribe_stamps[i] / test_scribe_indiv_i[i]
+func test_scribe():
+	
+	if Scribe._path != "res://../tests/autosave.sav":
+		if !Scribe.open(File.READ, "res://../tests/autosave.sav"):
+			return false
+	
+	Scribe.sync_record([self, "test_scribe_temp"], TYPE_DICTIONARY)
+	
+	# MAIN TEST LOOP
+	for i in 2:
+		var _t = Stopwatch.start()
+		Scribe._handle.seek(0)
+		test_scribe_stamps[20] += Stopwatch.query(_t, Stopwatch.Microsecond)
+		
+		for a in (10):
+			for j in range(0,9): ## SCRIBE
+				test_scribe_perform_random(j)
+			for j in range(21,30): ## SCRIBE.MONO
+				test_scribe_perform_random(j)
+		
+		###########################
+		_t = Stopwatch.start()
+		Scribe._handle.seek(6012)
+		test_scribe_stamps[20] += Stopwatch.query(_t, Stopwatch.Microsecond)
+		
+		_t = Stopwatch.start()
+		Scribe.push_compressed(207936)
+		test_scribe_stamps[18] += Stopwatch.query(_t, Stopwatch.Microsecond)
+		###########################
+		
+		for a in (10):
+			for j in range(9,18): ## SCRIBE
+				test_scribe_perform_random(j)
+			for j in range(30,39): ## SCRIBE.MONO
+				test_scribe_perform_random(j)
+		
+		
+		_t = Stopwatch.start()
+		Scribe.pop_compressed()
+		test_scribe_stamps[19] += Stopwatch.query(_t, Stopwatch.Microsecond)
+#		test_scribe_stamps[18] += 1
+#		test_scribe_stamps[19] += 1
+#		test_scribe_stamps[20] += 1
+		test_scribe_i += 1
+		
+	
+	if !test_scribe_enabled:
+		Scribe.close()
+	else:
+		var text =     "i:%-12d GDScript         Mono\n" % [test_scribe_i]
+		text += "               R / C            R / C\n"
+		text += "Scribe:u8      %-6.2f %-6.2f    %-6.2f %-6.2f\n" % [test_scribe_get_r(0), test_scribe_get_r(9), test_scribe_get_r(21), test_scribe_get_r(30)]
+		text += "Scribe:i8      %-6.2f %-6.2f    %-6.2f %-6.2f\n" % [test_scribe_get_r(1), test_scribe_get_r(10), test_scribe_get_r(22), test_scribe_get_r(31)]
+		text += "Scribe:u16     %-6.2f %-6.2f    %-6.2f %-6.2f\n" % [test_scribe_get_r(2), test_scribe_get_r(11), test_scribe_get_r(23), test_scribe_get_r(32)]
+		text += "Scribe:i16     %-6.2f %-6.2f    %-6.2f %-6.2f\n" % [test_scribe_get_r(3), test_scribe_get_r(12), test_scribe_get_r(24), test_scribe_get_r(33)]
+		text += "Scribe:u32     %-6.2f %-6.2f    %-6.2f %-6.2f\n" % [test_scribe_get_r(4), test_scribe_get_r(13), test_scribe_get_r(25), test_scribe_get_r(34)]
+		text += "Scribe:i32     %-6.2f %-6.2f    %-6.2f %-6.2f\n" % [test_scribe_get_r(5), test_scribe_get_r(14), test_scribe_get_r(26), test_scribe_get_r(35)]
+		text += "Scribe:ascii   %-6.2f %-6.2f    %-6.2f %-6.2f\n" % [test_scribe_get_r(6), test_scribe_get_r(15), test_scribe_get_r(27), test_scribe_get_r(36)]
+		text += "Scribe:utf8    %-6.2f %-6.2f    %-6.2f %-6.2f\n" % [test_scribe_get_r(7), test_scribe_get_r(16), test_scribe_get_r(28), test_scribe_get_r(37)]
+		text += "Scribe:raw     %-6.2f %-6.2f    %-6.2f %-6.2f\n" % [test_scribe_get_r(8), test_scribe_get_r(17), test_scribe_get_r(29), test_scribe_get_r(38)]
+		text += "\n"
+		text += "push_compressed   %d\n" % [test_scribe_get_r(18)]
+		text += "pop_compressed    %d\n" % [test_scribe_get_r(19)]
+		text += "File.seek         %d\n" % [test_scribe_get_r(20)]
+		
+		DEBUG_LABEL4.text = text
+		
+		
+		if test_scribe_i >= 10000:
+			$DEBUG_LABEL4/BtnTestScribe.pressed = false
+
 onready var DEBUG_FPS = $DEBUG_FPS
 onready var DEBUG_LABEL = $DEBUG_LABEL
 onready var DEBUG_LABEL2 = $DEBUG_LABEL2
+onready var DEBUG_LABEL3 = $DEBUG_LABEL3
+onready var DEBUG_LABEL4 = $DEBUG_LABEL4
 
 onready var CURSOR = Game.INGAME_ROOT.get_node("CURSOR")
 var debug_display_mode = 1
 func _input(event):
+	
+	if Input.is_key_pressed(KEY_CONTROL) && Input.is_key_pressed(KEY_C) && DEBUG_LABEL4.has_focus():
+		var selection = DEBUG_LABEL4.get_selected_text()
+		OS.clipboard = selection
+		print(selection)
 	
 	if Input.is_action_just_pressed("debug_cycle"):
 		debug_display_mode = (debug_display_mode + 1) % 3
@@ -98,6 +236,10 @@ func _input(event):
 var last_fps = 60
 func _process(delta):
 	
+	if test_scribe_enabled:
+		test_scribe()
+	
+	
 	# debug prints
 	var debug_text = "[color=#888888]Ozymandias Godot3.6 v0.2[/color]\n"
 	debug_text += "[color=#888888]game_state:[/color]       %s\n" % [Log.get_enum_string(Game.States, Game.STATE)]
@@ -120,3 +262,4 @@ func _process(delta):
 
 func _ready():
 	$DEBUG_LABEL3.bbcode_text = ""
+

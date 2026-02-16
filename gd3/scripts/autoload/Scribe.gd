@@ -42,6 +42,7 @@ func open(flags, path, offset = 0):
 	var r = _handle.open(path, flags)
 	if r != OK:
 		return bail(r, str("could not open file handle '",path,"'"))
+	_path = path
 	_flags = flags
 	_filesize = _handle.get_len()
 	_op_counts = 0
@@ -250,7 +251,7 @@ func put_grid(format, grid_name: String, compressed: bool, grid_width: int = Map
 # primary I/O
 func put(format, key, format_extra = null, default = 0) -> bool:
 	
-	return ScribeMono.put(format, key, format_extra)
+#	return ScribeMono.put(format, key, format_extra) # ~1350-1500
 	
 	
 	if _curr_record_ref == null || !(_curr_record_ref is Dictionary || _curr_record_ref is Array || _curr_record_ref is Object):
