@@ -297,3 +297,19 @@ Scribe:raw     24.19  13.43     24.46  13.43
 push_compressed   2738
 pop_compressed    10
 File.seek         13
+
+-------------------------------------
+i:10002        RAW               COMPR
+Scribe:u8      4.571             3.584
+Scribe:i8      3.295             3.156
+Scribe:u16     3.364             3.168
+Scribe:i16     3.265             3.116
+Scribe:u32     3.247             3.113
+Scribe:i32     3.250             3.088
+Scribe:ascii   4.164             3.997
+Scribe:utf8    6.012             4.083
+Scribe:raw     3.866             3.667
+
+push_compressed   1749
+pop_compressed    5
+File.seek         7

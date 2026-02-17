@@ -30,6 +30,17 @@ func naked_filename(path: String): # this trims the DIRECTORIES and returns the 
 		return null if file_name == "" else file_name
 func strip_extension(path: String):
 	return path.rsplit(".", false, 1)[0]
+func get_abs_path(path: String):
+#	if path.begins_with("res://"):
+#		return ProjectSettings.globalize_path(path)
+#	elif path.begins_with("user://"):
+#		return path.replacen("user://", OS.get_user_data_dir())
+#	else:
+#		if path.find("://") == -1:
+#			if path.find(":/") != -1:
+#				return path
+	return ProjectSettings.globalize_path(path)
+	
 
 # basic IO
 func create_folder(path: String):

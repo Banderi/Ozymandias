@@ -19,8 +19,6 @@ public class PKWare_mono : Node
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		GD.Print("*** MONO: PKWareMono loaded: " + this);
-		
 		// GlobalScope.Errors
 		var script = ResourceLoader.Load("res://scripts/classes/GlobalScope.gd") as Script;
 		Dictionary consts = script.GetScriptConstantMap();
@@ -51,6 +49,8 @@ public class PKWare_mono : Node
 				code_index++;
 			}
 		}
+
+		GD.Print("*** MONO: PKWareMono loaded: " + this);
 	}
 	void _construct_explode_jump_table(int size, int[] bits, int[] codes, int[] jump) // jump[] <-- output
 	{

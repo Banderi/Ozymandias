@@ -87,16 +87,16 @@ func test_scribe_get_r(i):
 #		return test_scribe_stamps[i] / test_scribe_indiv_i[i]
 func test_scribe():
 	
-	if Scribe._path != "res://../tests/autosave.sav":
+	if ScribeMono._path != "res://../tests/autosave.sav":
 		if !Scribe.open(File.READ, "res://../tests/autosave.sav"):
 			return false
 	
 	Scribe.sync_record([self, "test_scribe_temp"], TYPE_DICTIONARY)
 	
 	# MAIN TEST LOOP
-	for i in 2:
+	for i in 4:
 		var _t = Stopwatch.start()
-		Scribe._handle.seek(0)
+		ScribeMono.Seek(0)
 		test_scribe_stamps[20] += Stopwatch.query(_t, Stopwatch.Microsecond)
 		
 		for a in (10):
@@ -107,7 +107,7 @@ func test_scribe():
 		
 		###########################
 		_t = Stopwatch.start()
-		Scribe._handle.seek(6012)
+		ScribeMono.Seek(6012)
 		test_scribe_stamps[20] += Stopwatch.query(_t, Stopwatch.Microsecond)
 		
 		_t = Stopwatch.start()
@@ -134,17 +134,27 @@ func test_scribe():
 	if !test_scribe_enabled:
 		Scribe.close()
 	else:
-		var text =     "i:%-12d GDScript         Mono\n" % [test_scribe_i]
-		text += "               RAW / COMPR      RAW / COMPR\n"
-		text += "Scribe:u8      %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(0), test_scribe_get_r(9), test_scribe_get_r(21), test_scribe_get_r(30)]
-		text += "Scribe:i8      %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(1), test_scribe_get_r(10), test_scribe_get_r(22), test_scribe_get_r(31)]
-		text += "Scribe:u16     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(2), test_scribe_get_r(11), test_scribe_get_r(23), test_scribe_get_r(32)]
-		text += "Scribe:i16     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(3), test_scribe_get_r(12), test_scribe_get_r(24), test_scribe_get_r(33)]
-		text += "Scribe:u32     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(4), test_scribe_get_r(13), test_scribe_get_r(25), test_scribe_get_r(34)]
-		text += "Scribe:i32     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(5), test_scribe_get_r(14), test_scribe_get_r(26), test_scribe_get_r(35)]
-		text += "Scribe:ascii   %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(6), test_scribe_get_r(15), test_scribe_get_r(27), test_scribe_get_r(36)]
-		text += "Scribe:utf8    %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(7), test_scribe_get_r(16), test_scribe_get_r(28), test_scribe_get_r(37)]
-		text += "Scribe:raw     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(8), test_scribe_get_r(17), test_scribe_get_r(29), test_scribe_get_r(38)]
+		var text =     "i:%-12d RAW               COMPR\n" % [test_scribe_i]
+#		text += "               RAW / COMPR      RAW / COMPR\n"
+#		text += "Scribe:u8      %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(0), test_scribe_get_r(9), test_scribe_get_r(21), test_scribe_get_r(30)]
+#		text += "Scribe:i8      %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(1), test_scribe_get_r(10), test_scribe_get_r(22), test_scribe_get_r(31)]
+#		text += "Scribe:u16     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(2), test_scribe_get_r(11), test_scribe_get_r(23), test_scribe_get_r(32)]
+#		text += "Scribe:i16     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(3), test_scribe_get_r(12), test_scribe_get_r(24), test_scribe_get_r(33)]
+#		text += "Scribe:u32     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(4), test_scribe_get_r(13), test_scribe_get_r(25), test_scribe_get_r(34)]
+#		text += "Scribe:i32     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(5), test_scribe_get_r(14), test_scribe_get_r(26), test_scribe_get_r(35)]
+#		text += "Scribe:ascii   %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(6), test_scribe_get_r(15), test_scribe_get_r(27), test_scribe_get_r(36)]
+#		text += "Scribe:utf8    %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(7), test_scribe_get_r(16), test_scribe_get_r(28), test_scribe_get_r(37)]
+#		text += "Scribe:raw     %-5.1f %-5.1f      %-5.1f %-5.1f\n" % [test_scribe_get_r(8), test_scribe_get_r(17), test_scribe_get_r(29), test_scribe_get_r(38)]
+		
+		text += "Scribe:u8      %-5.3f             %-5.3f\n" % [test_scribe_get_r(0), test_scribe_get_r(9)]
+		text += "Scribe:i8      %-5.3f             %-5.3f\n" % [test_scribe_get_r(1), test_scribe_get_r(10)]
+		text += "Scribe:u16     %-5.3f             %-5.3f\n" % [test_scribe_get_r(2), test_scribe_get_r(11)]
+		text += "Scribe:i16     %-5.3f             %-5.3f\n" % [test_scribe_get_r(3), test_scribe_get_r(12)]
+		text += "Scribe:u32     %-5.3f             %-5.3f\n" % [test_scribe_get_r(4), test_scribe_get_r(13)]
+		text += "Scribe:i32     %-5.3f             %-5.3f\n" % [test_scribe_get_r(5), test_scribe_get_r(14)]
+		text += "Scribe:ascii   %-5.3f             %-5.3f\n" % [test_scribe_get_r(6), test_scribe_get_r(15)]
+		text += "Scribe:utf8    %-5.3f             %-5.3f\n" % [test_scribe_get_r(7), test_scribe_get_r(16)]
+		text += "Scribe:raw     %-5.3f             %-5.3f\n" % [test_scribe_get_r(8), test_scribe_get_r(17)]
 		text += "\n"
 		text += "push_compressed   %d\n" % [test_scribe_get_r(18)]
 		text += "pop_compressed    %d\n" % [test_scribe_get_r(19)]

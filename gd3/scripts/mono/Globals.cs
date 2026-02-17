@@ -32,6 +32,7 @@ public class Globals : Node
 	public static Node Campaign;
 	public static Node Map;
 	public static Node Figures;
+	public static Node FiguresMono;
 	public static Node Routing;
 	public static Node City;
 	public static Node Buildings;
@@ -67,6 +68,7 @@ public class Globals : Node
 		Campaign = GetNode("/root/Campaign");
 		Map = GetNode("/root/Map");
 		Figures = GetNode("/root/Figures");
+		Figures = GetNode("/root/FiguresMono");
 		Routing = GetNode("/root/Routing");
 		City = GetNode("/root/City");
 		Buildings = GetNode("/root/Buildings");

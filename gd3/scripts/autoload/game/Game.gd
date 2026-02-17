@@ -164,9 +164,11 @@ func enscribe_schema():
 	Scribe.sync_record([debug_schema], TYPE_DICTIONARY)
 	Scribe.put(ScribeFormat.i32, "file_version")
 	Scribe.put(ScribeFormat.i32, "chunks_schema")
-	var chunks_beginning = Scribe._handle.get_position()
+#	var chunks_beginning = Scribe._handle.get_position()
+	var chunks_beginning = ScribeMono.GetPosition()
 	for i in range(debug_schema.chunks_schema):
-		var s = Scribe._handle.get_position()
+#		var s = Scribe._handle.get_position()
+		var s = ScribeMono.GetPosition()
 		Scribe.sync_record([debug_schema, "chunks", i], TYPE_DICTIONARY)
 		Scribe.put(ScribeFormat.u32, "compressed")
 		Scribe.put(ScribeFormat.u8, "memory_offset")
@@ -176,7 +178,8 @@ func enscribe_schema():
 		Scribe.put(ScribeFormat.u32, "fields_num")
 		Scribe.put(ScribeFormat.u16, "unk06")
 		Scribe.put(ScribeFormat.u16, "unk07")
-		assert(Scribe._handle.get_position() == s + 20)
+#		assert(Scribe._handle.get_position() == s + 20)
+		assert(ScribeMono.GetPosition() == s + 20)
 		print("%03d: %s %6d %4d : %-6d %-5d %2d : %6d * %5d" % [
 			i,
 			"(C)" if debug_schema.chunks[i].compressed else "---",
@@ -184,15 +187,30 @@ func enscribe_schema():
 			debug_schema.chunks[i].memory_location, debug_schema.chunks[i].memory_offset, debug_schema.chunks[i].unk03,
 			debug_schema.chunks[i].fields_num, debug_schema.chunks[i].fields_size
 		])
-	Scribe._handle.seek(chunks_beginning + 300 * 20) # move to the end
+#	Scribe._handle.seek(chunks_beginning + 300 * 20) # move to the end
+	ScribeMono.Seek(chunks_beginning + 300 * 20) # move to the end
 
 func enscribe_SAV():
 	Scribe.sync_record([Campaign.data, "headers"], TYPE_DICTIONARY) # TODO: move to "Scenario" singleton
+	
 	Scribe.put(ScribeFormat.u8, "map_index")
-#	ScribeMono.put(ScribeFormat.u8, "map_index")
 	Scribe.put(ScribeFormat.u8, "campaign_index")
 	Scribe.put(ScribeFormat.i8, "prev_progress_pointer")
 	Scribe.put(ScribeFormat.i8, "mission_progress_pointer")
+	
+	var a = Campaign.data.headers
+	
+#	var a = ScribeMono.data
+#	var a = ScribeMono.getFieldAsDictionary(ScribeMono.data)
+#	var a = ScribeMono.getAsDictionary()
+#	var b = a.map_index
+#	var c = ScribeMono.Others.TestInt()
+#	var c = Others.TestInt()
+	
+#	var r = ScribeMono.testReadChunk();
+#	ScribeMono.testReadChunk(ScribeMono.data);
+#	ScribeMono.testReadChunk2();
+	
 	enscribe_schema()
 	
 #	Scribe.sync_record([Map.grids], TYPE_DICTIONARY)

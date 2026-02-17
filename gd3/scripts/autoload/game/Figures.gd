@@ -38,12 +38,21 @@ func spawn_sprites(): # TODO
 
 func enscribe_figures():
 	Scribe.push_compressed(Figures.MAX_FIGURES * 388)
+#	Scribe.pop_compressed()
+#	return # temp
+	
+	
+	
 	var _t = Stopwatch.start()
+	
+	
+#	ScribeMono.testReadChunk2();
 	
 	var _skipped = 0
 	for i in Figures.MAX_FIGURES:
 		
-		var _p = Scribe._compressed_top.get_position()
+#		var _p = Scribe._compressed_top.get_position()
+		var _p = ScribeMono.GetPosition()
 		assert(_p % 388 == 0)
 		
 		Scribe.sync_record([Figures.figures, i], TYPE_DICTIONARY)
@@ -60,10 +69,10 @@ func enscribe_figures():
 		Scribe.put(ScribeFormat.i16, "next_figure")
 		Scribe.put(ScribeFormat.u8, "type")
 		
-#		if figures[i].type == 0:
-#			_skipped += 1
-#			Scribe.skip(388 - 11)
-#			continue
+		if figures[i].type == 0:
+			_skipped += 1
+			Scribe.skip(388 - 11)
+			continue
 		
 		Scribe.put(ScribeFormat.u8, "resource_id")
 		Scribe.put(ScribeFormat.u8, "use_cross_country")
