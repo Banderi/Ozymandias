@@ -154,8 +154,8 @@ func save_game(path) -> bool: # TODO
 	else:
 #		if !Scribe.enscribe(path, File.WRITE, false, funcref(self, "enscribe_SAV")):
 #			return false
-		return true
 		print("TODO: saving ------- ", path)
+		return true
 func clear_ingame() -> bool:
 	
 	for n in Map.TILEMAP_FLAT.get_children():
@@ -766,7 +766,7 @@ func _ready():
 #	var a = load("res://scripts/mono/YourCustomClass.cs").new()
 	
 #	yield(get_tree(), "idle_frame")
-	Game.load_game("res://tests/autosave.sav")
+#	Game.load_game("res://tests/autosave.sav")
 #	STATE = States.Ingame
 #	close_all_menus()
 

@@ -661,7 +661,7 @@ func load_game_assets(game):
 	yield(ASYNC_set_game_install_paths(false, "Install Path"), "completed")
 	
 	load_locales()
-	load_tilesets() # <--- true for forcing texture re-generation
+	load_tilesets(true) # <--- true for forcing texture re-generation
 	
 	load_backdrops()
 	load_animations()

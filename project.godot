@@ -54,11 +54,6 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://scripts/classes/TCPHandler.gd"
 }, {
-"base": "Node",
-"class": "TestNodeType",
-"language": "GDScript",
-"path": "res://scripts/test_class.gd"
-}, {
 "base": "BitmapFont",
 "class": "TextureFont",
 "language": "GDScript",
@@ -79,7 +74,6 @@ _global_script_class_icons={
 "LabelEx": "",
 "ScribeFormat": "",
 "TCPHandler": "",
-"TestNodeType": "",
 "TextureFont": "res://addons/texture_fonts/Assets/TextureFont.svg",
 "XHRHandler": ""
 }
@@ -130,6 +124,7 @@ Monuments="*res://scripts/autoload/game/Monuments.gd"
 
 gdscript/warnings/unused_variable=false
 gdscript/warnings/unused_argument=false
+gdscript/warnings/integer_division=false
 
 [editor_plugins]
 

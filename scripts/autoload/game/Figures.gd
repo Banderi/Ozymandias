@@ -38,7 +38,6 @@ func spawn_sprites(): # TODO
 			n.set_figure(i)
 			Map.TILEMAP_FLAT.add_child(n)
 	
-	
 	Stopwatch.stop(self, _t, "Figures -> spawn_sprites")
 
 func enscribe_figures():
