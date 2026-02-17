@@ -1,5 +1,6 @@
 extends Node
 
+# TODO: change this by gameset
 const PH_MAP_WIDTH = 228
 const PH_MAP_SIZE = PH_MAP_WIDTH * PH_MAP_WIDTH # 228 * 228 = 51984
 
@@ -10,8 +11,8 @@ const TILE_SIZE = Vector2(TILE_WIDTH, TILE_HEIGHT)
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
 
-onready var TILEMAP_FLAT = INGAME_ROOT.get_node("Map_Flat") as TileMap
-onready var TILEMAP_ANIM = INGAME_ROOT.get_node("Map_Anim") as TileMap
+onready var TILEMAP_FLAT: TileMap = INGAME_ROOT.get_node("Map_Flat") as TileMap
+onready var TILEMAP_ANIM: TileMap = INGAME_ROOT.get_node("Map_Anim") as TileMap
 
 var data = {}
 onready var grids = {
@@ -137,3 +138,29 @@ var city_view_camera_y = 0
 
 const MAX_BOOKMARKS = 16
 var bookmarks = []
+
+var map_width = 0
+var map_height = 0
+var map_grid_start = 0
+var map_border_size = 0
+
+func coords_to_cantor(x, y, grid_width: int = PH_MAP_WIDTH) -> int:
+	return int(x) + (grid_width * int(y))
+func tile_to_cantor(tile: Vector2, grid_width: int = PH_MAP_WIDTH) -> int:
+	return int(tile.x) + (grid_width * int(tile.x))
+func cantor_to_x(grid_offset: int, grid_width: int = PH_MAP_WIDTH) -> int:
+	return grid_offset % grid_width
+func cantor_to_y(grid_offset: int, grid_width: int = PH_MAP_WIDTH) -> int:
+	return grid_offset / grid_width
+
+func tile_into_game_area(tile: Vector2, grid_width: int = PH_MAP_WIDTH) -> Vector2:
+	
+	var x_offset = map_grid_start % grid_width
+	var y_offset = map_grid_start / grid_width
+	
+	return Vector2(tile.x + x_offset, tile.y + y_offset)
+func map_to_world(tile: Vector2, game_area: bool) -> Vector2:
+	if game_area:
+		return TILEMAP_FLAT.map_to_world(tile_into_game_area(tile))
+	else:
+		return TILEMAP_FLAT.map_to_world(tile)

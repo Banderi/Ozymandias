@@ -7,6 +7,11 @@
 script = ExtResource( 2 )
 
 [node name="AnimatedSprite" type="AnimatedSprite" parent="."]
+position = Vector2( 5, -20 )
 frames = ExtResource( 1 )
 playing = true
 flip_h = true
+
+[node name="ReferenceRect" type="ReferenceRect" parent="."]
+margin_top = -32.0
+margin_right = 5.0

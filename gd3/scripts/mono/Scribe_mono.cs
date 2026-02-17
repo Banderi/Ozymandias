@@ -173,7 +173,6 @@ public class Scribe_mono : Node
 		int stack_size = _streams_stack.Count;
 		if (stack_size > 1)
 		{
-			// Array.Resize(ref _streams_stack, stack_size - 1);
 			_streams_stack.RemoveAt(stack_size - 1); // removes last element (old top of stack)
 			_updateStreamStackPointers(_streams_stack[stack_size - 2]);
 			return true;
@@ -197,48 +196,29 @@ public class Scribe_mono : Node
 	public bool PushCompressed(uint expected_size)
 	{
 		if (__file_flags == 1) {
-			// BinaryReader _stream = _bin_reader;
 			uint c_size = _bin_reader.ReadUInt32();
-
 			if (c_size == 0x80000000) { // TODO?
 				// OPTIONS:
 				// _pushStream(_copyStream((MemoryStream)_bin_reader.BaseStream)); // copy into new stream, push on stack and automatically update _bin_reader
 				// _pushStream((MemoryStream)_bin_reader.BaseStream); // just push the same stream (interface) into the stack again
 				return bail("ERR_SCRIPT_FAILED", "tried to decompress, but found invalid/uncompressed data size marker (c_size == 0x80000000)");
-
-				// long parent_ptr = _bin_reader.BaseStream.Position;
-				// // MemoryStream _stream = new MemoryStream(_bin_reader.BaseStream);
-				// MemoryStream new_stream = new MemoryStream();
-				// _bin_reader.BaseStream.CopyTo(new_stream); // this will COPY data from the parent stream INTO a new separate stream, advancing BOTH streams' heads
-				// _bin_reader = new BinaryReader(new_stream);
-			} else {
-				// decompress!
-				// byte[] compressed_data = readBytes((int)c_size);
-				long p1 = GetPosition();
+			} else { // decompress!
 				byte[] compressed_data = _bin_reader.ReadBytes((int)c_size);
-				long p2 = GetPosition();
 				byte[] uncompressed = (byte[])Globals.PKWareMono.Call("Inflate", compressed_data, expected_size);
 				if (uncompressed == null || uncompressed.Length != expected_size)
 					return bail("ERR_SCRIPT_FAILED", "PKWare decompression failed");
-				// _pushStream(_newStreamFromBytes(uncompressed));
 				_pushStream(new MemoryStream(uncompressed)); // creates new MemoryStream from raw bytes
 			}
 		} else { // TODO?
-			// create a new empty stream and push onto stack
-			// MemoryStream new_stream = new MemoryStream();
-			// _bin_reader = new BinaryReader(new_stream);
-			// _streams_stack.Append(_bin_writer.BaseStream);
 			_pushStream(new MemoryStream());
 		}
 		return true;
 	}
 	public bool PopCompressed()
 	{
-		if (__file_flags == 1) {
-			// reading
+		if (__file_flags == 1) { // reading
 			_popStream();
-		} else {
-			// writing
+		} else { // writing
 			_bin_writer.BaseStream.Position = 0;
 			long u_size = _bin_writer.BaseStream.Length;
 			byte[] uncompressed_data = _bin_reader.ReadBytes((int)u_size);
@@ -266,7 +246,7 @@ public class Scribe_mono : Node
 			return false;
 
 		// grid bytestream conversion
-		if (__file_flags == 1) {
+		if (__file_flags == 1) { // reading
 			byte[] raw_bytes = _bin_reader.ReadBytes((int)raw_size);
 
 			// call GridsMono.SetGridFromBytes() with a lot of pain
@@ -277,39 +257,15 @@ public class Scribe_mono : Node
 				return bail("FAILED", "(GridsMono) could not fill grid");
 			// if (!(bool)Globals.GridsMono.Call("SetGridFromBytes", ((Godot.Collections.Dictionary)Globals.Map.Get("grids"))[grid_name], raw_bytes, grid_width, format))
 			// 	return bail("FAILED", "(GridsMono) could not fill grid");
-		} else {
+		} else { // writing
 			// TODO
 		}
 
 		// pop stack buffer
 		if (compressed && !PopCompressed())
 			return false;
-
-
 		return true;
 	}
-
-	//////////////////
-
-	// public void setOpenFile(Godot.File __handle, int __flags)
-	// {
-	// 	_handle = __handle;
-	// 	__file_flags = __flags;
-	// 	_curr_record_ref = null;
-	// 	_compressed_top = null;
-	// 	if (__file_flags == 1) { // File.READ
-	// 		// _bin_reader = new BinaryReader(_handle);
-	// 	} else { // File.WRITE
-			
-	// 	}
-	// }
-	// public void setClosedFile()
-	// {
-	// 	_handle = null;
-	// 	__file_flags = -1;
-	// 	_curr_record_ref = null;
-	// 	_compressed_top = null;
-	// }
 
 	//////////////////
 	
@@ -528,52 +484,11 @@ public class Scribe_mono : Node
 	}
 	public bool put(int format, object key, int format_extra) //, dynamic default_value)
 	{
-
-		if (_bin_reader != null)
+		if (__file_flags == 1)
 			return assignToRef(_curr_record_ref, key, readFromStream(_bin_reader, (ScribeFormat)format, format_extra));
-		else if (_bin_writer != null)
+		else
 			return writeToStream(_bin_writer, (ScribeFormat)format, grabFromRef(_curr_record_ref, key), format_extra);
-
-		// int req_size = format_size((ScribeFormat)format);
-		// if (req_size == -1)
-		// 	req_size = format_extra;
-		// if (req_size == -1)
-		// 	return bail("ERR_INVALID_PARAMETER", "cannot determine requested format size");
-		
-		// object _curr_record_ref = Scribe.Get("_curr_record_ref");
-		// Godot.StreamPeerBuffer _compressed_top = (Godot.StreamPeerBuffer)Scribe.Get("_compressed_top");
-
-		
-		// Scribe.Set("_op_counts", (int)Scribe.Get("_op_counts") + 1);
-
-		// // int _flags = (int)Scribe.Get("_flags");
-		// if (_compressed_top == null) { // (_handle)
-
-		// 	// Godot.File _handle = (File)Scribe.Get("_handle");
-		// 	// if (_handle.GetPosition() > _handle.GetLen() - (ulong)req_size)
-		// 	// 	return bail("ERR_FILE_EOF", "file end reached");
-				
-		// 	if (__file_flags == 1)
-		// 		return assignToRef(_curr_record_ref, key, readFromStream(_handle, (ScribeFormat)format, format_extra));
-		// 	else
-		// 		return writeToStream(_handle, (ScribeFormat)format, grabFromRef(_curr_record_ref, key), format_extra);
-		
-		// } else { // compressed data (_compressed_top)
-
-		// 	// if (_compressed_top.GetAvailableBytes() < req_size)
-		// 	// 	return bail("ERR_FILE_EOF", "compressed buffer end reached");
-			
-		// 	if (__file_flags == 1)
-		// 		return assignToRef(_curr_record_ref, key, readFromStream(_compressed_top, (ScribeFormat)format, format_extra));
-		// 	else
-		// 		return writeToStream(_compressed_top, (ScribeFormat)format, grabFromRef(_curr_record_ref, key), format_extra);
-		// }
-		return false;
 	}
-
-
-
-
 
 	// public class SaveData
 	// {
@@ -917,12 +832,12 @@ public class Scribe_mono : Node
 }
 
 
-[StructLayout(LayoutKind.Sequential, Pack = 1)]
-// public class TestChunkClass : Reference
-public class TestChunkClass
-{
-	public byte map_index;
-	public byte campaign_index;
-	public sbyte prev_progress_pointer;
-	public sbyte mission_progress_pointer;
-}
+// [StructLayout(LayoutKind.Sequential, Pack = 1)]
+// // public class TestChunkClass : Reference
+// public class TestChunkClass
+// {
+// 	public byte map_index;
+// 	public byte campaign_index;
+// 	public sbyte prev_progress_pointer;
+// 	public sbyte mission_progress_pointer;
+// }

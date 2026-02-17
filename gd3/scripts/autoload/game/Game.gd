@@ -128,11 +128,15 @@ enum States {
 	Paused
 }
 var STATE = States.MainMenu
-func load_game(path):
+func load_game(path) -> bool:
 	if !IO.file_exists(path):
 		Log.error(self, GlobalScope.Error.ERR_DOES_NOT_EXIST, "the savefile '%s' does not exist" % [path])
 		return false
 	else:
+		
+		if !clear_ingame():
+			return false
+		
 		if !Scribe.enscribe(path, File.READ, false, funcref(self, "enscribe_SAV")):
 			return false
 		
@@ -143,15 +147,25 @@ func load_game(path):
 		close_all_menus()
 		
 		return true
-func save_game(path): # TODO
+func save_game(path) -> bool: # TODO
 	if STATE == States.MainMenu:
 		Log.error(self, GlobalScope.Error.ERR_LOCKED, "can not save without a game loaded first")
 		return false
 	else:
 #		if !Scribe.enscribe(path, File.WRITE, false, funcref(self, "enscribe_SAV")):
 #			return false
-#		return true
+		return true
 		print("TODO: saving ------- ", path)
+func clear_ingame() -> bool:
+	
+	for n in Map.TILEMAP_FLAT.get_children():
+		n.queue_free()
+	for n in Map.TILEMAP_ANIM.get_children():
+		n.queue_free()
+#	INGAME_ROOT.camera_position_target = Vector2(-97, 3505)
+#	INGAME_ROOT.camera_zoom_target = 1.0
+	
+	return true
 
 var debug_schema = { # default schema used
 	"file_version": 160,
@@ -198,7 +212,7 @@ func enscribe_SAV():
 	Scribe.put(ScribeFormat.i8, "prev_progress_pointer")
 	Scribe.put(ScribeFormat.i8, "mission_progress_pointer")
 	
-	var a = Campaign.data.headers
+#	var a = Campaign.data.headers
 	
 #	var a = ScribeMono.data
 #	var a = ScribeMono.getFieldAsDictionary(ScribeMono.data)
@@ -251,10 +265,19 @@ func enscribe_SAV():
 	Scribe.sync_record([City], TYPE_OBJECT)
 	Scribe.push_compressed(37808) # <----------------------------- TODO
 	Scribe.pop_compressed()
+	
+	# unknown / unused faction falgs
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
 	Scribe.put(ScribeFormat.i16, "unused_faction_flags1")
 	Scribe.put(ScribeFormat.i16, "unused_faction_flags2")
+	
+	# player names
+	Scribe.sync_record([City], TYPE_OBJECT)
 	Scribe.put(ScribeFormat.ascii, "player_name1", 32)
 	Scribe.put(ScribeFormat.ascii, "player_name2", 32)
+	
+	# city faction
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
 	Scribe.put(ScribeFormat.i32, "city_faction")
 	
 	# buildings
@@ -317,14 +340,138 @@ func enscribe_SAV():
 		Scribe.put(ScribeFormat.i32, "selling")
 		Scribe.put(ScribeFormat.i32, "buying")
 	
-	# figure names (1)	
+	# figure names (1)
 	Scribe.sync_record([Figures, "figure_names_1"], TYPE_ARRAY)
 	for i in 21:
 		Scribe.put(ScribeFormat.i32, i)
 	
-	# scenario data
-	Scribe.sync_record([Scenario, "info"], TYPE_DICTIONARY)
-	Scribe.put(ScribeFormat.raw, "TEMP_RAW", 1592) # <---------------------------- TODO
+	# scenario info 1
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put(ScribeFormat.i16, "starting_year")
+	Scribe.put(ScribeFormat.i16, "unkn_00")
+	Scribe.put(ScribeFormat.i16, "empire_id")
+	Scribe.put(ScribeFormat.i32, "unkn_01")
+	
+	# god-related scenario info
+	Scribe.sync_record([Gods, "is_known"], TYPE_ARRAY)
+	for i in 5:
+		Scribe.put(ScribeFormat.i16, i)
+	Scribe.sync_record([Gods, "unkn_00"], TYPE_ARRAY)
+	for i in 5:
+		Scribe.put(ScribeFormat.i16, i)
+	Scribe.skip(2) # <----------------- ?????
+	
+	# scenario info 2
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put(ScribeFormat.i32, "initial_funds")
+	Scribe.put(ScribeFormat.i16, "enemy_id")
+	Scribe.skip(6) # <----------------- ?????
+	
+	# map-related scenario info
+	Scribe.sync_record([Map], TYPE_OBJECT)
+	Scribe.put(ScribeFormat.i32, "map_width")
+	Scribe.put(ScribeFormat.i32, "map_height")
+	Scribe.put(ScribeFormat.i32, "map_grid_start")
+	Scribe.put(ScribeFormat.i32, "map_border_size")
+	
+	# scenario info 3
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put(ScribeFormat.ascii, "scenario_subtitle", 64)
+	Scribe.put(ScribeFormat.ascii, "scenario_brief_description", 522)
+	Scribe.put(ScribeFormat.i16, "scenario_icon")
+	Scribe.put(ScribeFormat.i16, "is_open_play")
+	Scribe.put(ScribeFormat.i16, "initial_player_rank")
+	
+	# predator herds / fishing points / invasion points
+	Scribe.skip(8) # predator herd points (x) 4 * i16 <-------------- TODO
+	Scribe.skip(8) # predator herd points (y) 4 * i16
+	Scribe.skip(16) # fishing points (x) 8 * i16
+	Scribe.skip(16) # fishing points (y) 8 * i16
+	Scribe.skip(2) # alt. predator
+	Scribe.skip(42) # <------------------------------------ ?????
+	Scribe.skip(16) # land invasion points (x) 8 * i16
+	Scribe.skip(16) # sea invasion points (x) 8 * i16
+	Scribe.skip(16) # land invasion points (y) 8 * i16
+	Scribe.skip(16) # sea invasion points (y) 8 * i16
+	Scribe.skip(36) # <------------------------------------ ????? (01 00)
+	
+	# scenario objectives / constraints
+	Scribe.sync_record([Scenario, "objectives", "goals"], TYPE_ARRAY)
+	for i in 6:
+		Scribe.put(ScribeFormat.i32, i)
+	Scribe.sync_record([Scenario, "objectives", "enabled"], TYPE_ARRAY)
+	for i in 6:
+		Scribe.put(ScribeFormat.u8, i)
+	Scribe.skip(6) # <------------------------------------ ?????
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put(ScribeFormat.i32, "time_until_failure_enabled")
+	Scribe.put(ScribeFormat.i32, "time_until_failure")
+	Scribe.put(ScribeFormat.i32, "time_until_victory_enabled")
+	Scribe.put(ScribeFormat.i32, "time_until_victory")
+	Scribe.put(ScribeFormat.i32, "population_goal_enabled")
+	Scribe.put(ScribeFormat.i32, "population_goal")
+	
+	# earthquake & entry points
+	Scribe.skip(2) # earthquake (x) <-------------- TODO
+	Scribe.skip(2) # earthquake (y)
+	Scribe.skip(2) # city entry (x)
+	Scribe.skip(2) # city entry (y)
+	Scribe.skip(2) # city exit (x)
+	Scribe.skip(2) # city exit (y)
+	Scribe.skip(28) # <------------------------------------ ????? (coords?)
+	Scribe.skip(4) # <------------------------------------ ????? (coords?) (58, 64)
+	Scribe.skip(2) # river entry (x)
+	Scribe.skip(2) # river entry (y)
+	Scribe.skip(2) # river exit (x)
+	Scribe.skip(2) # river exit (y)
+	
+	# city events reached
+	Scribe.sync_record([City], TYPE_OBJECT)
+	Scribe.put(ScribeFormat.i32, "bailout_money_received")
+	Scribe.put(ScribeFormat.i32, "pop_milestone_25")
+	Scribe.put(ScribeFormat.i32, "pop_milestone_50")
+	Scribe.put(ScribeFormat.i32, "pop_milestone_75")
+	Scribe.skip(12) # <------------------------------------ ????? (usually go n, n+2, n+1497)
+	
+	# climate / monuments / some unknowns
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put(ScribeFormat.u8, "climate_type")
+	Scribe.skip(1) # <------------------------------------ ????? (0)
+	Scribe.skip(1) # <------------------------------------ ????? (used anywhere?)
+	Scribe.skip(1) # <------------------------------------ ????? (used anywhere?)
+	Scribe.skip(8) # <------------------------------------ ?????
+	Scribe.put(ScribeFormat.u8, "monuments_era")
+	Scribe.put(ScribeFormat.u8, "player_tribe_faction") # egypt / enemy of egypt
+	Scribe.skip(1) # <------------------------------------ ????? (-1 or -31)
+	Scribe.skip(1) # <------------------------------------ ????? (-1)
+	
+	# animal herds / disembark points / allowed buildings
+	Scribe.skip(16) # prey herds (x) 4 * i32
+	Scribe.skip(16) # prey herds (y) 4 * i32
+	Scribe.skip(228) # allowed buildings: 114 * i16
+	Scribe.skip(12) # disembark points (x) 3 * i32
+	Scribe.skip(12) # disembark points (y) 3 * i32
+	Scribe.put(ScribeFormat.i32, "debt_interest_ratedebt_interest_rate")
+	
+	# monuments & burial provisions
+	Scribe.sync_record([Monuments], TYPE_OBJECT)
+	Scribe.put(ScribeFormat.u16, "available_monument_1")
+	Scribe.put(ScribeFormat.u16, "available_monument_2")
+	Scribe.put(ScribeFormat.u16, "available_monument_3")
+	Scribe.skip(2) # <------------------------------------ ?????
+	Scribe.sync_record([Monuments, "burial_provisions", "required"], TYPE_ARRAY)
+	for i in 36:
+		Scribe.put(ScribeFormat.i32, i)
+	Scribe.sync_record([Monuments, "burial_provisions", "dispatched"], TYPE_ARRAY)
+	for i in 36:
+		Scribe.put(ScribeFormat.i32, i)
+	
+	# pharaoh / player numerals
+	Scribe.sync_record([Scenario], TYPE_OBJECT)
+	Scribe.put(ScribeFormat.i32, "current_pharaoh")
+	Scribe.put(ScribeFormat.i32, "player_incarnation")
+#	Scribe.put(ScribeFormat.raw, "TEMP_RAW", 1592) # <---------------------------- TODO
+#	Scribe.sync_record([Scenario, "info"], TYPE_DICTIONARY)
 	Scribe.put(ScribeFormat.i32, "max_year")
 	
 	# messages
@@ -619,7 +766,7 @@ func _ready():
 #	var a = load("res://scripts/mono/YourCustomClass.cs").new()
 	
 #	yield(get_tree(), "idle_frame")
-#	Game.load_game("res://../tests/autosave.sav")
+	Game.load_game("res://../tests/autosave.sav")
 #	STATE = States.Ingame
 #	close_all_menus()
 

@@ -81,10 +81,8 @@ func test_scribe_perform_random(i):
 func test_scribe_get_r(i):
 	if i == 18 || i == 19 || i == 20:
 		return float(test_scribe_stamps[i]) / float(test_scribe_i)
-#		return test_scribe_stamps[i] / test_scribe_i
 	else:
 		return float(test_scribe_stamps[i]) / float(test_scribe_indiv_i[i])
-#		return test_scribe_stamps[i] / test_scribe_indiv_i[i]
 func test_scribe():
 	
 	if ScribeMono._path != "res://../tests/autosave.sav":
@@ -197,8 +195,8 @@ func _input(event):
 			
 				tile_text += "tile: %s\n" % [tile_coords]
 				tile_text += "[color=#ffcc00]image:[/color]      %d\n" % [Map.grids.images[tile_coords.y][tile_coords.x]]
-				tile_text += "[color=#ffcc00]edge:[/color]       %d\n" % [Map.grids.edge[tile_coords.y][tile_coords.x]]
 				tile_text += "[color=#ffcc00]buildings:[/color]  %d\n" % [Map.grids.buildings[tile_coords.y][tile_coords.x]]
+#				tile_text += "[color=#ffcc00]edge:[/color]       %d\n" % [Map.grids.edge[tile_coords.y][tile_coords.x]]
 				
 				# terrain
 				var _terrain = Map.grids.terrain[tile_coords.y][tile_coords.x]

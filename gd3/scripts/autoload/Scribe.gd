@@ -225,7 +225,15 @@ func pop_compressed() -> bool: # compress and write top bytestream to file on WR
 #
 ## helper I/O for grids (encapsulates push/pop_compressed and put ops)
 func put_grid(format, grid_name: String, compressed: bool, grid_width: int = Map.PH_MAP_WIDTH, default = 0) -> bool:
-	return ScribeMono.PutGrid(format, grid_name, compressed, grid_width)
+	var _t = Stopwatch.start()
+	if !ScribeMono.PutGrid(format, grid_name, compressed, grid_width):
+		return false
+	print("grid %-20s ms taken: %3d %s" % [
+		"'" + grid_name + "'",
+		Stopwatch.query(_t),
+		"" if compressed else ">> not compressed <<"
+	])
+	return true
 #
 #	var _t = Stopwatch.start()
 #

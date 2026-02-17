@@ -27,31 +27,25 @@ var total_formations
 var ferry_queues = []
 var ferry_transiting = []
 
+onready var figure_sprite_TSCN = load("res://scenes/FigureSprite.tscn")
 func spawn_sprites(): # TODO
 	var _t = Stopwatch.start()
 	
-	for figure in figures:
-		pass
+	for i in figures.size():
+		var figure = figures[i]
+		if figure.type != 0:
+			var n = figure_sprite_TSCN.instance()
+			n.set_figure(i)
+			Map.TILEMAP_FLAT.add_child(n)
 	
 	
 	Stopwatch.stop(self, _t, "Figures -> spawn_sprites")
 
 func enscribe_figures():
 	Scribe.push_compressed(Figures.MAX_FIGURES * 388)
-#	Scribe.pop_compressed()
-#	return # temp
-	
-	
-	
 	var _t = Stopwatch.start()
-	
-	
-#	ScribeMono.testReadChunk2();
-	
 	var _skipped = 0
 	for i in Figures.MAX_FIGURES:
-		
-#		var _p = Scribe._compressed_top.get_position()
 		var _p = ScribeMono.GetPosition()
 		assert(_p % 388 == 0)
 		
@@ -182,10 +176,10 @@ func enscribe_figures():
 			Scribe.put(ScribeFormat.i16, "cart_image_id") # this is off by 18 with respect to the normal SG global ids!
 			Scribe.skip(2)
 	
-	print("figures:  %d ms taken, %d total (%d skipped) " % [
-		Stopwatch.query(_t),
+	print("figures: %d (%d skipped)    ms taken: %d" % [
 		MAX_FIGURES - _skipped,
-		_skipped
+		_skipped,
+		Stopwatch.query(_t)
 	])
 	Scribe.pop_compressed()
 	
