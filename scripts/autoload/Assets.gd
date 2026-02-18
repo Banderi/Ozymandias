@@ -91,7 +91,7 @@ func load_png(path: String, flags: int):
 	texture.create_from_image(image, flags)
 	return texture
 
-# SG "Sierra Graphics" archives
+# SG "Sierra Graphics" archives parsing and raw record ops
 enum ImageTypes {
 	Plain_WithTransparency = 0,
 	Plain_Opaque = 1,
@@ -106,16 +106,19 @@ var SG = {}
 const SGX_HEADER_SIZE = 80
 const SGX_MAX_BMPS = 300
 const SGX_MAX_TAGS = 300
-func load_sgx(filename_sgx: String, force_reparse: bool = false, extract_data: bool = false): # .sgx head
+func parse_sgx(filename_sgx: String, force_reparse: bool = false): # .sgx head
 	# original SG format dissection resources:
 	# https://github.com/bvschaik/julius/blob/master/src/core/image.c
 	# https://github.com/lclarkmichalek/libsg/blob/master/c/sgfile.c
 	# https://github.com/bvschaik/citybuilding-tools/wiki/SG-file-format
 
+	Log.generic("parse_sgx", "filename_sgx:%s, force_reparse:%s" % [filename_sgx, force_reparse])
 	var _t = Stopwatch.start()
 	
 	# naked SG pak name
 	var pak_name = IO.strip_extension(filename_sgx)
+	if filename_sgx == pak_name:
+		return Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "parse_sgx() requires the full file name with extension but was provided the naked pak_name")
 
 	# check if already parsed
 	if pak_name in SG && !force_reparse:
@@ -205,13 +208,13 @@ func load_sgx(filename_sgx: String, force_reparse: bool = false, extract_data: b
 	# image data
 	var MAX_BMP_RECORDS
 	var IMG_RECORD_SIZE = 64
-	var include_alpha = false
+	var alpha_mask_extra = false
 	if p_data.header.version == 211:
 		MAX_BMP_RECORDS = 100 # .sg2
 	else:
 		MAX_BMP_RECORDS = 200 # .sg3
 	if p_data.header.version >= 214:
-		include_alpha = true
+		alpha_mask_extra = true
 		IMG_RECORD_SIZE = 72
 	file.push_cursor_base(200 * MAX_BMP_RECORDS + IMG_RECORD_SIZE)  # first one is empty/dummy
 	p_data.img.push_back(null)
@@ -222,7 +225,7 @@ func load_sgx(filename_sgx: String, force_reparse: bool = false, extract_data: b
 			"data_length": file.get_u32(),
 			"uncompressed_length": file.get_u32(),
 			"unk00": file.get_32(),
-			"offset_mirror": file.get_i32(), # .sg3 only
+			"offset_to_mirror_sprite": file.get_i32(), # .sg3 only
 			"width": max(file.get_i16(), 0),
 			"height": max(file.get_i16(), 0),
 			"atlas_x": file.get_16(),
@@ -257,7 +260,7 @@ func load_sgx(filename_sgx: String, force_reparse: bool = false, extract_data: b
 			"alpha_length": 0
 		})
 		var img = p_data.img[-1]
-		if include_alpha:
+		if alpha_mask_extra:
 			img.alpha_offset = file.get_i32()
 			img.alpha_length = file.get_i32()
 		p_data.bmp[img.bmp_record].__num_images_i += 1
@@ -270,29 +273,31 @@ func load_sgx(filename_sgx: String, force_reparse: bool = false, extract_data: b
 	assert(file.end_reached(true))
 	var _t_1 = Stopwatch.query(_t, Stopwatch.Milliseconds)
 	
-	print("SG pak: %s (%d ms) -- %d images, %d bmps, %d groups" % [
-		"'" + filename_sgx + "'",
+	Log.generic("parse_sgx", "DONE (%d ms) -- %d images, %d bmps, %d groups" % [
 		Stopwatch.query(_t, Stopwatch.Milliseconds),
 		p_data.header.img_records,
 		p_data.header.bmp_records_nix_system,
 		p_data.groups.size()
 	])
+	file.close()
+	if force_reparse:
+		return p_data.header.img_records
+	else:
+		return true
+func extract_sgx(filename_555: String, skip_system_bmp: bool, force_reextract: bool): # .555 pak / actual image data
 	
-	# also extract data
-	if extract_data:
-		return extract_sgx(pak_name + ".555", true, force_reparse)
-	
-	return true
-func extract_sgx(filename_555: String, skip_system_bmp: bool = true, force_reextract: bool = false): # .555 pak / actual image data
-	
+	Log.generic("extract_sgx", "filename_555:%s, skip_system_bmp:%s, force_reextract:%s" % [filename_555, skip_system_bmp, force_reextract])
 	var _t = Stopwatch.start()
 	
 	# naked SG pak name
 	var pak_name = IO.strip_extension(filename_555)
+	if filename_555 == pak_name:
+		return Log.error("extract_sgx", GlobalScope.Error.ERR_INVALID_PARAMETER, "extract_sgx() requires the full file name with extension but was provided the naked pak_name")
+
 	
 	# check if already parsed
 	if !(pak_name in SG):
-		if !load_sgx(filename_555):
+		if !parse_sgx(filename_555):
 			return false
 	
 	# actual path
@@ -355,9 +360,9 @@ func extract_sgx(filename_555: String, skip_system_bmp: bool = true, force_reext
 			_: # unknown image type?
 				Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "unknown image type '%d'" % [img.type])
 		if img.get("alpha_length", 0) != 0:
-			pass
-		if img.offset_mirror != 0:
-			pass
+			SGImageMono.SetAlphaMask(extracted_image, img.width, file.get_buffer(img.alpha_length))
+#		if img.offset_to_mirror_sprite != 0:
+#			pass
 		
 		# save extracted texture to disk
 		if extracted_image != null:
@@ -369,38 +374,41 @@ func extract_sgx(filename_555: String, skip_system_bmp: bool = true, force_reext
 		else:
 			images_failed += 1
 		
-	if has_system_bmp:
-		assert(images_skipped == p_data.bmp[0].num_images + 1)
+#	if has_system_bmp:
+#		assert(images_skipped == p_data.bmp[0].num_images + 1)
 	
-	print("555 pak: %s (%d ms) -- %d extracted, %d skipped, %d failed" % [
-		"'" + filename_555 + "'",
+	Log.generic("extract_sgx", "DONE (%d ms) -- %d extracted, %d skipped, %d failed" % [
 		Stopwatch.query(_t, Stopwatch.Milliseconds),
 		images_extracted,
 		images_skipped,
 		images_failed
 	])
-	return true
-func get_sg_texture(filename_sgx: String, id: int) -> Texture:
+	file.close()
+	if force_reextract:
+		return images_extracted
+	else:
+		return true
+func get_sg_texture(filename_sgx: String, img_idx: int, seek_cache_only: bool) -> Texture: # this uses the pak's own record indices -- it COUNTS SYSTEM.BMP AS WELL AS THE DUMMY RECORD.
 	
 	#  OPTION 1: read cached raw texture streams -- around ~380 ms
 	var pak_name = IO.strip_extension(filename_sgx)
-	var path_cached = str(get_game_cache_path(), "/Data/" , pak_name, "/", id, ".texture")
+	if filename_sgx == pak_name:
+		return Log.error("get_sg_texture", GlobalScope.Error.ERR_INVALID_PARAMETER, "get_sg_texture() requires the full file name with extension but was provided the naked pak_name")
+	var path_cached = str(get_game_cache_path(), "/Data/" , pak_name, "/", img_idx, ".texture")
 	var texture = IO.read(path_cached, false, true)
-	if texture != null:
+	if texture != null || seek_cache_only:
 		return texture
 	
 	#  OPTION 2: extract from SG paks -- ?? ms
-	var pak_path = load_sgx(filename_sgx)
-	if pak_path == null:
+	if !parse_sgx(filename_sgx) || !extract_sgx(pak_name + ".555", (true if img_idx >= 201 else false), false):
 		return null
-#	if extract_sgx(pak_name + ".555", id >= 201): # TODO
 	else:
 		texture = IO.read(path_cached, false, true)
 		if texture != null:
 			return texture
 	
 	# OPTION 3: loading pngs from res:// -- around ~1050 ms
-	var png_path = str(RES_ASSETS_PATH, "/", GAME_SET, "/", pak_name, "/", id, ".png")
+	var png_path = str(RES_ASSETS_PATH, "/", GAME_SET, "/", pak_name, "/", img_idx, ".png")
 	if IO.file_exists(png_path):
 		texture = load_png(png_path, 0) # Texture.FLAG_MIPMAPS breaks TileMap rendering.
 		if texture != null:
@@ -409,9 +417,9 @@ func get_sg_texture(filename_sgx: String, id: int) -> Texture:
 		return texture
 	
 	# OPTION 4: loading pngs from PharaohExtract -- around ~1050 ms
-	if id in SG[pak_name].img:
+	if img_idx < SG[pak_name].img.size(): # the sgx was enumerated at OPTION 2, so the records MUST be loaded.
+		var img = SG[pak_name].img[img_idx]
 		# compose full path from bmp records
-		var img = SG[pak_name].img[id] # this was enumerated at OPTION 2, so it must be valid.
 		var bmp_name = SG[pak_name].bmp[img.bmp_record].name
 		bmp_name = bmp_name.rsplit(".", false, 1)[0]
 		png_path = "%s/%s/%s_%05d.png" % [TMP_TESTING_EXTR_PATH, pak_name, bmp_name, img.idx_in_bmp]
@@ -424,73 +432,136 @@ func get_sg_texture(filename_sgx: String, id: int) -> Texture:
 	
 	# return results
 	if texture == null:
-		Log.error(self, GlobalScope.Error.ERR_FILE_NOT_FOUND, "could not load game texture %d of pak %s" % [id, pak_name])
+		Log.error("get_sg_texture", GlobalScope.Error.ERR_FILE_NOT_FOUND, "could not load game texture %d of pak %s" % [img_idx, pak_name])
 	return texture
 
-func get_pharaoh_loaded_enemy_pack(): # TODO
-		return "Assyrian.sg3"
-func get_pharaoh_loaded_monument_pak(): # TODO
-	return "Mastaba.sg3"
-func get_pharaoh_loaded_temple_complex_pak(): # TODO
-	return "Temple_nile.sg3"
+# gameset-specific SG paks, image id lookups and texture fetch
+var SG_PAKS = {  # These are the ranges of game paks and how they're laid out in the global image lookup.
+				 #                        start id        final id      start       end
+	"Pharaoh": [ #                        (global)        (global)      (pak)      (pak)
+		["Pharaoh_Unloaded.sg3", 			    1,            682,         1,       682],
+		["SprMain.sg3", 					  683,          11007,         1,     10325],
+		# ???
+	  # [ enemies, 	                        11008,          11906,         1,         0],
+		# ???
+		["Pharaoh_General.sg3",				11907,          14452,       201,      2746],
+		["Pharaoh_Terrain.sg3",				14453,          15767,       201,      1515],
+		["obelisk5x5a.sg3",					15768,          15768,       201,       201],
+	  # ["?????",							15769,          15769,       201,       201],
+		["obelisk3x3a.sg3",					15770,          15770,       201,       201],
+		# ???
+		["Temple_nile.sg3",					15792,          15829,       201,       238],
+		["Temple_ra.sg3",					15792,          15829,       201,       238],
+		["Temple_ptah.sg3",					15792,          15829,       201,       238],
+		["Temple_seth.sg3",					15792,          15829,       201,       238],
+		["Temple_bast.sg3",					15792,          15829,       201,       238],
+		# ???
+		["SprAmbient.sg3",					15831,          18764,         1,      2934],
+		["Pharaoh_Fonts.sg3",				18765,          20104,       201,      1540],
+		# ???                (200 images)
+		["Empire.sg3",						20305,          20305,       201,       201],
+		# ???
+		["SprMain2.sg3",					20683,          23034,         1,      2352],
+		# ???
+		["Expansion.sg3",					23236,          23935,       201,       900],
+	] }
+func load_sg_paks(force_reextract: bool = false): # parse sgx records AND extract images to cache, if missing
+	var _t = Stopwatch.start()
+	for i in SG_PAKS[GAME_SET].size():
+		var pak_range_info = SG_PAKS[GAME_SET][i]
+		
+		var filename_sgx = pak_range_info[0]
+		var start_img_id = pak_range_info[1]
+		var end_img_id = pak_range_info[2]
+		var skip_initial = pak_range_info[3]
+		var total_img_records = pak_range_info[4]
+		
+		var r = parse_sgx(filename_sgx, true)
+		if r != total_img_records:
+			return false
+		if r + start_img_id - skip_initial != end_img_id:
+			return false
+		var pak_name = IO.strip_extension(filename_sgx)
+		if !extract_sgx(pak_name + ".555", (true if skip_initial >= 201 else false), force_reextract):
+			return false
+	Stopwatch.stop("load_sg_paks", _t, "SG paks loaded for game '%s'" % [GAME_SET])
+	return true
+#func get_pharaoh_loaded_enemy_pack(): # TODO
+#	return "Assyrian.sg3"
+#func get_pharaoh_loaded_monument_pak(): # TODO
+#	return "Mastaba.sg3"
+#func get_pharaoh_loaded_temple_complex_pak(): # TODO
+#	return "Temple_nile.sg3"
+#func get_pharaoh_obelisk_pak(): # TODO
+#	return "obelisk5x5f.sg3"
 func get_gameset_sg_texture(img_id: int):
-	match GAME_SET:
-		"Pharaoh":
-			if img_id >= 23735:
-				return get_sg_texture(get_pharaoh_loaded_monument_pak(), img_id - 23735)
-			if img_id >= 23035:
-				return get_sg_texture("Expansion.sg3", img_id - 23035)
-			if img_id >= 20683:
-				return get_sg_texture("SprMain.sg3", img_id - 20683)
-			if img_id >= 20305:
-				return get_sg_texture("Empire.sg3", img_id - 20305)
-			if img_id >= 18765:
-				return get_sg_texture("Pharaoh_Fonts.sg3", img_id - 18765)
-			if img_id >= 15831:
-				return get_sg_texture("SprAmbient.sg3", img_id - 15831)
-			if img_id >= 15767:
-				return get_sg_texture(get_pharaoh_loaded_temple_complex_pak(), img_id - 15767)
-			if img_id >= 14252:
-				return get_sg_texture("Pharaoh_Terrain.sg3", img_id - 14252)
-			if img_id >= 11706:
-				return get_sg_texture("Pharaoh_General.sg3", img_id - 11706)
-			if img_id >= 11008:
-				return get_sg_texture(get_pharaoh_loaded_enemy_pack(), img_id - 11008)
-			if img_id >= 683:
-				return get_sg_texture("SprMain.sg3", img_id - 683)
-			else:
-				return get_sg_texture("Pharaoh_Unloaded.sg3", img_id)
-			
-			
-#			if img_id <= 200:
-#				return ["Pharaoh_Unloaded.sg3", img_id]
-#			if img_id <= 682:
-#				return ["Pharaoh_Unloaded.sg3", img_id]
-#			elif img_id <= 11007:
-#				return ["SprMain.sg3", img_id]
-#			elif img_id <= 11706:
-#				return [get_pharaoh_loaded_enemy_pack(), img_id]
-#			elif img_id <= 14252:
-#				return ["Pharaoh_General.sg3", img_id - 11706]
-#			elif img_id <= 14252:
-#				return ["Pharaoh_Terrain.sg3", img_id - 14252]
-			Log.error(self, GlobalScope.Error.ERR_DOES_NOT_EXIST, "image id '%s' could not be resolved" % [img_id])
-			
-		_:
-			Log.error(self, GlobalScope.Error.ERR_METHOD_NOT_FOUND, "game set '%s' is not implemented" % [GAME_SET])
+	if GAME_SET in SG_PAKS:
+		for i in SG_PAKS[GAME_SET].size():
+			var pak_range_info = SG_PAKS[GAME_SET][i]
+			var filename_sgx = pak_range_info[0]
+			var start_img_id = pak_range_info[1]
+			var end_img_id = pak_range_info[2]
+			var skip_initial = pak_range_info[3]
+			if img_id >= start_img_id && img_id <= end_img_id:
+				return get_sg_texture(filename_sgx, img_id - start_img_id + skip_initial, true)
+		Log.error(self, GlobalScope.Error.ERR_DOES_NOT_EXIST, "image id '%s' could not be resolved" % [img_id])
+	else:
+		Log.error(self, GlobalScope.Error.ERR_METHOD_NOT_FOUND, "game set '%s' is not implemented" % [GAME_SET])
+	return null
 
 # construct tile from texture
 const TILE_WIDTH_PIXELS = 60
 const TILE_HEIGHT_PIXELS = 30
 const HALF_TILE_WIDTH_PIXELS = 30
 const HALF_TILE_HEIGHT_PIXELS = 15
-func tileset_add_tile_from_texture(tileset: TileSet, texture: Texture, id: int): # for some reason, this shows [Null] in editor
-#	if id == 850 + 14252:														 # upon applying certain textures. e.g.:
-#		texture = get_sg_texture("Pharaoh_Terrain.sg3", 850)					 # - Pharaoh_Terrain @ 850 (SPR_B_DOCK_E)
-	var tile_size = (texture.get_size().x + 2) / TILE_WIDTH_PIXELS
+func tileset_add_tile_from_texture(tileset: TileSet, texture: Texture, id: int): # constructs tile from texture and add to tileset
+#	if id == 850 + 14252:														 # for some reason, this shows [Null] in editor
+#		texture = get_sg_texture("Pharaoh_Terrain.sg3", 850)					 # upon applying certain textures. e.g.:
+	var tile_size = (texture.get_size().x + 2) / TILE_WIDTH_PIXELS				 # - Pharaoh_Terrain @ 850 (SPR_B_DOCK_E)
 	tileset.create_tile(id)
 	tileset.tile_set_texture(id, texture)
 	tileset.tile_set_texture_offset(id, Vector2(0, (15 * (tile_size + 1)) - texture.get_size().y))
+func add_pak_sprites_into_tileset(tileset: TileSet, filename_sgx: String) -> bool:
+	var _t = Stopwatch.start()
+	if tileset == null:
+		return Log.error("add_pak_sprites_into_tileset", GlobalScope.Error.ERR_INVALID_PARAMETER, "tileset parameter was passed null")
+	
+	# find pak info in gameset records
+	var pak_range_info = null
+	for i in SG_PAKS[GAME_SET].size():
+		pak_range_info = SG_PAKS[GAME_SET][i]
+		if filename_sgx != pak_range_info[0]:
+			pak_range_info = null
+		else:
+			break
+	if pak_range_info == null:
+		return Log.error("add_pak_sprites_into_tileset", GlobalScope.Error.ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [filename_sgx])
+	var pak_start_img_id = pak_range_info[1]
+	var end_img_id = pak_range_info[2]
+	var skip_initial = pak_range_info[3]
+	
+	# check that pak has already been parsed
+	if !parse_sgx(filename_sgx, false):
+		return false
+	var pak_name = IO.strip_extension(filename_sgx)
+	
+	# load images within the boundaries of the global ids of this pak
+	var last_img_id = null
+	for i in range(skip_initial, SG[pak_name].img.size()):
+		var texture = get_sg_texture(filename_sgx, i, true)
+		if texture == null:
+			continue
+		last_img_id = pak_start_img_id + (i - skip_initial)
+		
+		# remove tile if already present
+		if tileset.get_tiles_ids().has(last_img_id):
+			tileset.remove_tile(last_img_id)
+		tileset_add_tile_from_texture(tileset, texture, last_img_id)
+	
+	if last_img_id != end_img_id:
+		return Log.error("add_pak_sprites_into_tileset", GlobalScope.Error.ERR_BUG, "pak '%s' image ids do not add up as expected (%d != %d)" % [filename_sgx, last_img_id, end_img_id])
+	Stopwatch.stop("add_pak_sprites_into_tileset", _t, "loaded '%s' into game tiles %d ---> %d" % [filename_sgx, pak_start_img_id, last_img_id])
+	return true
 
 func editor_debug_translate_labels(node): # in-editor text localization refresh for labels & buttons
 	if Engine.is_editor_hint():
@@ -640,43 +711,29 @@ func load_enemies(): # TODO
 	pass
 func load_settings(): # TODO
 	pass
-func load_tilesets(ignore_cache: bool = false):
+
+
+func load_common_tilesets(ignore_cache: bool = false):
 	
-	# load tileset from raw Variant disk file -- around ~400 ms
+	# load tileset from raw Variant disk file -- around 420~460 ms
 	var _t = Stopwatch.start()
 	var path_cached_tileset = get_game_cache_path() + "/Pharaoh_Terrain.tileset"
 	if !ignore_cache && IO.file_exists(path_cached_tileset):
 		Map.set_tileset(IO.read(path_cached_tileset), null)
-		Stopwatch.stop(self, _t, "tileset textures loaded from cache")
+		Stopwatch.stop("load_tilesets", _t, "tileset textures loaded from cache")
 	else:
-		# construct tileset from extracted sprites -- between 360~1050 ms
+		# construct tileset from extracted sprites -- around 1500~1800 ms
 		var tileset = TileSet.new()
-		
-		# Pharaoh_General
-#		if !load_sgx("Pharaoh_General.sg3"):
-#			return false
-#		for i in range(201, SG.Pharaoh_General.img.size()):
-#			var texture = get_sg_texture("Pharaoh_General", i)
-#			if texture == null:
-#				continue
-#			tileset_add_tile_from_texture(tileset, texture, i + 11706)
-		
-		# Pharaoh_Terrain
-		if !load_sgx("Pharaoh_Terrain.sg3", false, true):
-			return false
-		for i in range(201, SG.Pharaoh_Terrain.img.size()):
-			var texture = get_sg_texture("Pharaoh_Terrain", i)
-			if texture == null:
-				continue
-			tileset_add_tile_from_texture(tileset, texture, i + 14252)
-		
+		if !add_pak_sprites_into_tileset(tileset, "Pharaoh_General.sg3"): return false
+		if !add_pak_sprites_into_tileset(tileset, "Pharaoh_Terrain.sg3"): return false
+		if !add_pak_sprites_into_tileset(tileset, "Expansion.sg3"): return false
 		Map.set_tileset(tileset, null)
-		Stopwatch.stop(self, _t, "tileset textures generated and loaded")
+		Stopwatch.stop("load_tilesets", _t, "tileset textures generated and loaded")
 		
-		# save tileset as raw Variant disk file -- around ~310 ms
+		# save tileset as raw Variant disk file -- around ~1200 ms
 		_t = Stopwatch.start()
 		IO.write(path_cached_tileset, tileset)
-		Stopwatch.stop(self, _t, "tileset save to disk")
+		Stopwatch.stop("load_tilesets", _t, "tileset save to disk")
 		
 	return true
 
@@ -686,10 +743,17 @@ func load_game_assets(game):
 	yield(ASYNC_set_game_install_paths(false, "Install Path"), "completed")
 	
 	load_locales()
-	load_tilesets(true) # <--- true for forcing texture re-generation
+	load_sg_paks() # <--- true to force all sprite re-extraction
+	if !load_common_tilesets(false): # <--- true to ignore cached tiles
+		return bail(GlobalScope.Error.FAILED, "load_common_tilesets()")
 	
 	load_backdrops()
 	load_animations()
 	load_monuments()
 	load_enemies()
 	load_settings()
+
+func bail(err, msg) -> bool:
+	Log.error(self, err, msg)
+	assert(false)
+	return false

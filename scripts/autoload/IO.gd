@@ -126,7 +126,7 @@ func read(path: String, get_as_text = false, suppress_log = false, password = ""
 	if !suppress_log:
 		Log.generic(null,str("file '",path,"' read successfully!"))
 	return data
-func open(path: String, flags, suppress_log = false, password: String = ""):
+func open(path: String, flags, suppress_log = false, password: String = ""): # ***WARNING***: this requires manually CLOSING the file handle.
 	# init stream
 	var file = File.new()
 	var err = -1

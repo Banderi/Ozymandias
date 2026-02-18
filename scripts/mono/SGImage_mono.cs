@@ -174,4 +174,53 @@ public class SGImage_mono : Node
 		image.Unlock();
 		return image;
 	}
+
+	public void SetAlphaMask(Godot.Image image, int img_width, byte[] alpha_input)
+	{
+		BinaryReader reader = new BinaryReader(new MemoryStream(alpha_input));
+		image.Lock();
+
+		// int i = 0;
+		int x = 0, y = 0, j;
+		// int width = img->workRecord->width;
+		// int length = img->workRecord->alpha_length;
+		int img_alpha_length = alpha_input.Length;
+		// while (i < alpha_input.Length) {
+		while (img_alpha_length > 0) {
+			// uint8_t c = buffer[i++];
+			byte c = reader.ReadByte();
+			if (c == 255) {
+				/* The next byte is the number of pixels to skip */
+				// x += buffer[i++];
+				x += reader.ReadByte();
+				img_alpha_length++;
+				while (x >= img_width) {
+					y++;
+					x -= img_width;
+				}
+			} else {
+				/* `c' is the number of image data bytes */
+				// for (j = 0; j < c; j++, i++) {
+				for (j = 0; j < c; j++, img_alpha_length--) {
+					// setAlphaPixel(img, pixels, x, y, buffer[i]);
+
+					/* Only the first five bits of the alpha channel are used */
+					byte color = reader.ReadByte();
+					byte alpha = (byte)(((color & 0x1f) << 3) | ((color & 0x1c) >> 2));
+
+					// int p = y * img_width + x;
+					// pixels[p] = (pixels[p] & 0x00ffffff) | (alpha << 24);
+					Godot.Color pixel = image.GetPixel(x, y);
+					pixel.a8 = alpha;
+					image.SetPixel(x, y, pixel);
+
+					x++;
+					if (x >= img_width) {
+						y++;
+						x = 0;
+					}
+				}
+			}
+		}
+	}
 }

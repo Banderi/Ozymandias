@@ -118,12 +118,15 @@ enum BitFlags {
 
 func set_tileset(flats: TileSet, anims: TileSet): # does this require node setup in tree..?
 	TILEMAP_FLAT.tile_set = flats
-	TILEMAP_ANIM.tile_set = anims
-func set_grid(grid_name, x, y, value):
+	TILEMAP_ANIM.tile_set = anims # TODO
+func tilesets_load_scenario_specifics(): # TODO: anims?
+	if !Assets.add_pak_sprites_into_tileset(TILEMAP_FLAT.tile_set, "Temple_bast.sg3"):
+		return false
+
+func set_grid(grid_name, x, y, value): # TODO
 	if !(grid_name in grids):
 		return false
-#	grids[grid_name].set_cell(x, y, value)
-	# TODO
+	grids[grid_name][y][x] = value
 	return true
 
 func redraw():

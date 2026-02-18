@@ -1656,16 +1656,25 @@ text = "autosave.sav"
 
 [node name="BtnTestTerrainImages" type="SpinBox" parent="Debug/DEBUG_BTNS"]
 margin_left = 199.0
-margin_right = 273.0
+margin_right = 279.0
 margin_bottom = 24.0
+rect_min_size = Vector2( 80, 0 )
 min_value = -1.0
 max_value = 1e+08
 
 [node name="BtnRedrawMap" type="Button" parent="Debug/DEBUG_BTNS"]
-margin_left = 277.0
-margin_right = 367.0
+margin_left = 283.0
+margin_right = 373.0
 margin_bottom = 24.0
 text = "Redraw map"
+
+[node name="BtnTestSprites" type="SpinBox" parent="Debug/DEBUG_BTNS"]
+margin_left = 377.0
+margin_right = 457.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 80, 0 )
+min_value = -1.0
+max_value = 1e+08
 
 [node name="TextureRect" type="TextureRect" parent="Debug"]
 margin_left = 430.0
@@ -1678,6 +1687,7 @@ __meta__ = {
 }
 
 [node name="ColorRect" type="ColorRect" parent="Debug/TextureRect"]
+visible = false
 show_behind_parent = true
 margin_right = 40.0
 margin_bottom = 40.0
@@ -1716,3 +1726,4 @@ color = Color( 0.733333, 0.733333, 0.733333, 1 )
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnLoadAutosave" to="Debug" method="_on_BtnLoadAutosave_pressed"]
 [connection signal="value_changed" from="Debug/DEBUG_BTNS/BtnTestTerrainImages" to="Debug" method="_on_BtnTestTerrainImages_value_changed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnRedrawMap" to="Debug" method="_on_BtnRedrawMap_pressed"]
+[connection signal="value_changed" from="Debug/DEBUG_BTNS/BtnTestSprites" to="Debug" method="_on_BtnTestSprites_value_changed"]

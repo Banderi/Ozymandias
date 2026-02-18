@@ -133,15 +133,17 @@ func load_game(path) -> bool:
 		Log.error(self, GlobalScope.Error.ERR_DOES_NOT_EXIST, "the savefile '%s' does not exist" % [path])
 		return false
 	else:
-		
 		if !clear_ingame():
 			return false
-		
 		if !Scribe.enscribe(path, File.READ, false, funcref(self, "enscribe_SAV")):
 			return false
 		
+		Map.tilesets_load_scenario_specifics()
+		
 		Map.redraw()
 		Figures.spawn_sprites()
+		
+		####
 		
 		STATE = States.Ingame
 		close_all_menus()
@@ -767,6 +769,7 @@ func _ready():
 	
 #	yield(get_tree(), "idle_frame")
 #	Game.load_game("res://tests/autosave.sav")
+#	Game.load_game("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep/autosave.sav")
 #	STATE = States.Ingame
 #	close_all_menus()
 

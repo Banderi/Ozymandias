@@ -4,6 +4,7 @@ func _on_BtnPKWareTest_pressed():
 	Game.do_PKWare_tests()
 func _on_BtnLoadAutosave_pressed():
 	Game.load_game("res://tests/autosave.sav")
+#	Game.load_game("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep/autosave.sav")
 
 var prev_tile_test_value = 2
 func _on_BtnTestTerrainImages_value_changed(value):
@@ -16,8 +17,9 @@ func _on_BtnTestTerrainImages_value_changed(value):
 				Map.TILEMAP_FLAT.set_cell(x, y, 2)
 				found += 1
 	print("found: ", found, " cells")
-				
 	prev_tile_test_value = value
+
+func _on_BtnTestSprites_value_changed(value):
 #	$TextureRect.texture = Assets.get_sg_texture("Pharaoh_Terrain.sg3", value)
 	$TextureRect.texture = Assets.get_gameset_sg_texture(value)
 
@@ -239,7 +241,7 @@ func _input(event):
 			
 			if $DEBUG_LABEL3.bbcode_text != tile_text:
 				$DEBUG_LABEL3.bbcode_text = tile_text
-			$DEBUG_LABEL3.rect_position = $DEBUG_LABEL3.get_global_mouse_position() - Vector2(100, 200)
+			$DEBUG_LABEL3.rect_position = $DEBUG_LABEL3.get_global_mouse_position() - Vector2(200, 100)
 
 var last_fps = 60
 func _process(delta):
