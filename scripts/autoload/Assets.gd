@@ -106,7 +106,7 @@ var SG = {}
 const SGX_HEADER_SIZE = 80
 const SGX_MAX_BMPS = 300
 const SGX_MAX_TAGS = 300
-func load_sgx(sgx_file: String, force_reparse: bool = false, extract_data: bool = false): # .sgx head
+func load_sgx(filename_sgx: String, force_reparse: bool = false, extract_data: bool = false): # .sgx head
 	# original SG format dissection resources:
 	# https://github.com/bvschaik/julius/blob/master/src/core/image.c
 	# https://github.com/lclarkmichalek/libsg/blob/master/c/sgfile.c
@@ -115,14 +115,14 @@ func load_sgx(sgx_file: String, force_reparse: bool = false, extract_data: bool 
 	var _t = Stopwatch.start()
 	
 	# naked SG pak name
-	var pak_name = IO.strip_extension(sgx_file)
+	var pak_name = IO.strip_extension(filename_sgx)
 
 	# check if already parsed
 	if pak_name in SG && !force_reparse:
 		return true
 	
 	# actual path
-	var path = get_game_file_path(sgx_file)
+	var path = get_game_file_path(filename_sgx)
 	if path == null:
 		return false
 	
@@ -240,7 +240,7 @@ func load_sgx(sgx_file: String, force_reparse: bool = false, extract_data: bool 
 			"animation.can_reverse": file.get_i8(),
 			"animation.unk10": file.get_8(),
 			"type": file.get_u8(),
-			"is_fully_compressed": file.get_i8(),
+			"has_compressed_alpha": file.get_i8(),
 			"is_external": file.get_i8(),
 			"has_isometric_top": file.get_i8(),
 			"unk11": file.get_8(),
@@ -271,7 +271,7 @@ func load_sgx(sgx_file: String, force_reparse: bool = false, extract_data: bool 
 	var _t_1 = Stopwatch.query(_t, Stopwatch.Milliseconds)
 	
 	print("SG pak: %s (%d ms) -- %d images, %d bmps, %d groups" % [
-		"'" + sgx_file + "'",
+		"'" + filename_sgx + "'",
 		Stopwatch.query(_t, Stopwatch.Milliseconds),
 		p_data.header.img_records,
 		p_data.header.bmp_records_nix_system,
@@ -280,23 +280,23 @@ func load_sgx(sgx_file: String, force_reparse: bool = false, extract_data: bool 
 	
 	# also extract data
 	if extract_data:
-		return extract_sgx(pak_name + ".555")
+		return extract_sgx(pak_name + ".555", true, force_reparse)
 	
 	return true
-func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / actual image data
+func extract_sgx(filename_555: String, skip_system_bmp: bool = true, force_reextract: bool = false): # .555 pak / actual image data
 	
 	var _t = Stopwatch.start()
 	
 	# naked SG pak name
-	var pak_name = IO.strip_extension(sgx_file)
+	var pak_name = IO.strip_extension(filename_555)
 	
 	# check if already parsed
 	if !(pak_name in SG):
-		if !load_sgx(sgx_file):
+		if !load_sgx(filename_555):
 			return false
 	
 	# actual path
-	var path = get_game_file_path(sgx_file)
+	var path = get_game_file_path(filename_555)
 	if path == null:
 		return false
 	
@@ -320,19 +320,25 @@ func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / a
 			images_skipped += 1
 			continue
 		
-		if img.is_external:
+		if img.is_external: # TODO
 			images_external += 1
 			continue
-			
+		
+		if img.data_length == 0:
+			images_failed += 1
+			continue
+		
+		# check if image is already in cache
+		var path_cached = str(get_game_cache_path(), "/Data/" , pak_name, "/", i, ".texture")
+		if !force_reextract && IO.file_exists(path_cached):
+			images_skipped += 1
+			continue
 		
 		# convert raw pixel data
-#		var raw_data_size = 4 * img.width * img.height
 		var raw_data_size = img.data_length
-		var uncompr_data_size = img.uncompressed_length
 		file.seek(img.data_offset)
-#		var _p = file.get_position()
 		var raw_data = file.get_buffer(raw_data_size)
-		var extracted_texture: ImageTexture = null
+		var extracted_image: Image = null
 		match img.type:
 			ImageTypes.Plain_WithTransparency,\
 			ImageTypes.Plain_Opaque,\
@@ -340,19 +346,12 @@ func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / a
 			ImageTypes.Plain_24x24,\
 			ImageTypes.Plain_32x32,\
 			ImageTypes.Plain_Font:
-				if !img.is_fully_compressed:
-					
-#					var image = Image.new()
-#					image.create_from_data(img.width, img.height, false, Image.FORMAT_RGBA5551, raw_data)
-#					extracted_texture = ImageTexture.new()
-#					extracted_texture.create_from_image(image, 0)
-					
-					extracted_texture = SGImageMono.ReadUncompressed(raw_data, img.width, img.height) as ImageTexture
-
+				if !img.has_compressed_alpha:
+					extracted_image = SGImageMono.ReadPlain(raw_data, img.width, img.height) as Image
 				else: # 256, 257, 276 etc.
-					var imgdata = SGImageMono.ReadCompressed(raw_data)
-			ImageTypes.Isometric:
-				var imgdata = SGImageMono.ReadIsometric(raw_data)
+					extracted_image = SGImageMono.ReadWithCompressedAlpha(raw_data, img.width, img.height) as Image
+			ImageTypes.Isometric: # TODO: set isometric tile width/height by gameset 
+				extracted_image = SGImageMono.ReadIsometric(raw_data, img.uncompressed_length, img.width, img.height, img.isometric_tile_size, 30, 58) as Image
 			_: # unknown image type?
 				Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "unknown image type '%d'" % [img.type])
 		if img.get("alpha_length", 0) != 0:
@@ -360,53 +359,38 @@ func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / a
 		if img.offset_mirror != 0:
 			pass
 		
-		# save to disk
-		if extracted_texture != null:
-#			var path_cached = str(get_game_cache_path(), "/Data/" , sgx_file, "/", i, ".texture")
-			var path_cached = str(get_game_cache_path(), "/Data_Extracted/" , sgx_file, "/", i, ".texture")
-			if !IO.write(path_cached, extracted_texture, true):
+		# save extracted texture to disk
+		if extracted_image != null:
+			var texture = ImageTexture.new()
+			texture.create_from_image(extracted_image, 0)
+			if !IO.write(path_cached, texture, true):
 				return false
-#			var _image = extracted_texture.get_image()
-			var path_tres = str(RES_ASSETS_PATH, "/TEST_EXTRACTED/" , sgx_file, "/", i, ".res")
-			IO.create_folder(IO.naked_folder_path(path_tres))
-			var rec = ResourceSaver.get_recognized_extensions(extracted_texture)
-			# res
-			var r = ResourceSaver.save(path_tres, extracted_texture)
-			if r != OK:
-				Log.error(self, r, "could not save extracted_texture to %s" % [path_tres])
-				return false
-			else:
-				pass
-			# png
-			r = ResourceSaver.save(str(RES_ASSETS_PATH, "/TEST_EXTRACTED/" , sgx_file, "/", i, ".png"), extracted_texture)
-			if r != OK:
-				Log.error(self, r, "could not save extracted_texture to %s" % [path_tres])
-				return false
-			else:
-				pass
-		images_extracted += 1
+			images_extracted += 1
+		else:
+			images_failed += 1
 		
 	if has_system_bmp:
 		assert(images_skipped == p_data.bmp[0].num_images + 1)
 	
 	print("555 pak: %s (%d ms) -- %d extracted, %d skipped, %d failed" % [
-		"'" + sgx_file + "'",
+		"'" + filename_555 + "'",
 		Stopwatch.query(_t, Stopwatch.Milliseconds),
 		images_extracted,
 		images_skipped,
 		images_failed
 	])
 	return true
-func get_sg_texture(sgx_file: String, id: int) -> Texture:
+func get_sg_texture(filename_sgx: String, id: int) -> Texture:
 	
 	#  OPTION 1: read cached raw texture streams -- around ~380 ms
-	var path_cached = str(get_game_cache_path(), "/Data/" , sgx_file, "/", id, ".texture")
+	var pak_name = IO.strip_extension(filename_sgx)
+	var path_cached = str(get_game_cache_path(), "/Data/" , pak_name, "/", id, ".texture")
 	var texture = IO.read(path_cached, false, true)
 	if texture != null:
 		return texture
 	
 	#  OPTION 2: extract from SG paks -- ?? ms
-	var pak_path = load_sgx(sgx_file)
+	var pak_path = load_sgx(filename_sgx)
 	if pak_path == null:
 		return null
 #	if extract_sgx(pak_name + ".555", id >= 201): # TODO
@@ -416,7 +400,6 @@ func get_sg_texture(sgx_file: String, id: int) -> Texture:
 			return texture
 	
 	# OPTION 3: loading pngs from res:// -- around ~1050 ms
-	var pak_name = IO.strip_extension(sgx_file)
 	var png_path = str(RES_ASSETS_PATH, "/", GAME_SET, "/", pak_name, "/", id, ".png")
 	if IO.file_exists(png_path):
 		texture = load_png(png_path, 0) # Texture.FLAG_MIPMAPS breaks TileMap rendering.
