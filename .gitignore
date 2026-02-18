@@ -13,3 +13,4 @@ export_presets.cfg
 
 # Project ignores
 **/assets/Pharaoh
+**/assets/TEST_EXTRACTED

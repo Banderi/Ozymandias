@@ -1,4 +1,4 @@
-[gd_scene load_steps=71 format=2]
+[gd_scene load_steps=72 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -55,6 +55,7 @@
 [ext_resource path="res://assets/Pharaoh/TILE_SHAPE.png" type="Texture" id=53]
 [ext_resource path="res://assets/fonts/basis33_thick_outline.tres" type="DynamicFont" id=54]
 [ext_resource path="res://scenes/FigureSprite.tscn" type="PackedScene" id=55]
+[ext_resource path="res://assets/TEST_EXTRACTED/Pharaoh_Terrain.555/689.res" type="Texture" id=56]
 
 [sub_resource type="ShaderMaterial" id=31]
 shader = ExtResource( 44 )
@@ -1667,17 +1668,20 @@ margin_bottom = 24.0
 text = "Redraw map"
 
 [node name="TextureRect" type="TextureRect" parent="Debug"]
-margin_left = 218.0
-margin_top = 36.0
-margin_right = 258.0
-margin_bottom = 76.0
+margin_left = 430.0
+margin_top = 42.0
+margin_right = 470.0
+margin_bottom = 82.0
+texture = ExtResource( 56 )
+__meta__ = {
+"_edit_group_": true
+}
 
 [node name="ColorRect" type="ColorRect" parent="Debug/TextureRect"]
-visible = false
 show_behind_parent = true
 margin_right = 40.0
 margin_bottom = 40.0
-color = Color( 0, 0, 0, 1 )
+color = Color( 0.733333, 0.733333, 0.733333, 1 )
 
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnPlay" to="Menus/Main" method="_on_BtnPlay_pressed"]
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnWebsite" to="Menus/Main" method="_on_BtnWebsite_pressed"]

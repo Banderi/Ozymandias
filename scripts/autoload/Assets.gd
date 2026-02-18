@@ -100,7 +100,7 @@ enum ImageTypes {
 	Plain_32x32 = 13, # only used in system.bmp
 	Plain_Font = 20,
 	Isometric = 30,
-	Modded = 40	
+#	Modded = 40	
 }
 var SG = {}
 const SGX_HEADER_SIZE = 80
@@ -312,6 +312,7 @@ func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / a
 	var images_skipped = 0
 	var images_extracted = 0
 	var images_failed = 0
+	var images_external = 0
 	var i = -1
 	for img in p_data.img:
 		i += 1
@@ -319,8 +320,19 @@ func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / a
 			images_skipped += 1
 			continue
 		
+		if img.is_external:
+			images_external += 1
+			continue
+			
+		
 		# convert raw pixel data
-		var raw_data = file.get_buffer(4 * img.width * img.height)
+#		var raw_data_size = 4 * img.width * img.height
+		var raw_data_size = img.data_length
+		var uncompr_data_size = img.uncompressed_length
+		file.seek(img.data_offset)
+#		var _p = file.get_position()
+		var raw_data = file.get_buffer(raw_data_size)
+		var extracted_texture: ImageTexture = null
 		match img.type:
 			ImageTypes.Plain_WithTransparency,\
 			ImageTypes.Plain_Opaque,\
@@ -329,11 +341,18 @@ func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / a
 			ImageTypes.Plain_32x32,\
 			ImageTypes.Plain_Font:
 				if !img.is_fully_compressed:
-					var imgdata = SGImageMono.readPlain(raw_data)
+					
+#					var image = Image.new()
+#					image.create_from_data(img.width, img.height, false, Image.FORMAT_RGBA5551, raw_data)
+#					extracted_texture = ImageTexture.new()
+#					extracted_texture.create_from_image(image, 0)
+					
+					extracted_texture = SGImageMono.ReadUncompressed(raw_data, img.width, img.height) as ImageTexture
+
 				else: # 256, 257, 276 etc.
-					var imgdata = SGImageMono.readSprite(raw_data)
+					var imgdata = SGImageMono.ReadCompressed(raw_data)
 			ImageTypes.Isometric:
-				var imgdata = SGImageMono.readIsometric(raw_data)
+				var imgdata = SGImageMono.ReadIsometric(raw_data)
 			_: # unknown image type?
 				Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "unknown image type '%d'" % [img.type])
 		if img.get("alpha_length", 0) != 0:
@@ -341,7 +360,30 @@ func extract_sgx(sgx_file: String, skip_system_bmp: bool = true): # .555 pak / a
 		if img.offset_mirror != 0:
 			pass
 		
-		# TODO: save to disk / cache
+		# save to disk
+		if extracted_texture != null:
+#			var path_cached = str(get_game_cache_path(), "/Data/" , sgx_file, "/", i, ".texture")
+			var path_cached = str(get_game_cache_path(), "/Data_Extracted/" , sgx_file, "/", i, ".texture")
+			if !IO.write(path_cached, extracted_texture, true):
+				return false
+#			var _image = extracted_texture.get_image()
+			var path_tres = str(RES_ASSETS_PATH, "/TEST_EXTRACTED/" , sgx_file, "/", i, ".res")
+			IO.create_folder(IO.naked_folder_path(path_tres))
+			var rec = ResourceSaver.get_recognized_extensions(extracted_texture)
+			# res
+			var r = ResourceSaver.save(path_tres, extracted_texture)
+			if r != OK:
+				Log.error(self, r, "could not save extracted_texture to %s" % [path_tres])
+				return false
+			else:
+				pass
+			# png
+			r = ResourceSaver.save(str(RES_ASSETS_PATH, "/TEST_EXTRACTED/" , sgx_file, "/", i, ".png"), extracted_texture)
+			if r != OK:
+				Log.error(self, r, "could not save extracted_texture to %s" % [path_tres])
+				return false
+			else:
+				pass
 		images_extracted += 1
 		
 	if has_system_bmp:
@@ -637,7 +679,7 @@ func load_tilesets(ignore_cache: bool = false):
 #			tileset_add_tile_from_texture(tileset, texture, i + 11706)
 		
 		# Pharaoh_Terrain
-		if !load_sgx("Pharaoh_Terrain.sg3"):
+		if !load_sgx("Pharaoh_Terrain.sg3", false, true):
 			return false
 		for i in range(201, SG.Pharaoh_Terrain.img.size()):
 			var texture = get_sg_texture("Pharaoh_Terrain", i)
