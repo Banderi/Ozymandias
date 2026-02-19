@@ -12,6 +12,8 @@ onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
 
 onready var TILEMAP_FLAT: TileMap = INGAME_ROOT.get_node("Map_Flat") as TileMap
+onready var TILEMAP_FEATURES: TileMap = INGAME_ROOT.get_node("Map_Features") as TileMap
+onready var TILEMAP_TOP: TileMap = INGAME_ROOT.get_node("Map_Top") as TileMap
 onready var TILEMAP_ANIM: TileMap = INGAME_ROOT.get_node("Map_Anim") as TileMap
 
 var data = {}
@@ -118,10 +120,23 @@ enum BitFlags {
 
 func set_tileset(flats: TileSet, anims: TileSet): # does this require node setup in tree..?
 	TILEMAP_FLAT.tile_set = flats
+	TILEMAP_TOP.tile_set = flats
 	TILEMAP_ANIM.tile_set = anims # TODO
 func tilesets_load_scenario_specifics(): # TODO: anims?
-	if !Assets.add_pak_sprites_into_tileset(TILEMAP_FLAT.tile_set, "Temple_bast.sg3"):
-		return false
+	var tileset = TILEMAP_FLAT.tile_set
+	TILEMAP_FLAT.tile_set = null
+	
+	# parse various paks (TODO, for now it's just a few selected paks)
+	var success = true
+	if !Assets.add_pak_sprites_into_tileset(tileset, "Temple_bast.sg3"): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk5x5a.sg3"): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk3x3a.sg3"): success = false
+	
+	# MUST reach here even on errors, otherwise the tileset will disappear into the ether.
+	if tileset == null:
+		success = Log.error("tilesets_load_scenario_specifics", GlobalScope.Error.FAILED, "something went horribly wrong!")
+	TILEMAP_FLAT.tile_set = tileset
+	return success
 
 func set_grid(grid_name, x, y, value): # TODO
 	if !(grid_name in grids):

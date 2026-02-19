@@ -139,7 +139,6 @@ func load_game(path) -> bool:
 			return false
 		
 		Map.tilesets_load_scenario_specifics()
-		
 		Map.redraw()
 		Figures.spawn_sprites()
 		
@@ -159,14 +158,16 @@ func save_game(path) -> bool: # TODO
 		print("TODO: saving ------- ", path)
 		return true
 func clear_ingame() -> bool:
-	
 	for n in Map.TILEMAP_FLAT.get_children():
+		n.queue_free()
+	for n in Map.TILEMAP_FEATURES.get_children():
+		n.queue_free()
+	for n in Map.TILEMAP_TOP.get_children():
 		n.queue_free()
 	for n in Map.TILEMAP_ANIM.get_children():
 		n.queue_free()
 #	INGAME_ROOT.camera_position_target = Vector2(-97, 3505)
 #	INGAME_ROOT.camera_zoom_target = 1.0
-	
 	return true
 
 var debug_schema = { # default schema used
@@ -180,10 +181,8 @@ func enscribe_schema():
 	Scribe.sync_record([debug_schema], TYPE_DICTIONARY)
 	Scribe.put(ScribeFormat.i32, "file_version")
 	Scribe.put(ScribeFormat.i32, "chunks_schema")
-#	var chunks_beginning = Scribe._handle.get_position()
 	var chunks_beginning = ScribeMono.GetPosition()
 	for i in range(debug_schema.chunks_schema):
-#		var s = Scribe._handle.get_position()
 		var s = ScribeMono.GetPosition()
 		Scribe.sync_record([debug_schema, "chunks", i], TYPE_DICTIONARY)
 		Scribe.put(ScribeFormat.u32, "compressed")
@@ -194,7 +193,6 @@ func enscribe_schema():
 		Scribe.put(ScribeFormat.u32, "fields_num")
 		Scribe.put(ScribeFormat.u16, "unk06")
 		Scribe.put(ScribeFormat.u16, "unk07")
-#		assert(Scribe._handle.get_position() == s + 20)
 		assert(ScribeMono.GetPosition() == s + 20)
 		print("%03d: %s %6d %4d : %-6d %-5d %2d : %6d * %5d" % [
 			i,
@@ -203,7 +201,6 @@ func enscribe_schema():
 			debug_schema.chunks[i].memory_location, debug_schema.chunks[i].memory_offset, debug_schema.chunks[i].unk03,
 			debug_schema.chunks[i].fields_num, debug_schema.chunks[i].fields_size
 		])
-#	Scribe._handle.seek(chunks_beginning + 300 * 20) # move to the end
 	ScribeMono.Seek(chunks_beginning + 300 * 20) # move to the end
 
 func enscribe_SAV():
@@ -768,8 +765,8 @@ func _ready():
 #	var a = load("res://scripts/mono/YourCustomClass.cs").new()
 	
 #	yield(get_tree(), "idle_frame")
-#	Game.load_game("res://tests/autosave.sav")
-#	Game.load_game("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep/autosave.sav")
+	Game.load_game("res://tests/autosave.sav")
+#	Game.load_game("res://tests/Alexandria.sav")
 #	STATE = States.Ingame
 #	close_all_menus()
 

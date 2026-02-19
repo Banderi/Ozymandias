@@ -77,8 +77,7 @@ public class SGImage_mono : Node
 		image.Unlock();
 		return image;
 	}
-
-	public Godot.Image ReadIsometric(Byte[] input, int img_uncompressed_len, int img_width, int img_height, int img_isometric_tile_size, int tile_height, int tile_width)
+	public Godot.Image ReadIsometric(Byte[] input, int top_sprite_data_length, int img_width, int img_height, int img_isometric_tile_size, int tile_height, int tile_width)
 	{
 		BinaryReader reader = new BinaryReader(new MemoryStream(input));
 		Godot.Image image = new Godot.Image();
@@ -139,12 +138,11 @@ public class SGImage_mono : Node
 		}
 
 		// read rest of the sprite (isometric top)
-		int compressed_data_len = input.Length - img_uncompressed_len;
-		if (compressed_data_len > 0) {
-			reader.BaseStream.Position = img_uncompressed_len;
+		if (top_sprite_data_length > 0) {
+			reader.BaseStream.Position = input.Length - top_sprite_data_length;
 			int top_y = 0;
 			int top_x = 0;
-			while (compressed_data_len > 0) {
+			while (top_sprite_data_length > 0) {
 				int control = reader.ReadByte();
 				if (control == 255) { // next byte = transparent pixels to skip
 					int skip = reader.ReadByte();
@@ -154,7 +152,7 @@ public class SGImage_mono : Node
 						top_y++;
 						top_x -= img_width;
 					}
-					compressed_data_len -= 2;
+					top_sprite_data_length -= 2;
 				} else { // control = number of concrete pixels
 					for (int i = 0; i < control; i++) {
 						ushort _c = reader.ReadUInt16();
@@ -166,7 +164,7 @@ public class SGImage_mono : Node
 							top_x -= img_width;
 						}
 					}
-					compressed_data_len -= control * 2 + 1;
+					top_sprite_data_length -= control * 2 + 1;
 				}
 			}
 		}

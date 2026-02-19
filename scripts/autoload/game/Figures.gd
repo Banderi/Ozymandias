@@ -37,6 +37,7 @@ func spawn_sprites(): # TODO
 			var n = figure_sprite_TSCN.instance()
 			n.set_figure(i)
 			Map.TILEMAP_FLAT.add_child(n)
+#			Map.TILEMAP_ANIM.add_child(n)
 	
 	Stopwatch.stop(self, _t, "Figures -> spawn_sprites")
 

@@ -8,7 +8,7 @@ func set_figure(idx): # this is index into the Figures.figure global array
 	var tile = Vector2(figure_data.tile_x, figure_data.tile_y)
 	var world_pos = Map.map_to_world(tile, true)
 	position = world_pos + Vector2(-1, 30)
-	print("spawned figure %d at %s ---> %s" % [idx, tile, position])
+#	print("spawned figure %d at %s ---> %s" % [idx, tile, position])
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):

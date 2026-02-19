@@ -1,10 +1,10 @@
 extends CanvasLayer
-
+	
 func _on_BtnPKWareTest_pressed():
 	Game.do_PKWare_tests()
 func _on_BtnLoadAutosave_pressed():
-	Game.load_game("res://tests/autosave.sav")
-#	Game.load_game("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep/autosave.sav")
+#	Game.load_game("res://tests/autosave.sav")
+	Game.load_game("res://tests/Alexandria.sav")
 
 var prev_tile_test_value = 2
 func _on_BtnTestTerrainImages_value_changed(value):
@@ -20,6 +20,7 @@ func _on_BtnTestTerrainImages_value_changed(value):
 	prev_tile_test_value = value
 
 func _on_BtnTestSprites_value_changed(value):
+#	get_tree().set_input_as_handled()
 #	$TextureRect.texture = Assets.get_sg_texture("Pharaoh_Terrain.sg3", value)
 	$TextureRect.texture = Assets.get_gameset_sg_texture(value)
 
@@ -172,33 +173,30 @@ onready var DEBUG_LABEL2 = $DEBUG_LABEL2
 onready var DEBUG_LABEL3 = $DEBUG_LABEL3
 onready var DEBUG_LABEL4 = $DEBUG_LABEL4
 
+onready var FONT_BASIS33 = load("res://assets/fonts/basis33_thick_outline.tres") as Font
 onready var CURSOR = Game.INGAME_ROOT.get_node("CURSOR")
+enum DebugDisplays {
+	GRIDS = 0,
+	TILEMAPS = 1,
+	FIGURES = 2,
+	BUILDINGS = 3,
+}
 var debug_display_mode = 1
-func _input(event):
+func present_debug():
+	var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position()
+	var tile_coords = Map.TILEMAP_FLAT.world_to_map(mouse_pos)
+	CURSOR.position = Map.TILEMAP_FLAT.map_to_world(tile_coords) # TODO: move do InGame / separate Cursor logic
 	
-	if Input.is_key_pressed(KEY_CONTROL) && Input.is_key_pressed(KEY_C) && DEBUG_LABEL4.has_focus():
-		var selection = DEBUG_LABEL4.get_selected_text()
-		OS.clipboard = selection
-		print(selection)
-	
-	if Input.is_action_just_pressed("debug_cycle"):
-		debug_display_mode = (debug_display_mode + 1) % 3
-	
-
-	if Game.STATE == Game.States.Ingame:
-		if event is InputEventMouseMotion:
-			var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position()
-			var tile_coords = Map.TILEMAP_FLAT.world_to_map(mouse_pos)
-			
-			var tile_text = ""
-			if Rect2(0, 0, Map.PH_MAP_WIDTH, Map.PH_MAP_WIDTH).has_point(tile_coords):
-				CURSOR.position = Map.TILEMAP_FLAT.map_to_world(tile_coords) # TODO: move do InGame / separate Cursor logic
-				CURSOR.show()
-			
+	var tile_text = ""
+	if Rect2(0, 0, Map.PH_MAP_WIDTH, Map.PH_MAP_WIDTH).has_point(tile_coords):
+		CURSOR.show()
+		$DEBUG_LABEL3.show()
+		
+		match debug_display_mode:
+			DebugDisplays.GRIDS:
 				tile_text += "tile: %s\n" % [tile_coords]
 				tile_text += "[color=#ffcc00]image:[/color]      %d\n" % [Map.grids.images[tile_coords.y][tile_coords.x]]
 				tile_text += "[color=#ffcc00]buildings:[/color]  %d\n" % [Map.grids.buildings[tile_coords.y][tile_coords.x]]
-#				tile_text += "[color=#ffcc00]edge:[/color]       %d\n" % [Map.grids.edge[tile_coords.y][tile_coords.x]]
 				
 				# terrain
 				var _terrain = Map.grids.terrain[tile_coords.y][tile_coords.x]
@@ -235,13 +233,58 @@ func _input(event):
 				for flag in Map.BitFlags:
 					if _bitfields & Map.BitFlags[flag] in [16, 32, 64, 128]:
 						tile_text += "  [color=#888888]%s[/color]\n" % [flag]
-					
-			else:
-				CURSOR.hide()
+			DebugDisplays.TILEMAPS:
+				tile_text += "tile: %s\n" % [tile_coords]
+				tile_text += "[color=#ccff00]Map_Flat:[/color]       %d\n" % [Map.TILEMAP_FLAT.get_cell(tile_coords.x, tile_coords.y)]
+				tile_text += "[color=#ccff00]Map_Features:[/color]   %d\n" % [Map.TILEMAP_FEATURES.get_cell(tile_coords.x, tile_coords.y)]
+				tile_text += "[color=#ccff00]Map_Top:[/color]        %d\n" % [Map.TILEMAP_TOP.get_cell(tile_coords.x, tile_coords.y)]
+				tile_text += "[color=#ccff00]Map_Anim:[/color]       %d\n" % [Map.TILEMAP_ANIM.get_cell(tile_coords.x, tile_coords.y)]
+				
+		
+		if $DEBUG_LABEL3.bbcode_text != tile_text:
+			$DEBUG_LABEL3.bbcode_text = tile_text
+		$DEBUG_LABEL3.rect_position = $DEBUG_LABEL3.get_global_mouse_position() - Vector2(220, 170)
 			
-			if $DEBUG_LABEL3.bbcode_text != tile_text:
-				$DEBUG_LABEL3.bbcode_text = tile_text
-			$DEBUG_LABEL3.rect_position = $DEBUG_LABEL3.get_global_mouse_position() - Vector2(200, 100)
+	else:
+		CURSOR.hide()
+		$DEBUG_LABEL3.hide()
+
+	
+#	# stylebox
+#	var long = ""
+#	var lon = 0
+#	var lines = $DEBUG_LABEL3.text.split("\n")
+#	for l in lines:
+#		if l.length() > lon:
+#			lon = l.length()
+#			long = l
+#	var box = $DEBUG_LABEL3.get_stylebox("normal")
+#	$DEBUG_LABEL3.rect_size.x = FONT_BASIS33.get_string_size(long).x + box.content_margin_left + box.content_margin_right
+#	$DEBUG_LABEL3.rect_size.y = (lines.size() - 1) * (FONT_BASIS33.get_height() + $DEBUG_LABEL3.get("custom_constants/line_separation")) +\
+#		box.content_margin_top + box.content_margin_bottom
+
+
+func _input(event):
+	
+	if Input.is_key_pressed(KEY_CONTROL) && Input.is_key_pressed(KEY_C) && DEBUG_LABEL4.has_focus():
+		var selection = DEBUG_LABEL4.get_selected_text()
+		OS.clipboard = selection
+		print(selection)
+	
+	if Input.is_action_just_pressed("debug_toggle"):
+		visible = !visible
+		CURSOR.visible = visible
+		if visible:
+			present_debug()
+#		Input.parse_input_event(InputEventAction.new())
+	if Input.is_action_just_pressed("debug_cycle"):
+		if visible:
+			debug_display_mode = (debug_display_mode + 1) % 3
+			present_debug()
+	
+	if Game.STATE == Game.States.Ingame && visible:
+		if event is InputEventMouseMotion:
+			present_debug()
 
 var last_fps = 60
 func _process(delta):
@@ -264,6 +307,8 @@ func _process(delta):
 	debug_text += "[color=#888888]last_click_mouse:[/color]    %s\n" % [Game.INGAME_ROOT.last_click_game_coords]
 	debug_text += "[color=#888888]last_click_camera:[/color]   %s\n" % [Game.INGAME_ROOT.camera_previous_game_coords]
 	
+	debug_text += "[color=#888888]debug_display_mode:[/color]  %s\n" % [Log.get_enum_string(DebugDisplays, debug_display_mode)]
+	
 	if DEBUG_LABEL.bbcode_text != debug_text:
 		DEBUG_LABEL.bbcode_text = debug_text
 	
@@ -272,4 +317,7 @@ func _process(delta):
 
 func _ready():
 	$DEBUG_LABEL3.bbcode_text = ""
+
+
+
 

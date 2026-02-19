@@ -13,5 +13,5 @@ playing = true
 flip_h = true
 
 [node name="ReferenceRect" type="ReferenceRect" parent="."]
-margin_top = -32.0
+margin_top = -5.0
 margin_right = 5.0

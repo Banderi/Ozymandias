@@ -12,8 +12,7 @@ public class Scribe_mono : Node
 	Godot.Collections.Dictionary Errors;
 	bool bail(string Err, string Message)
 	{
-		Globals.Log.Call("error", "", Errors[Err], Message);
-		return false;
+		return (bool)Globals.Scribe.Call("bail", Errors[Err], Message);
 	}
 
 	// Called when the node enters the scene tree for the first time.
@@ -83,16 +82,13 @@ public class Scribe_mono : Node
 	private int __file_flags = -1;
 	public bool openFile(int flags, string path, int offset)
 	{
-		if (flags == 1) {
-			__file = new FileStream(path, FileMode.Open, FileAccess.Read);
-			// __file_flags = flags;
-			// _bin_reader = new BinaryReader(__file);
-			// _streams_stack.Add(_bin_reader.BaseStream);
-		} else {
-			__file = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
-			// __file_flags = flags;
-			// _bin_writer = new BinaryWriter(__file);
-			// _streams_stack.Add(__file);
+		try {
+			if (flags == 1)
+				__file = new FileStream(path, FileMode.Open, FileAccess.Read);
+			else
+				__file = new FileStream(path, FileMode.OpenOrCreate, FileAccess.Write);
+		} catch (Exception e) {
+			return bail("FAILED", e.ToString());
 		}
 		_path = path;
 		__file_flags = flags;

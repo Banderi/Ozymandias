@@ -1,4 +1,4 @@
-[gd_scene load_steps=72 format=2]
+[gd_scene load_steps=74 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -55,7 +55,7 @@
 [ext_resource path="res://assets/Pharaoh/TILE_SHAPE.png" type="Texture" id=53]
 [ext_resource path="res://assets/fonts/basis33_thick_outline.tres" type="DynamicFont" id=54]
 [ext_resource path="res://scenes/FigureSprite.tscn" type="PackedScene" id=55]
-[ext_resource path="res://assets/TEST_EXTRACTED/Pharaoh_Terrain.555/689.res" type="Texture" id=56]
+[ext_resource path="res://scripts/classes/RichTextLabelEx.gd" type="Script" id=56]
 
 [sub_resource type="ShaderMaterial" id=31]
 shader = ExtResource( 44 )
@@ -126,6 +126,20 @@ modulate_color = Color( 1, 1, 1, 0.5 )
 texture = ExtResource( 36 )
 region_rect = Rect2( 0, 0, 39, 26 )
 
+[sub_resource type="StyleBoxFlat" id=41]
+content_margin_left = 2.0
+content_margin_right = 2.0
+content_margin_top = 0.0
+content_margin_bottom = 1.0
+bg_color = Color( 0, 0, 0, 0.317647 )
+
+[sub_resource type="StyleBoxFlat" id=40]
+content_margin_left = 2.0
+content_margin_right = 2.0
+content_margin_top = 0.0
+content_margin_bottom = 1.0
+bg_color = Color( 0, 0, 0, 0.419608 )
+
 [node name="Root" type="Node"]
 
 [node name="InGame" type="Node2D" parent="."]
@@ -140,16 +154,40 @@ tile_set = ExtResource( 49 )
 cell_size = Vector2( 60, 30 )
 cell_y_sort = true
 format = 1
-tile_data = PoolIntArray( -131064, 1, 0, -65531, 0, 0, -65530, 0, 0, -65529, 0, 0, -65528, 0, 0, 5, 0, 0, 8, 0, 0, 65539, 1, 0, 65541, 0, 0, 65542, 1, 0, 65544, 0, 0, 65545, 1, 0, 131077, 0, 0, 131078, 0, 0, 131079, 0, 0, 131080, 0, 0, 262150, 1, 0 )
+tile_data = PoolIntArray( -65531, 0, 0, -65530, 0, 0, -65529, 0, 0, -65528, 0, 0, 5, 0, 0, 8, 0, 0, 65541, 0, 0, 65544, 0, 0, 131077, 0, 0, 131078, 0, 0, 131079, 0, 0, 131080, 0, 0 )
 __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="Node2D" type="Node2D" parent="InGame/Map_Flat"]
+[node name="Map_Features" type="TileMap" parent="InGame"]
+visible = false
+mode = 1
+tile_set = ExtResource( 49 )
+cell_size = Vector2( 60, 30 )
+cell_y_sort = true
+format = 1
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Map_Top" type="TileMap" parent="InGame"]
+visible = false
+mode = 1
+tile_set = ExtResource( 49 )
+cell_size = Vector2( 60, 30 )
+cell_tile_origin = 1
+cell_y_sort = true
+format = 1
+tile_data = PoolIntArray( -131064, 1, 0, 65539, 1, 0, 65542, 1, 0, 65545, 1, 0, 262148, 1, 0, 262150, 1, 0, 262152, 1, 0 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Node2D" type="Node2D" parent="InGame/Map_Top"]
 visible = false
 position = Vector2( 179, 161 )
 
-[node name="Sprite" type="Sprite" parent="InGame/Map_Flat/Node2D"]
+[node name="Sprite" type="Sprite" parent="InGame/Map_Top/Node2D"]
 visible = false
 position = Vector2( 1, -9 )
 scale = Vector2( 1.375, 1.5625 )
@@ -158,24 +196,25 @@ __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="AnimatedSprite" type="AnimatedSprite" parent="InGame/Map_Flat/Node2D"]
+[node name="AnimatedSprite" type="AnimatedSprite" parent="InGame/Map_Top/Node2D"]
 frames = ExtResource( 52 )
 playing = true
 __meta__ = {
 "_edit_lock_": true
 }
 
-[node name="FigureSprite" parent="InGame/Map_Flat" instance=ExtResource( 55 )]
-position = Vector2( 149, 165 )
+[node name="FigureSprite" parent="InGame/Map_Top" instance=ExtResource( 55 )]
+position = Vector2( 178, 171 )
 
 [node name="Map_Anim" type="TileMap" parent="InGame"]
+visible = false
 mode = 1
 tile_set = ExtResource( 50 )
 cell_size = Vector2( 60, 30 )
 cell_tile_origin = 1
 cell_y_sort = true
 format = 1
-tile_data = PoolIntArray( 65542, 0, 0, 65545, 0, 0, 262150, 0, 0 )
+tile_data = PoolIntArray( 262150, 0, 0 )
 __meta__ = {
 "_edit_lock_": true
 }
@@ -1518,10 +1557,12 @@ custom_constants/shadow_offset_y = 1
 custom_constants/line_separation = -3
 custom_constants/shadow_as_outline = 1
 custom_fonts/normal_font = ExtResource( 28 )
+custom_styles/normal = SubResource( 41 )
 bbcode_enabled = true
 bbcode_text = "asdasd"
 text = "asdasd"
 scroll_active = false
+script = ExtResource( 56 )
 __meta__ = {
 "_edit_lock_": true
 }
@@ -1561,10 +1602,10 @@ text = "test"
 [node name="DEBUG_LABEL3" type="RichTextLabel" parent="Debug"]
 anchor_right = 1.0
 anchor_bottom = 1.0
-margin_left = 159.0
-margin_top = 231.0
-margin_right = 137.0
-margin_bottom = 196.0
+margin_left = 1172.0
+margin_top = 681.0
+margin_right = 254.0
+margin_bottom = -213.0
 mouse_filter = 2
 custom_colors/font_color_shadow = Color( 0, 0, 0, 1 )
 custom_constants/shadow_offset_x = 1
@@ -1572,6 +1613,7 @@ custom_constants/shadow_offset_y = 1
 custom_constants/line_separation = -3
 custom_constants/shadow_as_outline = 1
 custom_fonts/normal_font = ExtResource( 54 )
+custom_styles/normal = SubResource( 40 )
 bbcode_enabled = true
 bbcode_text = "test
 test
@@ -1582,9 +1624,7 @@ test
 test
 test"
 scroll_active = false
-__meta__ = {
-"_edit_lock_": true
-}
+script = ExtResource( 56 )
 
 [node name="DEBUG_LABEL4" type="RichTextLabel" parent="Debug"]
 visible = false
@@ -1638,6 +1678,7 @@ align = 2
 [node name="DEBUG_BTNS" type="HBoxContainer" parent="Debug"]
 anchor_right = 1.0
 margin_bottom = 20.0
+mouse_filter = 0
 __meta__ = {
 "_edit_group_": true,
 "_edit_lock_": true
@@ -1681,7 +1722,6 @@ margin_left = 430.0
 margin_top = 42.0
 margin_right = 470.0
 margin_bottom = 82.0
-texture = ExtResource( 56 )
 __meta__ = {
 "_edit_group_": true
 }
