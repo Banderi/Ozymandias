@@ -47,7 +47,7 @@ func right_click_pressed(relevant_node, event): # TODO: capture right click when
 	return false
 
 func debug_tools_enabled():
-	return false
+	return true
 
 # PKWare inflate / deflate tests
 const CHUNK_SIZE = 1024
@@ -177,7 +177,7 @@ var debug_schema = { # default schema used
 }
 func set_schema(): # TODO
 	pass
-func enscribe_schema():
+func enscribe_schema(debug_print):
 	Scribe.sync_record([debug_schema], TYPE_DICTIONARY)
 	Scribe.put(ScribeFormat.i32, "file_version")
 	Scribe.put(ScribeFormat.i32, "chunks_schema")
@@ -194,13 +194,14 @@ func enscribe_schema():
 		Scribe.put(ScribeFormat.u16, "unk06")
 		Scribe.put(ScribeFormat.u16, "unk07")
 		assert(ScribeMono.GetPosition() == s + 20)
-		print("%03d: %s %6d %4d : %-6d %-5d %2d : %6d * %5d" % [
-			i,
-			"(C)" if debug_schema.chunks[i].compressed else "---",
-			debug_schema.chunks[i].unk06, debug_schema.chunks[i].unk07,
-			debug_schema.chunks[i].memory_location, debug_schema.chunks[i].memory_offset, debug_schema.chunks[i].unk03,
-			debug_schema.chunks[i].fields_num, debug_schema.chunks[i].fields_size
-		])
+		if debug_print:
+			print("%03d: %s %6d %4d : %-6d %-5d %2d : %6d * %5d" % [
+				i,
+				"(C)" if debug_schema.chunks[i].compressed else "---",
+				debug_schema.chunks[i].unk06, debug_schema.chunks[i].unk07,
+				debug_schema.chunks[i].memory_location, debug_schema.chunks[i].memory_offset, debug_schema.chunks[i].unk03,
+				debug_schema.chunks[i].fields_num, debug_schema.chunks[i].fields_size
+			])
 	ScribeMono.Seek(chunks_beginning + 300 * 20) # move to the end
 
 func enscribe_SAV():
@@ -210,21 +211,7 @@ func enscribe_SAV():
 	Scribe.put(ScribeFormat.u8, "campaign_index")
 	Scribe.put(ScribeFormat.i8, "prev_progress_pointer")
 	Scribe.put(ScribeFormat.i8, "mission_progress_pointer")
-	
-#	var a = Campaign.data.headers
-	
-#	var a = ScribeMono.data
-#	var a = ScribeMono.getFieldAsDictionary(ScribeMono.data)
-#	var a = ScribeMono.getAsDictionary()
-#	var b = a.map_index
-#	var c = ScribeMono.Others.TestInt()
-#	var c = Others.TestInt()
-	
-#	var r = ScribeMono.testReadChunk();
-#	ScribeMono.testReadChunk(ScribeMono.data);
-#	ScribeMono.testReadChunk2();
-	
-	enscribe_schema()
+	enscribe_schema(false)
 	
 #	Scribe.sync_record([Map.grids], TYPE_DICTIONARY)
 	Scribe.put_grid(ScribeFormat.u32, "images", true)
@@ -714,15 +701,43 @@ var month = 0
 var year = 0
 var total_ticks = 0
 var total_days = 0
+func game_year():
+	year += 1
+func game_month():
+	month += 1
+	if month >= 12:
+		month = 0
+		game_year()
+func game_day():
+	day += 1
+	total_days += 1
+	if day >= 16:
+		day = 0
+		game_month()
+func game_tick():
+	tick += 1
+	total_ticks += 1
+	if tick >= 50:
+		tick = 0
+		game_day()
+
+var speed = 10
+var speed_tps = 0.1
+var ticks_per_frame = 0.1
+var game_refresh_rate = 60.0
+var ticks_to_do = 0
 
 var t = 0
-func game_loop(delta):
+const DELTA_60FPS = 1.0 / 60.0
+func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup if performance drops the ticks' compute time over the impositions?
 	t += delta
-#	for i in debug_test_spinbox.value:
-#		ticks += 1
-	pass
-func game_tick(delta):
-	pass
+	if STATE == States.Ingame:
+		ticks_to_do += ticks_per_frame
+		if speed > 0:
+			for i in int(ticks_to_do):
+				game_tick()
+				ticks_to_do -= 1.0
+				t = 0
 
 #############
 
@@ -774,4 +789,26 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+#	game_refresh_rate = int(Engine.get_frames_per_second()) if !OS.vsync_enabled else Engine.target_fps
+	game_refresh_rate = 1.0 / delta
+	ticks_per_frame = speed_tps / game_refresh_rate
 	game_loop(delta)
+
+func _input(event):
+	
+	if STATE == States.Ingame:
+		# game speed
+		if Input.is_action_pressed("speed_dec"):
+			speed -= 10
+		if Input.is_action_pressed("speed_inc"):
+			speed += 10
+		speed = clamp(speed, 0, 2000)
+		speed_tps = 60.0 * float(speed) / 100.0
+		
+		# pause game
+		if Input.is_action_just_pressed("pause_game"):
+			STATE = States.Paused
+	elif STATE == States.Paused:
+		# unpause game
+		if Input.is_action_just_pressed("pause_game"):
+			STATE = States.Ingame

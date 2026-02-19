@@ -422,5 +422,5 @@ func enscribe(path, operation, create_backup, enscriber_proc: FuncRef, enscriber
 	var t = Stopwatch.start()
 	var r = enscriber_proc.call_funcv(enscriber_args)
 	Scribe.close()
-	Stopwatch.stop(self, t, "time taken:")
+	Stopwatch.stop(self, t, path)
 	return r

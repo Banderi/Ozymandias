@@ -67,7 +67,7 @@ func update_mouse_press_coords(button_id):
 	current_click_mousepos[i] = mousepos
 
 func _input(event):
-	if Game.STATE == Game.States.Ingame:
+	if Game.STATE != Game.States.MainMenu:
 		
 		update_mouse_press_coords(BUTTON_LEFT)
 		update_mouse_press_coords(BUTTON_RIGHT)
@@ -77,7 +77,7 @@ func _input(event):
 
 func _process(delta):
 #	mouse_worldpos = get_local_mouse_position()
-	if Game.STATE == Game.States.Ingame:
+	if Game.STATE != Game.States.MainMenu:
 		mouse_worldpos = get_local_mouse_position()
 		
 		# camera zoom - TODO: setting for enabling smooth zoom

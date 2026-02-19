@@ -39,7 +39,7 @@ func spawn_sprites(): # TODO
 			Map.TILEMAP_FLAT.add_child(n)
 #			Map.TILEMAP_ANIM.add_child(n)
 	
-	Stopwatch.stop(self, _t, "Figures -> spawn_sprites")
+	Stopwatch.stop(self, _t, "Figures.spawn_sprites")
 
 func enscribe_figures():
 	Scribe.push_compressed(Figures.MAX_FIGURES * 388)
@@ -185,130 +185,7 @@ func enscribe_figures():
 	
 
 func _enter_tree():
-	for i in MAX_FIGURES:
-#		figures.push_back(Figure.new())
+	for i in MAX_FIGURES: # prepare empty array
 		figures.push_back({})
-#		figures.push_back({ # around ~1140 ms
-#
-#			"alternative_location_index": 0,
-#			"anim_frame": 0,
-#			"is_enemy_image": 0,
-#			"flotsam_visible": 0,
-#			"sprite_image_id": 0, # this is off by 18 with respect to the normal SG global ids!
-##			if Assets.GAME_SET == "C3":
-##				"cart_image_id": 0,
-##			elif Assets.GAME_SET == "Pharaoh":
-##				Scribe.skip(2)
-#			"next_figure": 0,
-#			"type": 0,
-#
-#			"resource_id": 0,
-#			"use_cross_country": 0,
-#			"is_friendly": 0,
-#			"state": 0,
-#			"faction_id": 0,
-#			"action_state_before_attack": 0,
-#			"direction": 0,
-#			"previous_tile_direction": 0,
-#			"attack_direction": 0,
-#			"tile_x": 0,
-#			"tile_y": 0,
-#			"previous_tile_x": 0,
-#			"previous_tile_y": 0,
-#			"missile_damage": 0,
-#			"damage": 0,
-#			"tile_grid": 0,
-#			"destination_tile_x": 0,
-#			"destination_tile_y": 0,
-#			"destination_tile_grid": 0,
-#			"source_tile_x": 0,
-#			"source_tile_y": 0,
-#			"formation_position_x.soldier": 0,
-#			"formation_position_y.soldier": 0,
-#			"__unused_24": 0, # 0
-#			"wait_ticks": 0, # 0
-#			"action_state": 0, # 9
-#			"progress_on_tile": 0, # 11
-#			"routing_path_id": 0, # 12
-#			"routing_path_current_tile": 0, # 4
-#			"routing_path_length": 0, # 28
-#			"in_building_wait_ticks": 0, # 0
-#			"outside_road_ticks": 0, # 1
-#			"max_roam_length": 0,
-#			"roam_length": 0,
-#			"roam_wander_freely": 0,
-#			"roam_random_counter": 0,
-#			"roam_turn_direction": 0,
-#			"roam_ticks_until_next_turn": 0, # 0 ^^^^
-#			"cc_coords.x": 0,
-#			"cc_coords.y": 0,
-#			"cc_destination.x": 0,
-#			"cc_destination.y": 0,
-#			"cc_delta.x": 0,
-#			"cc_delta.y": 0,
-#			"cc_delta_xy": 0,
-#			"cc_direction": 0,
-#			"speed_multiplier": 0,
-#			"home_building_id": 0,
-#			"immigrant_home_building_id": 0,
-#			"destination_building_id": 0,
-#			"formation_id": 0, # formation: 10
-#			"index_in_formation": 0, # 3
-#			"formation_at_rest": 0,
-#			"migrant_num_people": 0,
-#			"is_ghost": 0,
-#			"min_max_seen": 0,
-#			"__unused_57": 0,
-#			"leading_figure_id": 0,
-#			"attack_image_offset": 0,
-#			"wait_ticks_missile": 0,
-#			"cart_offset.x": 0,
-#			"cart_offset.y": 0,
-#			"empire_city_id": 0,
-#			"trader_amount_bought": 0,
-#			"name": 0, # 6
-#			"terrain_usage": 0,
-#			"is_boat": 0,
-#			"resource_amount_full": 0, # 4772 >>>> 112 (resource amount! 2-bytes)
-#			"height_adjusted_ticks": 0,
-#			"current_height": 0,
-#			"target_height": 0,
-#			"collecting_item_id": 0,
-#			"trade_ship_failed_dock_attempts": 0,
-#			"phrase_sequence_exact": 0,
-#			"phrase_id": 0,
-#			"phrase_sequence_city": 0,
-#			"__unused_6f": 0,
-#			"trader_id": 0,
-#			"wait_ticks_next_target": 0,
-#			"target_figure_id": 0,
-#			"targeted_by_figure_id": 0,
-#			"created_sequence": 0,
-#			"target_figure_created_sequence": 0,
-#		#    "figures_sametile_num": 0,
-##			Scribe.skip(1)
-#			"num_attackers": 0,
-#			"attacker_id1": 0,
-#			"attacker_id2": 0,
-#			"opponent_id": 0,
-##			if Assets.GAME_SET == "Pharaoh":
-#		#        Scribe.skip(239": 0,
-##			Scribe.skip(7)
-#			"unk_ph1_269": 0, # 269
-#			"unk_ph2_00": 0, # 0
-#			"market_lady_resource_image_offset": 0, # 03 00 00 00
-##			Scribe.skip(12) # FF FF FF FF FF ...
-#			"market_lady_returning_home_id": 0, # 26
-##			Scribe.skip(14) # 00 00 00 00 00 00 00 ...
-#			"market_lady_bought_amount": 0, # 200
-##			Scribe.skip(115)
-#			"unk_ph3_6": 0, # 6
-#			"unk_ph4_ffff": 0, # -1
-##			Scribe.skip(48)
-#			"festival_remaining_dances": 0,
-##			Scribe.skip(27)
-#			"cart_image_id": 0, # this is off by 18 with respect to the normal SG global ids!
-##			Scribe.skip(2)
-#		})
 func _ready():
 	assert(figures.size() == MAX_FIGURES)

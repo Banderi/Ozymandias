@@ -19,14 +19,18 @@ func _on_BtnTestTerrainImages_value_changed(value):
 	print("found: ", found, " cells")
 	prev_tile_test_value = value
 
+func _on_BtnRedrawMap_pressed():
+	Map.redraw()
+
 func _on_BtnTestSprites_value_changed(value):
 #	get_tree().set_input_as_handled()
 #	$TextureRect.texture = Assets.get_sg_texture("Pharaoh_Terrain.sg3", value)
 	$TextureRect.texture = Assets.get_gameset_sg_texture(value)
 
-
-func _on_BtnRedrawMap_pressed():
-	Map.redraw()
+func _on_BtnChangeFPS_value_changed(value):
+	Engine.target_fps = value
+func _on_ToggleVsync_toggled(button_pressed):
+	OS.vsync_enabled = button_pressed
 
 
 var test_scribe_enabled = false
@@ -282,7 +286,7 @@ func _input(event):
 			debug_display_mode = (debug_display_mode + 1) % 3
 			present_debug()
 	
-	if Game.STATE == Game.States.Ingame && visible:
+	if visible && Game.STATE != Game.States.MainMenu:
 		if event is InputEventMouseMotion:
 			present_debug()
 
@@ -294,20 +298,35 @@ func _process(delta):
 	
 	
 	# debug prints
-	var debug_text = "[color=#888888]Ozymandias Godot3.6 v0.2[/color]\n"
-	debug_text += "[color=#888888]game_state:[/color]       %s\n" % [Log.get_enum_string(Game.States, Game.STATE)]
-	debug_text += "[color=#888888]last_menu:[/color]        %s\n" % [Game.debug_last_menu]
-	debug_text += "[color=#888888]current_family:[/color]   %s\n" % [Family.current_family]
-	debug_text += "[color=#888888]families:[/color]         %s\n" % [Family.data.size()]
+#	var col1 = "[color=#888888]"
+	var col1 = "[color=#a8a8a8]"
+	var debug_text = col1 + "Ozymandias Godot3.6 v0.2[/color]\n"
+	debug_text += col1 + "debug_display_mode:[/color]  %d:%s\n" % [debug_display_mode, Log.get_enum_string(DebugDisplays, debug_display_mode)]
+	debug_text += col1 + "game_state:[/color]          %s\n" % [Log.get_enum_string(Game.States, Game.STATE)]
+	debug_text += col1 + "last_menu:[/color]           %s\n" % [Game.debug_last_menu]
+	debug_text += col1 + "current_family:[/color]      %s\n" % [Family.current_family]
+	debug_text += col1 + "families:[/color]            %s\n\n" % [Family.data.size()]
 	#
-	debug_text += "[color=#888888]zoom:[/color]                %s\n" % [Game.INGAME_ROOT.camera_zoom_target]
-	debug_text += "[color=#888888]camera:[/color]              %s\n" % [Game.INGAME_ROOT.camera_position_target]
-	debug_text += "[color=#888888]mouse_worldpos:[/color]      %s\n" % [Game.INGAME_ROOT.mouse_worldpos]
-	debug_text += "[color=#888888]curr_click_mouse:[/color]    %s\n" % [Game.INGAME_ROOT.current_click_game_coords]
-	debug_text += "[color=#888888]last_click_mouse:[/color]    %s\n" % [Game.INGAME_ROOT.last_click_game_coords]
-	debug_text += "[color=#888888]last_click_camera:[/color]   %s\n" % [Game.INGAME_ROOT.camera_previous_game_coords]
-	
-	debug_text += "[color=#888888]debug_display_mode:[/color]  %s\n" % [Log.get_enum_string(DebugDisplays, debug_display_mode)]
+	debug_text += col1 + "camera:[/color]              %s\n" % [Game.INGAME_ROOT.camera_position_target]
+	debug_text += col1 + "zoom:[/color]                %s\n" % [Game.INGAME_ROOT.camera_zoom_target]
+	debug_text += col1 + "mouse_worldpos:[/color]      %s\n" % [Game.INGAME_ROOT.mouse_worldpos]
+	debug_text += col1 + "curr_click_mouse:[/color]    %s\n" % [Game.INGAME_ROOT.current_click_game_coords]
+	debug_text += col1 + "last_click_mouse:[/color]    %s\n" % [Game.INGAME_ROOT.last_click_game_coords]
+	debug_text += col1 + "last_click_camera:[/color]   %s\n\n" % [Game.INGAME_ROOT.camera_previous_game_coords]
+	#
+	debug_text += col1 + "game_speed:[/color]   %d\n" % [Game.speed]
+	debug_text += col1 + "ENGINE_t:[/color]     %.2f\n" % [Game.t]
+	debug_text += col1 + "refresh_rate:[/color] %.2f\n" % [Game.game_refresh_rate]
+	debug_text += col1 + "TPS:[/color]          %.2f\n" % [Game.speed_tps]
+	debug_text += col1 + "ticks/frame:[/color]  %.2f\n" % [Game.ticks_per_frame]
+	debug_text += col1 + "ticks_to_do:[/color]  %.2f\n\n" % [Game.ticks_to_do]
+	#
+	debug_text += col1 + "total_ticks:[/color]  %d\n" % [Game.total_ticks]
+	debug_text += col1 + "total_days:[/color]   %d\n" % [Game.total_days]
+	debug_text += col1 + "tick:[/color]         %d\n" % [Game.tick]
+	debug_text += col1 + "day:[/color]          %d\n" % [Game.day]
+	debug_text += col1 + "month:[/color]        %d\n" % [Game.month]
+	debug_text += col1 + "year:[/color]         %d\n" % [Game.year]
 	
 	if DEBUG_LABEL.bbcode_text != debug_text:
 		DEBUG_LABEL.bbcode_text = debug_text

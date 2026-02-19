@@ -148,7 +148,7 @@ func redraw():
 	var _t = Stopwatch.start()
 	if !GridsMono.RedrawMap(TILEMAP_FLAT, grids): # around ~360 ms (120 ms afterwards)
 		return Log.error(self, GlobalScope.Error.FAILED, "(GridsMono) could not set TileMap")
-	Stopwatch.stop(self, _t, "GridsMono -> RedrawMap")
+	Stopwatch.stop(self, _t, "GridsMono.RedrawMap")
 
 var city_orientation = 0
 var city_view_camera_x = 0

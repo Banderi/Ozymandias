@@ -131,7 +131,7 @@ content_margin_left = 2.0
 content_margin_right = 2.0
 content_margin_top = 0.0
 content_margin_bottom = 1.0
-bg_color = Color( 0, 0, 0, 0.317647 )
+bg_color = Color( 0, 0, 0, 0.470588 )
 
 [sub_resource type="StyleBoxFlat" id=40]
 content_margin_left = 2.0
@@ -1549,8 +1549,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 margin_left = 10.0
 margin_top = 28.0
-margin_right = -12.0
-margin_bottom = -9.0
+margin_right = -655.0
+margin_bottom = -753.0
 mouse_filter = 2
 custom_colors/font_color_shadow = Color( 0, 0, 0, 0.54902 )
 custom_constants/shadow_offset_y = 1
@@ -1563,9 +1563,7 @@ bbcode_text = "asdasd"
 text = "asdasd"
 scroll_active = false
 script = ExtResource( 56 )
-__meta__ = {
-"_edit_lock_": true
-}
+AutoResize = true
 
 [node name="DEBUG_LABEL2" type="RichTextLabel" parent="Debug"]
 visible = false
@@ -1625,6 +1623,7 @@ test
 test"
 scroll_active = false
 script = ExtResource( 56 )
+AutoResize = true
 
 [node name="DEBUG_LABEL4" type="RichTextLabel" parent="Debug"]
 visible = false
@@ -1717,6 +1716,31 @@ rect_min_size = Vector2( 80, 0 )
 min_value = -1.0
 max_value = 1e+08
 
+[node name="BtnChangeFPS" type="SpinBox" parent="Debug/DEBUG_BTNS"]
+margin_left = 461.0
+margin_right = 541.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 80, 0 )
+max_value = 200.0
+value = 60.0
+prefix = "FPS"
+
+[node name="Control" type="Control" parent="Debug/DEBUG_BTNS"]
+margin_left = 545.0
+margin_right = 650.0
+margin_bottom = 24.0
+rect_min_size = Vector2( 105, 0 )
+mouse_filter = 2
+
+[node name="ToggleVsync" type="CheckButton" parent="Debug/DEBUG_BTNS/Control"]
+anchor_top = 0.5
+anchor_bottom = 0.5
+margin_top = -20.0
+margin_right = 116.0
+margin_bottom = 20.0
+pressed = true
+text = "vsync"
+
 [node name="TextureRect" type="TextureRect" parent="Debug"]
 margin_left = 430.0
 margin_top = 42.0
@@ -1767,3 +1791,5 @@ color = Color( 0.733333, 0.733333, 0.733333, 1 )
 [connection signal="value_changed" from="Debug/DEBUG_BTNS/BtnTestTerrainImages" to="Debug" method="_on_BtnTestTerrainImages_value_changed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnRedrawMap" to="Debug" method="_on_BtnRedrawMap_pressed"]
 [connection signal="value_changed" from="Debug/DEBUG_BTNS/BtnTestSprites" to="Debug" method="_on_BtnTestSprites_value_changed"]
+[connection signal="value_changed" from="Debug/DEBUG_BTNS/BtnChangeFPS" to="Debug" method="_on_BtnChangeFPS_value_changed"]
+[connection signal="toggled" from="Debug/DEBUG_BTNS/Control/ToggleVsync" to="Debug" method="_on_ToggleVsync_toggled"]

@@ -212,9 +212,6 @@ enum ImageTypes {
 	Plain_Font = 20,
 	Isometric = 30, }
 var SG = {}
-#const SGX_HEADER_SIZE = 80
-#const MAX_BMPS = 300
-#const MAX_TAGS = 300
 func sgx_pak_header(filename_sgx: String): # ~2 ms
 	var pak_name = IO.strip_extension(filename_sgx) # naked SG pak name
 	if filename_sgx == pak_name:
@@ -265,211 +262,6 @@ func sgx_pak_header(filename_sgx: String): # ~2 ms
 			SG[pak_name].groups.size()
 		])
 	return SG[pak_name].header
-func parse_sgx_scribe(filename_sgx: String, force_reparse: bool = false): # .sgx head
-#	Log.generic("parse_sgx", "filename_sgx:%s, force_reparse:%s" % [filename_sgx, force_reparse])
-	var _t = Stopwatch.start()
-	
-	# naked SG pak name
-	var pak_name = IO.strip_extension(filename_sgx)
-	if filename_sgx == pak_name:
-		return Log.error("parse_sgx_scribe", GlobalScope.Error.ERR_INVALID_PARAMETER, "full filename with extension is required but was provided the naked pak_name")
-
-	# check if already parsed
-	if pak_name in SG && !force_reparse:
-		return true
-	
-	# actual path
-	var path = get_game_file_path(filename_sgx)
-	if path == null:
-		return false
-	
-	# open .sgx file
-	if !Scribe.open(File.READ, path):
-		return false
-	
-	# initialize pak data
-	SG[pak_name] = {
-		"header": {},
-		"bmp": [],
-		"img": [],
-		"tag_groups": [],
-		"tag_names": []
-	}
-#	var pak_data = SG[pak_name]
-	
-	# file offsets
-	var SGX_HEADER_SIZE = 80
-	var MAX_BMPS = 300
-	var MAX_TAGS = 300
-	
-	var MAX_BMP_RECORDS = 200 # .sg3
-	if SG[pak_name].header.version == 211:
-		MAX_BMP_RECORDS = 100 # .sg2
-	
-	var alpha_mask_extra = false
-	var IMG_RECORD_SIZE = 64
-	if SG[pak_name].header.version >= 214:
-		alpha_mask_extra = true
-		IMG_RECORD_SIZE = 72
-	
-	var OFFSET_BMP_RECORDS = SGX_HEADER_SIZE + 2 * MAX_BMPS
-	var OFFSET_IMG_RECORDS = OFFSET_BMP_RECORDS + 200 * MAX_BMP_RECORDS + IMG_RECORD_SIZE
-	
-	# header
-#	Scribe.sync_record([pak_data.header], TYPE_DICTIONARY)
-	Scribe.sync_record([SG, pak_name, "header"], TYPE_DICTIONARY)
-	Scribe.put(ScribeFormat.u32, "filesize_sgx")
-	Scribe.put(ScribeFormat.u32, "version")
-	Scribe.put(ScribeFormat.u32, "unk00")
-	Scribe.put(ScribeFormat.i32, "img_records_max")
-	Scribe.put(ScribeFormat.i32, "img_records")
-	Scribe.put(ScribeFormat.i32, "bmp_records")
-	Scribe.put(ScribeFormat.i32, "bmp_records_nix_system")
-	Scribe.put(ScribeFormat.u32, "filesize_total")
-	Scribe.put(ScribeFormat.u32, "filesize_555")
-	Scribe.put(ScribeFormat.u32, "filesize_external")
-	Scribe.put(ScribeFormat.u32, "unk10")
-	Scribe.put(ScribeFormat.u32, "unk11")
-	Scribe.put(ScribeFormat.u32, "unk12")
-	Scribe.put(ScribeFormat.u32, "unk13")
-	Scribe.put(ScribeFormat.u32, "unk14")
-	Scribe.put(ScribeFormat.u32, "unk15")
-	Scribe.put(ScribeFormat.u32, "unk16")
-	Scribe.put(ScribeFormat.u32, "unk17")
-	Scribe.put(ScribeFormat.u32, "unk18")
-	Scribe.put(ScribeFormat.u32, "unk19")
-
-	# tag groups
-#	Scribe.sync_record([pak_data.tag_groups], TYPE_ARRAY)
-	Scribe.sync_record([SG, pak_name, "tag_groups"], TYPE_ARRAY)
-	for i in SG[pak_name].header.bmp_records:
-		Scribe.put(ScribeFormat.u16, i)
-
-	# bmp records
-#	var OFFSET_BMP_RECORDS = SGX_HEADER_SIZE + 2 * MAX_BMPS
-	ScribeMono.Seek(OFFSET_BMP_RECORDS)
-	for i in SG[pak_name].header.bmp_records:
-#		Scribe.sync_record([pak_data.bmp, i], TYPE_DICTIONARY)
-		Scribe.sync_record([SG, pak_name, "bmp", i], TYPE_DICTIONARY)
-		Scribe.skip(65)
-		Scribe.skip(51)
-#		Scribe.put(ScribeFormat.ascii, "name", 65)
-#		Scribe.put(ScribeFormat.ascii, "comment", 51)
-		Scribe.put(ScribeFormat.u32, "width")
-		Scribe.put(ScribeFormat.u32, "height")
-		Scribe.put(ScribeFormat.u32, "num_images")
-		Scribe.put(ScribeFormat.u32, "index_start")
-		Scribe.put(ScribeFormat.u32, "index_end")
-		Scribe.put(ScribeFormat.u32, "unk00")  # unknown, img record index
-		Scribe.put(ScribeFormat.u32, "unk01")
-		Scribe.put(ScribeFormat.u32, "unk02")
-		Scribe.put(ScribeFormat.u32, "unk03")  #        8
-		Scribe.put(ScribeFormat.u32, "unk04")  #        172
-		Scribe.put(ScribeFormat.u32, "smallest_img_width")
-		Scribe.put(ScribeFormat.u32, "smallest_img_height")
-
-		Scribe.put(ScribeFormat.u32, "unk07")  # 39214	897425
-		Scribe.put(ScribeFormat.u32, "unk08")  # 50124	1575400
-		Scribe.put(ScribeFormat.u32, "unk09")  # 10910	677975
-
-		Scribe.put(ScribeFormat.u32, "unk10")  #        10
-		Scribe.put(ScribeFormat.u32, "unk11")
-		Scribe.put(ScribeFormat.u32, "unk12")
-		Scribe.put(ScribeFormat.u32, "unk13")
-		Scribe.put(ScribeFormat.u32, "unk14")
-		Scribe.put(ScribeFormat.u16, "unk15a") # 1      1
-		Scribe.put(ScribeFormat.u16, "unk15b") #        2
-
-		SG[pak_name].bmp[i]["__num_images_i"] = 0 # this is a temp cumulator used to determine each img's own index within the bmp group
-
-	# image data
-#	var MAX_BMP_RECORDS
-#	var IMG_RECORD_SIZE = 64
-#	var alpha_mask_extra = false
-#	if SG[pak_name].header.version == 211:
-#		MAX_BMP_RECORDS = 100 # .sg2
-#	else:
-#		MAX_BMP_RECORDS = 200 # .sg3
-#	if SG[pak_name].header.version >= 214:
-#		alpha_mask_extra = true
-#		IMG_RECORD_SIZE = 72
-#	file.push_cursor_base(200 * MAX_BMP_RECORDS + IMG_RECORD_SIZE)  # first one is empty/dummy
-#	var OFFSET_IMG_RECORDS = OFFSET_BMP_RECORDS + 200 * MAX_BMP_RECORDS + IMG_RECORD_SIZE
-#	ScribeMono.Seek(OFFSET_IMG_RECORDS)  # first one is empty/dummy
-#	SG[pak_name].img.push_back(null)
-#	for i in SG[pak_name].header.img_records:
-#		Scribe.sync_record([SG, pak_name, "img", i + 1], TYPE_DICTIONARY)
-##		pak_data.img.push_back({
-##			"__sgx_idx": i, # first one is NULL
-#		Scribe.put(ScribeFormat.u32, "data_offset")
-#		Scribe.put(ScribeFormat.u32, "data_length")
-#		Scribe.put(ScribeFormat.u32, "uncompressed_length")
-#		Scribe.put(ScribeFormat.u32, "unk00")
-#		Scribe.put(ScribeFormat.i32, "offset_to_mirror_sprite") # .sg3 only
-#		Scribe.put(ScribeFormat.i16, "width") # max(file.get_i16(), 0),
-#		Scribe.put(ScribeFormat.i16, "height") # max(file.get_i16(), 0),
-#		Scribe.put(ScribeFormat.u16, "atlas_x")
-#		Scribe.put(ScribeFormat.u16, "atlas_y")
-#		Scribe.put(ScribeFormat.u16, "name_idx")
-#		Scribe.put(ScribeFormat.u16, "animation.num_sprites")
-#		Scribe.put(ScribeFormat.u16, "animation.unk04")
-#		Scribe.put(ScribeFormat.i16, "animation.sprite_x_offset")
-#		Scribe.put(ScribeFormat.i16, "animation.sprite_y_offset")
-#		Scribe.put(ScribeFormat.u16, "animation.unk05")
-#		Scribe.put(ScribeFormat.u16, "animation.unk06")
-#		Scribe.put(ScribeFormat.u16, "animation.unk07")
-#		Scribe.put(ScribeFormat.u16, "animation.unk08")
-#		Scribe.put(ScribeFormat.u16, "animation.unk09")
-#		Scribe.put(ScribeFormat.i8, "animation.can_reverse")
-#		Scribe.put(ScribeFormat.u8, "animation.unk10")
-#		Scribe.put(ScribeFormat.u8, "type")
-#		Scribe.put(ScribeFormat.i8, "has_compressed_alpha")
-#		Scribe.put(ScribeFormat.i8, "is_external")
-#		Scribe.put(ScribeFormat.i8, "has_isometric_top")
-#		Scribe.put(ScribeFormat.i8, "unk11")
-#		Scribe.put(ScribeFormat.u8, "isometric_tile_size") # not fully consistent?
-#		Scribe.put(ScribeFormat.u8, "bmp_record")
-#		Scribe.put(ScribeFormat.i8, "unk13")
-#		Scribe.put(ScribeFormat.u8, "animation.speed_id")
-#		Scribe.put(ScribeFormat.u8, "unk14")
-#		Scribe.put(ScribeFormat.u8, "unk15")
-#		Scribe.put(ScribeFormat.u8, "unk16")
-#		Scribe.put(ScribeFormat.u8, "unk17")
-#		Scribe.put(ScribeFormat.u8, "isometric_multi_tile")
-##		})
-#		var img = SG[pak_name].img[-1]
-#		if alpha_mask_extra:
-#			Scribe.put(ScribeFormat.i32, "alpha_offset")
-#			Scribe.put(ScribeFormat.i32, "alpha_length")
-#		else:
-#			img["alpha_offset"] = 0
-#			img["alpha_length"] = 0
-#		SG[pak_name].bmp[img.bmp_record].__num_images_i += 1
-#		img.idx_in_bmp = SG[pak_name].bmp[img.bmp_record].__num_images_i
-
-	# tag names at the end
-#	file.push_cursor_base((pak_data.header.img_records_max - 1) * IMG_RECORD_SIZE)
-	ScribeMono.Seek(OFFSET_IMG_RECORDS + (SG[pak_name].header.img_records_max - 1) * IMG_RECORD_SIZE)
-	Scribe.sync_record([SG, pak_name, "tag_names"], TYPE_ARRAY)
-	for i in MAX_TAGS: # first field here is also empty/dummy
-		Scribe.put(ScribeFormat.ascii, i, 48)
-#		pak_data.tag_names.push_back(file.get_buffer(48).get_string_from_ascii())
-
-	ScribeMono.AssertEOF()
-#	assert(file.end_reached(true))
-#	var _t_1 = Stopwatch.query(_t, Stopwatch.Milliseconds)
-	
-	Scribe.close()
-	Log.generic("parse_sgx", "DONE (%d ms) -- %d images, %d bmps, %d tag groups" % [
-		Stopwatch.query(_t, Stopwatch.Milliseconds),
-		SG[pak_name].header.img_records,
-		SG[pak_name].header.bmp_records_nix_system,
-		SG[pak_name].tag_groups.size()
-	])
-	if force_reparse:
-		return SG[pak_name].header.img_records
-	else:
-		return true
 func parse_full_sgx(filename_sgx: String, force_reparse: bool = false): # .sgx head
 #	return parse_sgx_2(filename_sgx, force_reparse)
 #	Log.generic("parse_sgx", "filename_sgx:%s, force_reparse:%s" % [filename_sgx, force_reparse])
@@ -1124,10 +916,8 @@ func load_enemies(): # TODO
 func load_settings(): # TODO
 	pass
 
-
 func load_common_tilesets(ignore_cache: bool = false):
-	
-	# load tileset from raw Variant disk file -- around 420~460 ms
+	# load tileset from cache -- around 420~460 ms
 	var _t = Stopwatch.start()
 	var path_cached_tileset = get_game_cache_path() + "/Pharaoh_Terrain.tileset"
 	if !ignore_cache && IO.file_exists(path_cached_tileset):
@@ -1146,7 +936,6 @@ func load_common_tilesets(ignore_cache: bool = false):
 		_t = Stopwatch.start()
 		IO.write(path_cached_tileset, tileset)
 		Stopwatch.stop("load_tilesets", _t, "tileset save to disk")
-		
 	return true
 
 ###
@@ -1159,10 +948,7 @@ func load_game_assets(game):
 	if !load_locales():
 		return bail(GlobalScope.Error.FAILED, "load_locales()")
 	
-#	parse_sgx("SprMain.sg3")
-	
-	
-#	if !extract_sg_paks(): # <--- true to force all sprite re-extraction
+#	if !extract_sg_paks(): # <--- true to force all sprite re-extraction --- TODO: on first game load / data path set (or reset)
 #		return bail(GlobalScope.Error.FAILED, "load_sg_paks()")
 	
 	if !load_common_tilesets(false): # <--- true to ignore cached tiles
