@@ -33,14 +33,16 @@ func spawn_sprites(): # TODO
 	
 	for i in figures.size():
 		var figure = figures[i]
-		if figure.type != 0:
+		if figure.getData("type") != 0:
 			var n = figure_sprite_TSCN.instance()
 			n.set_figure(i)
+			
 			Map.TILEMAP_FLAT.add_child(n)
 #			Map.TILEMAP_ANIM.add_child(n)
 	
 	Stopwatch.stop(self, _t, "Figures.spawn_sprites")
 
+#var FIGURE_CS = load("res://scripts/mono/Figure.cs")
 func enscribe_figures():
 	Scribe.push_compressed(Figures.MAX_FIGURES * 388)
 	var _t = Stopwatch.start()
@@ -48,6 +50,22 @@ func enscribe_figures():
 	for i in Figures.MAX_FIGURES:
 		var _p = ScribeMono.GetPosition()
 		assert(_p % 388 == 0)
+		
+#		if i == 1:
+#		var ftest = FIGURE_CS.new()
+		var ftest = figures[i]
+		ftest.Fill()
+#		var a = ftest.getData("anim_frame")
+#		var b = ftest.getData("sprite_image_id")
+#		var c = ftest.getData("type")
+#		ftest.setData("type", 99)
+#		c = ftest.getData("type")
+#		var _p2 = ScribeMono.GetPosition()
+		
+#		Figures.figures.push_back(ftest)
+		continue
+		
+		##################
 		
 		Scribe.sync_record([Figures.figures, i], TYPE_DICTIONARY)
 	
@@ -62,6 +80,8 @@ func enscribe_figures():
 			Scribe.skip(2)
 		Scribe.put(ScribeFormat.i16, "next_figure")
 		Scribe.put(ScribeFormat.u8, "type")
+		
+#		var a = figures[i]
 		
 		if figures[i].type == 0:
 			_skipped += 1
@@ -185,7 +205,9 @@ func enscribe_figures():
 	
 
 func _enter_tree():
+	var FIGURE_CS = load("res://scripts/mono/Figure.cs")
 	for i in MAX_FIGURES: # prepare empty array
-		figures.push_back({})
+#		figures.push_back({})
+		figures.push_back(FIGURE_CS.new())
 func _ready():
 	assert(figures.size() == MAX_FIGURES)

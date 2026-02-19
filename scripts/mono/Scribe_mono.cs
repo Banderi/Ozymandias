@@ -70,6 +70,12 @@ public class Scribe_mono : Node
 
 	private BinaryReader _bin_reader; // these point ALWAYS the stream at the top of the stack. BOTH are set upon stack ops, OTHERWISE
 	private BinaryWriter _bin_writer; // only the needed one is -- so ALWAYS use _flags to check for read / write, not these!!
+	public BinaryReader GetReader() {
+		return _bin_reader;
+	}
+	public BinaryWriter GetWriter() {
+		return _bin_writer;
+	}
 
 	// MemoryStream stack -- this will ALWAYS contain the base file stream as the BOTTOM, so it can not be removed NOR garbage collected!
 	// private object _streams_top = null;

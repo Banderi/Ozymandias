@@ -3,8 +3,8 @@ extends CanvasLayer
 func _on_BtnPKWareTest_pressed():
 	Game.do_PKWare_tests()
 func _on_BtnLoadAutosave_pressed():
-#	Game.load_game("res://tests/autosave.sav")
-	Game.load_game("res://tests/Alexandria.sav")
+	Game.load_game("res://tests/autosave.sav")
+#	Game.load_game("res://tests/Alexandria.sav")
 
 var prev_tile_test_value = 2
 func _on_BtnTestTerrainImages_value_changed(value):

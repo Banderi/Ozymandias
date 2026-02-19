@@ -1,5 +1,5 @@
 extends Node
-# ANTIMONY 'Log' by Banderi --- v1.3
+# ANTIMONY 'Log' by Banderi --- v1.4
 
 var LOG_EVERYTHING = []
 var LOG_ENGINE = []
@@ -67,10 +67,10 @@ func generic(from, message_text, iserror = false):
 	
 	LOG_CHANGED = true
 	LAST_MSG = str(message_text)
-func error(from, err, message_text):
+func error(from, err, message_text, error_enum_set = 0):
 	var error_text = "ERROR: "
 	if err != null:
-		error_text += str("(", err, ":", get_enum_string(GlobalScope.Error, err), ") ")
+		error_text += str("(", err, ":", get_enum_string(GlobalScope.Error if error_enum_set == 0 else GlobalScope.WinError, err), ") ")
 	error_text += str(message_text)
 	return generic(from, error_text, true)
 

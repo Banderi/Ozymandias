@@ -808,6 +808,13 @@ func get_gameset_sg_texture(img_id: int):
 		Log.error(self, GlobalScope.Error.ERR_METHOD_NOT_FOUND, "game set '%s' is not implemented" % [GAME_SET])
 	return null
 
+func get_grouped_sg_texture():
+	pass
+
+# animated sprites:
+func get_animated_sprite_texture():
+	pass
+
 # tiles and tileset ops
 const TILE_WIDTH_PIXELS = 60
 const TILE_HEIGHT_PIXELS = 30
