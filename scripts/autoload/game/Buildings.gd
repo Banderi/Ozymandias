@@ -15,3 +15,10 @@ var burning_buildings_list_info = 0
 var burning_buildings_size = 0
 
 var storage_yards_settings = []
+
+func _enter_tree():
+	var BUILDING_CS = load("res://scripts/mono/Building.cs")
+	for i in MAX_BUILDINGS: # prepare array of figure objects
+		buildings.push_back(BUILDING_CS.new(i))
+func _ready():
+	assert(buildings.size() == MAX_BUILDINGS)

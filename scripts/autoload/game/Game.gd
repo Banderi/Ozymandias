@@ -715,7 +715,11 @@ func game_day():
 func game_tick():
 	
 	for f in Figures.figures:
-		f.tick()
+		if f.in_use():
+			f.tick()
+			
+			if randi() % 15 == 1:
+				f.poof()
 	
 	###
 	

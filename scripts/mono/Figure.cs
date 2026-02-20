@@ -1,13 +1,13 @@
 using Godot;
 using System;
-using System.IO;
-using System.Reflection;
+using System.IO; // BinaryReader / BinaryWriter
+using System.Reflection; // FieldInfo
 using System.Runtime.InteropServices; // Marshal
 
 public class Figure : Reference
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public partial class FigureData
+    partial class FigureData
     {
 		public byte alternative_location_index;
 		public byte anim_frame;
@@ -133,11 +133,11 @@ public class Figure : Reference
 		public short cart_image_id; // this is off by 18 with respect to the normal SG global ids!
 		public short unk_12;
     }
-	public FigureData data = new FigureData();
+	FigureData data = new FigureData();
 
 	// constructor
-	public int FIGURE_IDX;
-	Figure(int _IDX)
+	public short FIGURE_IDX;
+	Figure(short _IDX)
 	{
 		FIGURE_IDX = _IDX;
 	}
@@ -149,7 +149,7 @@ public class Figure : Reference
 	public bool Fill() // returns true if this figure block is in use
 	{
 		_readFromStream(((Scribe_mono)Globals.ScribeMono).GetReader());
-		return data.type != 0;
+		return in_use();
 	}
 	public void Dump()
 	{
@@ -203,9 +203,11 @@ public class Figure : Reference
 
 	// =============================== Figure =============================== //
 
-	Figure figure_get(int i)
+	public static Figure getFigure(short figure_id)
 	{
-		return (Figure) ((Godot.Collections.Dictionary)Globals.Figures.Get("figures"))[i];
+        if (figure_id == 0)
+            return null;
+		return (Figure) ((Godot.Collections.Array)Globals.Figures.Get("figures"))[figure_id];
 	}
 
 	void set_state(Enums.FigureStates state)
@@ -224,7 +226,8 @@ public class Figure : Reference
         data.action_state = Enums.FigureActions.ACTION_149_CORPSE;
     }
     public void poof() {
-        set_state(Enums.FigureStates.DEAD);
+		if (data.state != Enums.FigureStates.NONE && data.state != Enums.FigureStates.DEAD)
+	        set_state(Enums.FigureStates.DEAD);
     }
 	
 	public void create(Enums.FigureTypes type, ushort x, ushort y, byte dir) // TODO
@@ -233,16 +236,78 @@ public class Figure : Reference
 	}
 	void figure_delete_UNSAFE()
 	{
-		
+		Building b = home();
+		if (b != null) {
+			b.remove_figure(FIGURE_IDX);
+			// Building b = home();
+			// if (b.has_figure(0, FIGURE_IDX))
+			// 	b.remove_figure(0);
+			// if (b.has_figure(1, FIGURE_IDX))
+			// 	b.remove_figure(1);
+		}
+
+		// // switch (type) {
+		// // 	case FIGURE_BALLISTA:
+		// // 		if (has_home())
+		// // 			home()->remove_figure(3);
+		// // 		break;
+		// // 	case FIGURE_DOCKER:
+		// // 		if (has_home()) {
+		// // 			building *b = home();
+		// // 			for (int i = 0; i < 3; i++) {
+		// // 				if (b->data.dock.docker_ids[i] == id)
+		// // 					b->data.dock.docker_ids[i] = 0;
+		// // 			}
+		// // 		}
+		// // 		break;
+		// // 	case FIGURE_ENEMY_CAESAR_LEGIONARY:
+		// // 		city_emperor_mark_soldier_killed();
+		// // 		break;
+		// // }
+		// if (data.empire_city_id != 0)
+		// 	empire_city_remove_trader(data.empire_city_id, FIGURE_IDX);
+
+		// if (has_immigrant_home())
+		// 	immigrant_home()->remove_figure(2);
+
+		// route_remove();
+		// map_figure_remove();
+
+		data.state = Enums.FigureStates.NONE;
+		FigureSprite.QueueFree();
+		FigureSprite = null;
 	}
 
 
+	// bool has_home(short id = -1)
+	// {
+	// 	if (id == -1)
+	// 		return data.home_building_id != 0;
+	// 	return data.home_building_id == id;
+	// }
+	// bool has_immigrant_home(short _id = -1)
+	// {
+	// 	if (_id == -1)
+	// 		return data.immigrant_home_building_id != 0;
+	// 	return data.immigrant_home_building_id == _id;
+	// }
+	// bool has_destination(short _id = -1) {
+	// 	if (_id == -1)
+	// 		return data.destination_building_id != 0;
+	// 	return data.destination_building_id == _id;
+	// }
+	Building home(short building_id = -1) // if an id is provided, check that the record matches, otherwise it returns null
+	{
+		if (building_id == -1 || building_id == data.home_building_id)
+			return Building.getBuilding(data.home_building_id);
+		return null;
+	}
 
 
 	void update_attacker()
 	{
 		if (data.targeted_by_figure_id != 0) {
-			Figure attacker = figure_get(data.targeted_by_figure_id);
+			Figure attacker = getFigure(data.targeted_by_figure_id);
 			if (attacker.data.state != Enums.FigureStates.ALIVE)
 				data.targeted_by_figure_id = 0;
 			if (attacker.data.target_figure_id != FIGURE_IDX)
@@ -251,7 +316,7 @@ public class Figure : Reference
 	}
 	void update_animation()
 	{
-		FigureSprite.Call("update_animation");
+		
 	}
 	void update_linked_buildings()
 	{
@@ -371,38 +436,38 @@ public class Figure : Reference
 
 	public bool tick() // return true if the figure has despawned
 	{
-		if (data.state == Enums.FigureStates.NONE)
-			return false;
+		// if DEAD, delete figure -- this is UNSAFE, and must exit the tick loop immediately
+		if (data.state == Enums.FigureStates.DEAD) {
+			figure_delete_UNSAFE();
+			return true;
+		}
+		
+		// invalid action states?
 		if (data.action_state < 0)
 			set_state(Enums.FigureStates.DEAD);
-	// 	if (state != 0) {
 
 		update_attacker();
 
-		//////////////
-
 		// reset values like cart image & max roaming length
-		data.cart_image_id = 0;
-		data.max_roam_length = 0;
-		data.use_cross_country = false;
-		data.is_ghost = false;
-
+		// data.cart_image_id = 0;
+		// data.max_roam_length = 0;
+		// data.use_cross_country = false;
+		// data.is_ghost = false;
 		// base lookup data
 		// figure_action_property action_properties = action_properties_lookup[type];
 		// if (action_properties.terrain_usage != -1 && data.terrain_usage == -1)
 		// 	data.terrain_usage = action_properties.terrain_usage;
 		// max_roam_length = action_properties.max_roam_length;
 		// speed_multiplier = action_properties.speed_mult;
-		// image_set_animation(action_properties.base_image_collection, action_properties.base_image_group);
-		
 
-// 		// check for building being alive (at the start of the action)
+		// image_set_animation(action_properties.base_image_collection, action_properties.base_image_group);
+		update_animation();
+
+		// check for building being alive (at the start of the action)
 		update_linked_buildings();
 
-// 		// common action states handling
+		// common action states handling
 		action_common_pretick();
-
-// 		////////////
 
 // 		switch (type) {
 // 			case 1: immigrant_action();                 break;
@@ -497,22 +562,14 @@ public class Figure : Reference
 // 				break;
 // 		}
 
-		// if DEAD, delete figure -- this is UNSAFE, and should only be done here.
-		if (data.state == Enums.FigureStates.DEAD) {
-			figure_delete_UNSAFE();
-			return true;
-		}
+		
 
 		// poof if LOST
 		if (data.direction == Enums.FigureDirections.CAN_NOT_REACH)
 			poof();
 
 		// advance sprite offset
-		// figure_image_update(false);
-		update_animation();
-	// 	}
-
+		FigureSprite.Call("advance_sprite_animation");
 		return false;
 	}
-
 }
