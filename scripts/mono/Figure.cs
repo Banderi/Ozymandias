@@ -4,49 +4,31 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices; // Marshal
 
-
-// [StructLayout(LayoutKind.Sequential, Pack = 1)]
-public class Figure : Reference //Godot.Object //Reference
+public class Figure : Reference
 {
-	
-	// public override void _Init()
-	// {
-	// 	GD.Print("*** FIGURE.CS SPAWNED: " + this);
-	// }
-	Figure()
-	{
-		// GD.Print("*** FIGURE.CS CREATED: " + this);
-	}
-	~Figure()
-	{
-		// GD.Print("*** FIGURE.CS DESTRUCTED: " + this);
-	}
-	// public New()
-	// {
-	// 	return new Figure();
-	// }
-
-
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    public class FigureData
+    public partial class FigureData
     {
 		public byte alternative_location_index;
 		public byte anim_frame;
-		public byte is_enemy_image;
-		public byte flotsam_visible;
+		[MarshalAs(UnmanagedType.U1)]
+		public bool is_enemy_image; // public byte is_enemy_image;
+		public byte flotsam_visible; // is this boolean?
 		public short sprite_image_id; // this is off by 18 with respect to the normal SG global ids!
 		public short unk_00; // cart_image_id was here in C3
 		public short next_figure;
-		public byte type;
+		public Enums.FigureTypes type;
 		public byte resource_id;
-		public byte use_cross_country;
-		public byte is_friendly;
-		public byte state;
+		[MarshalAs(UnmanagedType.U1)] // public byte use_cross_country;
+		public bool use_cross_country;
+		[MarshalAs(UnmanagedType.U1)]
+		public bool is_friendly; // public byte is_friendly;
+		public Enums.FigureStates state; // public byte state;
 		public byte faction_id;
-		public byte action_state_before_attack;
-		public sbyte direction;
-		public sbyte previous_tile_direction;
-		public sbyte attack_direction;
+		public Enums.FigureActions action_state_before_attack;
+		public Enums.FigureDirections direction;
+		public Enums.FigureDirections previous_tile_direction;
+		public Enums.FigureDirections attack_direction;
 		public ushort tile_x;
 		public ushort tile_y;
 		public ushort previous_tile_x;
@@ -63,7 +45,7 @@ public class Figure : Reference //Godot.Object //Reference
 		public ushort formation_position_y_soldier;
 		public short __unused_24; // 0
 		public short wait_ticks; // 0
-		public byte action_state; // 9
+		public Enums.FigureActions action_state; // 9
 		public byte progress_on_tile; // 11
 		public short routing_path_id; // 12
 		public short routing_path_current_tile; // 4
@@ -92,7 +74,8 @@ public class Figure : Reference //Godot.Object //Reference
 		public byte index_in_formation; // 3
 		public byte formation_at_rest;
 		public byte migrant_num_people;
-		public byte is_ghost;
+		[MarshalAs(UnmanagedType.U1)]
+		public bool is_ghost; // public byte is_ghost;
 		public byte min_max_seen;
 		public byte __unused_57;
 		public short leading_figure_id;
@@ -103,7 +86,7 @@ public class Figure : Reference //Godot.Object //Reference
 		public byte empire_city_id;
 		public byte trader_amount_bought;
 		public short name; // 6
-		public byte terrain_usage;
+		public Enums.TerrainUsage terrain_usage; // public byte terrain_usage;
 		public byte is_boat;
 		public ushort resource_amount_full; // 4772 >>>> 112 (resource amount! 2-bytes)
 		public byte height_adjusted_ticks;
@@ -121,9 +104,7 @@ public class Figure : Reference //Godot.Object //Reference
 		public short targeted_by_figure_id;
 		public ushort created_sequence;
 		public ushort target_figure_created_sequence;
-	//    public byte figures_sametile_num;
-		// Scribe.skip(1)
-		public byte unk_01;
+		public byte unk_01; // public byte figures_sametile_num;
 		public byte num_attackers;
 		public short attacker_id1;
 		public short attacker_id2;
@@ -153,96 +134,59 @@ public class Figure : Reference //Godot.Object //Reference
 		public short unk_12;
     }
 	public FigureData data = new FigureData();
-    
-	public void Fill()
+
+	// constructor
+	public int FIGURE_IDX;
+	Figure(int _IDX)
 	{
-		// BinaryReader r = (BinaryReader)Globals.ScribeMono.Call("GetReader");
-		readFromStream(((Scribe_mono)Globals.ScribeMono).GetReader());
+		FIGURE_IDX = _IDX;
+	}
+    
+	// FigureSprite bridge (hacky but works, for now)
+	public Node FigureSprite; 
+
+	// public I/O
+	public bool Fill() // returns true if this figure block is in use
+	{
+		_readFromStream(((Scribe_mono)Globals.ScribeMono).GetReader());
+		return data.type != 0;
 	}
 	public void Dump()
 	{
-		// writeToStream((BinaryWriter)Globals.ScribeMono.Call("GetWriter"));
-		writeToStream(((Scribe_mono)Globals.ScribeMono).GetWriter());
+		_writeToStream(((Scribe_mono)Globals.ScribeMono).GetWriter());
 	}
 
-	// public unsafe void readFigure<T>(T pData)
-	public unsafe void readFromStream(BinaryReader reader)
+	// private I/O
+	unsafe void _readFromStream(BinaryReader reader)
 	{
-		// int size = Marshal.SizeOf<T>();
-		// int size = Marshal.SizeOf(this.GetType());
 		int size = Marshal.SizeOf<FigureData>();
-		// byte[] stream = _handle.GetBuffer(size);
 		byte[] buffer = reader.ReadBytes(size);
 		fixed (byte* ptr = buffer)
 		{
-			// return Marshal.PtrToStructure<T>((IntPtr)ptr);
-			// Marshal.PtrToStructure((IntPtr)ptr, this);
 			Marshal.PtrToStructure((IntPtr)ptr, data);
-
 		}
 	}
-	public unsafe void writeToStream(BinaryWriter writer)
+	unsafe void _writeToStream(BinaryWriter writer)
     {
-        // using (var file = new FileStream(path, FileMode.Create))
-        // using (var writer = new BinaryWriter(file))
-        // {
-		// int size = Marshal.SizeOf(this.GetType());
 		int size = Marshal.SizeOf<FigureData>();
 		byte[] buffer = new byte[size];
 		
 		fixed (byte* ptr = buffer)
 		{
-			// Marshal.StructureToPtr(this, (IntPtr)ptr, false);
 			Marshal.StructureToPtr(data, (IntPtr)ptr, false);
 		}
-		
 		writer.Write(buffer);
-        // }
     }
 
-    // public void enscribe_figures()
-    // {
-        
-    // }
-
-	public object getData(String fieldName)
+	// raw data fields set/get
+	public new object get(String fieldName)
 	{
 		FieldInfo field = data.GetType().GetField(fieldName);
 		if (field == null)
 			return null;
 		return field.GetValue(data);
-		// var dict = new Godot.Collections.Dictionary();
-		
-		// foreach (var field in data.GetType().GetFields())
-		// {
-		// 	if (field.Name == fieldName)
-		// 		return field.GetValue(data);
-		// 	// var value = field.GetValue(_obj);
-			
-		// 	// if (value is int[] intArray)
-		// 	// {
-		// 	// 	var godotArray = new Godot.Collections.Array();
-		// 	// 	foreach (var item in intArray)
-		// 	// 		godotArray.Add(item);
-		// 	// 	dict[field.Name] = godotArray;
-		// 	// }
-		// 	// else if (value is float[] floatArray)
-		// 	// {
-		// 	// 	var godotArray = new Godot.Collections.Array();
-		// 	// 	foreach (var item in floatArray)
-		// 	// 		godotArray.Add(item);
-		// 	// 	dict[field.Name] = godotArray;
-		// 	// }
-		// 	// else
-		// 	// {
-		// 	// 	dict[field.Name] = value;
-		// 	// }
-		// }
-		// return null;
-		// // return dict;
 	}
-	
-	public bool setData(String fieldName, object value)
+	public new bool set(String fieldName, object value)
 	{
 		FieldInfo field = data.GetType().GetField(fieldName);
 		if (field == null)
@@ -250,53 +194,325 @@ public class Figure : Reference //Godot.Object //Reference
 		try {
 			field.SetValue(data, Convert.ChangeType(value, field.FieldType));
 		} catch (Exception e) {
-			// Globals.Log.Call("error", this, e.HResult, "could not set data field");
 			GD.PrintErr(e.ToString());
 			GD.PushError(e.ToString());
 			return false;
 		}
 		return true;
-		// foreach (var field in data.GetType().GetFields())
-		// {
-		// 	if (field.Name == fieldName) {
-		// 		try {
-		// 			field.SetValue(data, Convert.ChangeType(value, field.FieldType));
-		// 		} catch (Exception e) {
-		// 			// Globals.Log.Call("error", this, e.HResult, "could not set data field");
-		// 			GD.PrintErr(e.ToString());
-		// 			GD.PushError(e.ToString());
-		// 			return false;
-		// 		}
-		// 		return true;
-		// 	}
-		// 	// var fieldName = key.ToString();
-		// 	// var field = _obj.GetType().GetField(fieldName);
-			
-		// 	// if (field != null)
-		// 	// {
-		// 	// 	var value = dict[key];
-				
-		// 	// 	if (value is Godot.Collections.Array godotArray && field.FieldType.IsArray)
-		// 	// 	{
-		// 	// 		if (field.FieldType == typeof(int[]))
-		// 	// 		{
-		// 	// 			var intArray = new int[godotArray.Count];
-		// 	// 			for (int i = 0; i < godotArray.Count; i++)
-		// 	// 				intArray[i] = Convert.ToInt32(godotArray[i]);
-		// 	// 			field.SetValue(_obj, intArray);
-		// 	// 		}
-		// 	// 		else if (field.FieldType == typeof(float[]))
-		// 	// 		{
-		// 	// 			var floatArray = new float[godotArray.Count];
-		// 	// 			for (int i = 0; i < godotArray.Count; i++)
-		// 	// 				floatArray[i] = Convert.ToSingle(godotArray[i]);
-		// 	// 			field.SetValue(_obj, floatArray);
-		// 	// 		}
-		// 	// 	}
-		// 	// 	else
-		// 	// 		field.SetValue(_obj, Convert.ChangeType(value, field.FieldType));
-		// 	// }
-		// }
-		// return false;
 	}
+
+	// =============================== Figure =============================== //
+
+	Figure figure_get(int i)
+	{
+		return (Figure) ((Godot.Collections.Dictionary)Globals.Figures.Get("figures"))[i];
+	}
+
+	void set_state(Enums.FigureStates state)
+	{
+		data.state = state;
+	}
+	
+	public bool in_use()
+	{
+		return data.state != Enums.FigureStates.NONE;
+	}
+    public void kill() {
+        if (data.state != Enums.FigureStates.ALIVE)
+            return;
+        set_state(Enums.FigureStates.DYING);
+        data.action_state = Enums.FigureActions.ACTION_149_CORPSE;
+    }
+    public void poof() {
+        set_state(Enums.FigureStates.DEAD);
+    }
+	
+	public void create(Enums.FigureTypes type, ushort x, ushort y, byte dir) // TODO
+	{
+		
+	}
+	void figure_delete_UNSAFE()
+	{
+		
+	}
+
+
+
+
+	void update_attacker()
+	{
+		if (data.targeted_by_figure_id != 0) {
+			Figure attacker = figure_get(data.targeted_by_figure_id);
+			if (attacker.data.state != Enums.FigureStates.ALIVE)
+				data.targeted_by_figure_id = 0;
+			if (attacker.data.target_figure_id != FIGURE_IDX)
+				data.targeted_by_figure_id = 0;
+		}
+	}
+	void update_animation()
+	{
+		FigureSprite.Call("update_animation");
+	}
+	void update_linked_buildings()
+	{
+// 		building *b = home();
+// 		building *b_imm = immigrant_home();
+// 		figure *leader = figure_get(leading_figure_id);
+// 		switch ((Enums.FigureTypes)type) {
+// 			case Enums.FigureTypes.IMMIGRANT:
+// //                if (b_imm->state != BUILDING_STATE_VALID)
+// //                    poof();
+// //                if (!b_imm->house_size)
+// //                    poof();
+// //                if (!b_imm->has_figure(2, id))
+// //                    poof();
+// 				if (b_imm->type == BUILDING_BURNING_RUIN)
+// 					poof();
+// 				break;
+// 			case Enums.FigureTypes.ENGINEER:
+// 			case Enums.FigureTypes.PREFECT:
+// 			case Enums.FigureTypes.POLICEMAN:
+// 			case Enums.FigureTypes.MAGISTRATE:
+// 			case Enums.FigureTypes.WORKER:
+// 			case Enums.FigureTypes.MARKET_TRADER:
+// 			case Enums.FigureTypes.NATIVE_TRADER:
+// 			case Enums.FigureTypes.TAX_COLLECTOR:
+// 			case Enums.FigureTypes.TOWER_SENTRY:
+// 			case Enums.FigureTypes.MISSIONARY:
+// //            case Enums.FigureTypes.ACTOR:
+// //            case Enums.FigureTypes.GLADIATOR:
+// //            case Enums.FigureTypes.LION_TAMER:
+// //            case Enums.FigureTypes.CHARIOTEER:
+// 			case Enums.FigureTypes.BATHHOUSE_WORKER:
+// 			case Enums.FigureTypes.DOCTOR:
+// 			case Enums.FigureTypes.SURGEON:
+// 			case Enums.FigureTypes.BARBER:
+// 			case Enums.FigureTypes.WATER_CARRIER:
+// 			case Enums.FigureTypes.PRIEST:
+// 				if (b->state != BUILDING_STATE_VALID || !b->has_figure(0, id))
+// 					poof();
+// 				break;
+// 			case Enums.FigureTypes.HUNTER:
+// 			case Enums.FigureTypes.REED_GATHERER:
+// 			case Enums.FigureTypes.LUMBERJACK:
+// 				if (b->state != BUILDING_STATE_VALID)
+// 					poof();
+// 				break;
+// 			case Enums.FigureTypes.CART_PUSHER:
+// 				if (has_destination())
+// 					break;
+// 				if (!building_is_floodplain_farm(b) && (b->state != BUILDING_STATE_VALID || (!b->has_figure(0, id) && !b->has_figure(1, id))))
+// 					poof();
+// 				break;
+// 			case Enums.FigureTypes.WAREHOUSEMAN:
+// 				if (has_destination())
+// 					break;
+// 				if (b->state != BUILDING_STATE_VALID || (!b->has_figure(0, id) && !b->has_figure(1, id)))
+// 					poof();
+// 				break;
+// 			case Enums.FigureTypes.LABOR_SEEKER:
+// //            case Enums.FigureTypes.MARKET_BUYER:
+// 				if (b->state != BUILDING_STATE_VALID) //  || !b->has_figure(1, id)
+// 					poof();
+// 				break;
+// 			case Enums.FigureTypes.DELIVERY_BOY:
+// 			case Enums.FigureTypes.TRADE_CARAVAN_DONKEY:
+// 				if (leading_figure_id <= 0 || leader->action_state == FIGURE_ACTION_149_CORPSE)
+// 					poof();
+// 				if (leader->is_ghost)
+// 					is_ghost = true;
+// 				break;
+// 		}
+	}
+	void action_common_pretick()
+	{
+// 		switch (action_state) {
+// 			case Enums.FigureTypes.ACTION_150_ATTACK:
+// 				figure_combat_handle_attack(); break;
+// 			case Enums.FigureTypes.ACTION_149_CORPSE:
+// 				figure_combat_handle_corpse(); break;
+// 			case Enums.FigureTypes.ACTION_125_ROAMING:
+// 			case ACTION_1_ROAMING:
+// 				if (type == FIGURE_IMMIGRANT || type == FIGURE_EMIGRANT || type == FIGURE_HOMELESS)
+// 					break;
+// 				do_roam();
+// 				break;
+// 			case Enums.FigureTypes.ACTION_126_ROAMER_RETURNING:
+// 			case ACTION_2_ROAMERS_RETURNING:
+// 				if (type == FIGURE_IMMIGRANT || type == FIGURE_EMIGRANT || type == FIGURE_HOMELESS)
+// 					break;
+// 				do_returnhome();
+// 				break;
+// 		}
+// 		if (state == FIGURE_STATE_DYING) // update corpses / dying animation
+// 		figure_combat_handle_corpse();
+// 		if (map_terrain_is(tile.grid_offset(), TERRAIN_ROAD)) { // update road flag
+// 			outside_road_ticks = 0;
+// 			if (map_terrain_is(tile.grid_offset(), TERRAIN_WATER)) // bridge
+// 				set_target_height_bridge();
+// 		} else {
+// 			if (outside_road_ticks < 255)
+// 				outside_road_ticks++;
+// 			if (!is_boat && map_terrain_is(tile.grid_offset(), TERRAIN_WATER))
+// 				kill();
+// 			if (is_boat && !map_terrain_is(tile.grid_offset(), TERRAIN_WATER))
+// 				kill();
+// 			if (terrain_usage == TERRAIN_USAGE_ROADS) { // walkers outside of roads for too long?
+// 				if (destination_tile.x() && destination_tile.y() &&
+// 					outside_road_ticks > 100) // dudes with destination have a bit of lee way
+// 					poof();
+// 				if (!destination_tile.x() && !destination_tile.y() && state == Enums.FigureStates.ALIVE && outside_road_ticks > 0)
+// 					poof();
+// 			}
+// 		}
+	}
+
+
+
+	public bool tick() // return true if the figure has despawned
+	{
+		if (data.state == Enums.FigureStates.NONE)
+			return false;
+		if (data.action_state < 0)
+			set_state(Enums.FigureStates.DEAD);
+	// 	if (state != 0) {
+
+		update_attacker();
+
+		//////////////
+
+		// reset values like cart image & max roaming length
+		data.cart_image_id = 0;
+		data.max_roam_length = 0;
+		data.use_cross_country = false;
+		data.is_ghost = false;
+
+		// base lookup data
+		// figure_action_property action_properties = action_properties_lookup[type];
+		// if (action_properties.terrain_usage != -1 && data.terrain_usage == -1)
+		// 	data.terrain_usage = action_properties.terrain_usage;
+		// max_roam_length = action_properties.max_roam_length;
+		// speed_multiplier = action_properties.speed_mult;
+		// image_set_animation(action_properties.base_image_collection, action_properties.base_image_group);
+		
+
+// 		// check for building being alive (at the start of the action)
+		update_linked_buildings();
+
+// 		// common action states handling
+		action_common_pretick();
+
+// 		////////////
+
+// 		switch (type) {
+// 			case 1: immigrant_action();                 break;
+// 			case 2: emigrant_action();                  break;
+// 			case 3: homeless_action();                  break;
+// 			case 4: cartpusher_action();                break;
+// //            case 5: common_action(12, GROUP_FIGURE_LABOR_SEEKER); break;
+// 			case 6: explosion_cloud_action();           break;
+// 			case 7: tax_collector_action();             break;
+// 			case 8: engineer_action();                  break;
+// 			case 9: warehouseman_action();              break; // warehouseman_action !!!!
+// 			case 10: prefect_action();                  break; //10
+// 			case 11: //soldier_action();                  break;
+// 			case 12: //soldier_action();                  break;
+// 			case 13: soldier_action();                  break;
+// 			case 14: military_standard_action();        break;
+// 			case 15: //entertainer_action();              break;
+// 			case 16: //entertainer_action();              break;
+// 			case 17: //entertainer_action();              break;
+// 			case 18: entertainer_action();              break;
+// 			case 19: trade_caravan_action();            break;
+// 			case 20: trade_ship_action();               break; //20
+// 			case 21: trade_caravan_donkey_action();     break;
+// 			case 22: protestor_action();                break;
+// 			case 23: criminal_action();                 break;
+// 			case 24: rioter_action();                   break;
+// 			case 25: fishing_boat_action();             break;
+// 			case 26: market_trader_action();            break;
+// 			case 27: priest_action();                   break;
+// //            case 27: common_action(12, GROUP_FIGURE_PRIEST); break;
+// 			case 28: school_child_action();             break;
+// //            case 29: common_action(12, GROUP_FIGURE_TEACHER_LIBRARIAN); break;
+// //            case 30: common_action(12, GROUP_FIGURE_TEACHER_LIBRARIAN); break; //30
+// //            case 31: common_action(12, GROUP_FIGURE_BARBER); break;
+// //            case 32: common_action(12, GROUP_FIGURE_BATHHOUSE_WORKER); break;
+// 			case 33: //doctor_action(); break;
+// //            case 34: common_action(12, GROUP_FIGURE_DOCTOR_SURGEON); break;
+// //            case 35: worker_action();                   break;
+// 			case 36: editor_flag_action();              break;
+// 			case 37: flotsam_action();                  break;
+// 			case 38: docker_action();                   break;
+// 			case 39: market_buyer_action();             break;
+// //            case 40: patrician_action();                break; //40
+// 			case 41: indigenous_native_action();        break;
+// 			case 42: tower_sentry_action();             break;
+// 			case 43: enemy43_spear_action();            break;
+// 			case 44: enemy44_sword_action();            break;
+// 			case 45: enemy45_sword_action();            break;
+// 			case 46: enemy_camel_action();              break;
+// 			case 47: enemy_elephant_action();           break;
+// 			case 48: enemy_chariot_action();            break;
+// 			case 49: enemy49_fast_sword_action();       break;
+// 			case 50: enemy50_sword_action();            break; //50
+// 			case 51: enemy51_spear_action();            break;
+// 			case 52: enemy52_mounted_archer_action();   break;
+// 			case 53: enemy53_axe_action();              break;
+// 			case 54: enemy_gladiator_action();          break;
+// //                no_action();                            break;
+// //                no_action();                            break;
+// 			case 57: enemy_caesar_legionary_action();   break;
+// 			case 58: native_trader_action();            break;
+// 			case 59: arrow_action();                    break;
+// 			case 60: javelin_action();                  break; //60
+// 			case 61: bolt_action();                     break;
+// 			case 62: ballista_action();                 break;
+// //                no_action();                            break;
+// //            case 64: missionary_action();               break;
+// 			case 65: seagulls_action();                 break;
+// 			case 66: delivery_boy_action();             break;
+// 			case 67: shipwreck_action();                break;
+// 			case 68: sheep_action();                    break;
+// 			case 69:
+// 				if (GAME_ENV == ENGINE_ENV_C3)
+// 					wolf_action();
+// 				else
+// 					ostrich_action();                   break;
+// 			case 70: zebra_action();                    break; //70
+// 			case 71: spear_action();                    break;
+// 			case 72: hippodrome_horse_action();         break;
+// 			// PHARAOH vvvv
+// 			case 73: hunter_action();                   break;
+// 			case 74: arrow_action();                    break;
+// 			case 75: gatherer_action();                 break; // wood cutters
+// 			case 84: hippo_action();                    break;
+// 			case 85: worker_action();                   break;
+// 			case 87: water_carrier_action();            break;
+// 			case 88: policeman_action();                break;
+// 			case 89: magistrate_action();               break;
+// 			case 90: gatherer_action();                 break; // reed gatherers
+// 			case 91: festival_guy_action();             break;
+// 			default:
+// 				break;
+// 		}
+
+		// if DEAD, delete figure -- this is UNSAFE, and should only be done here.
+		if (data.state == Enums.FigureStates.DEAD) {
+			figure_delete_UNSAFE();
+			return true;
+		}
+
+		// poof if LOST
+		if (data.direction == Enums.FigureDirections.CAN_NOT_REACH)
+			poof();
+
+		// advance sprite offset
+		// figure_image_update(false);
+		update_animation();
+	// 	}
+
+		return false;
+	}
+
 }

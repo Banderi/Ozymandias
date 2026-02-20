@@ -125,8 +125,7 @@ var bizarre_ordered_fields_9 = null
 enum States {
 	MainMenu,
 	Ingame,
-	Paused
-}
+	Paused }
 var STATE = States.MainMenu
 func load_game(path) -> bool:
 	if !IO.file_exists(path):
@@ -173,8 +172,7 @@ func clear_ingame() -> bool:
 var debug_schema = { # default schema used
 	"file_version": 160,
 	"chunks_schema": -1,
-	"chunks": []
-}
+	"chunks": [] }
 func set_schema(): # TODO
 	pass
 func enscribe_schema(debug_print):
@@ -715,6 +713,12 @@ func game_day():
 		day = 0
 		game_month()
 func game_tick():
+	
+	for f in Figures.figures:
+		f.tick()
+	
+	###
+	
 	tick += 1
 	total_ticks += 1
 	if tick >= 50:
@@ -728,7 +732,6 @@ var game_refresh_rate = 60.0
 var ticks_to_do = 0
 
 var t = 0
-const DELTA_60FPS = 1.0 / 60.0
 func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup if performance drops the ticks' compute time over the impositions?
 	t += delta
 	if STATE == States.Ingame:
@@ -789,25 +792,26 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-#	game_refresh_rate = int(Engine.get_frames_per_second()) if !OS.vsync_enabled else Engine.target_fps
 	game_refresh_rate = 1.0 / delta
 	ticks_per_frame = speed_tps / game_refresh_rate
 	game_loop(delta)
 
 func _input(event):
-	
 	if STATE == States.Ingame:
 		# game speed
 		if Input.is_action_pressed("speed_dec"):
 			speed -= 10
 		if Input.is_action_pressed("speed_inc"):
 			speed += 10
-		speed = clamp(speed, 0, 2000)
+		speed = clamp(speed, 0, 5000)
 		speed_tps = 60.0 * float(speed) / 100.0
+		DEBUG_ROOT.get_node("DEBUG_LABEL/SpinBoxSpeed").value = speed
+		DEBUG_ROOT.get_node("DEBUG_LABEL/HSliderSpeed").value = speed
 		
 		# pause game
 		if Input.is_action_just_pressed("pause_game"):
 			STATE = States.Paused
+	
 	elif STATE == States.Paused:
 		# unpause game
 		if Input.is_action_just_pressed("pause_game"):

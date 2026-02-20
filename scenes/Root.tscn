@@ -92,37 +92,37 @@ axis_stretch_vertical = 1
 [sub_resource type="StyleBoxEmpty" id=8]
 content_margin_left = 10.0
 
-[sub_resource type="StyleBoxTexture" id=32]
+[sub_resource type="StyleBoxTexture" id=42]
 texture = ExtResource( 40 )
 region_rect = Rect2( 0, 0, 39, 26 )
 
-[sub_resource type="StyleBoxTexture" id=33]
+[sub_resource type="StyleBoxTexture" id=43]
 texture = ExtResource( 41 )
 region_rect = Rect2( 0, 0, 39, 26 )
 
-[sub_resource type="StyleBoxTexture" id=34]
+[sub_resource type="StyleBoxTexture" id=44]
 texture = ExtResource( 42 )
 region_rect = Rect2( 0, 0, 39, 26 )
 modulate_color = Color( 1, 1, 1, 0.5 )
 
-[sub_resource type="StyleBoxTexture" id=35]
+[sub_resource type="StyleBoxTexture" id=45]
 texture = ExtResource( 43 )
 region_rect = Rect2( 0, 0, 39, 26 )
 
-[sub_resource type="StyleBoxTexture" id=36]
+[sub_resource type="StyleBoxTexture" id=46]
 texture = ExtResource( 37 )
 region_rect = Rect2( 0, 0, 39, 26 )
 
-[sub_resource type="StyleBoxTexture" id=37]
+[sub_resource type="StyleBoxTexture" id=47]
 texture = ExtResource( 39 )
 region_rect = Rect2( 0, 0, 39, 26 )
 
-[sub_resource type="StyleBoxTexture" id=38]
+[sub_resource type="StyleBoxTexture" id=48]
 texture = ExtResource( 38 )
 region_rect = Rect2( 0, 0, 39, 26 )
 modulate_color = Color( 1, 1, 1, 0.5 )
 
-[sub_resource type="StyleBoxTexture" id=39]
+[sub_resource type="StyleBoxTexture" id=49]
 texture = ExtResource( 36 )
 region_rect = Rect2( 0, 0, 39, 26 )
 
@@ -1355,10 +1355,10 @@ margin_right = 262.0
 margin_bottom = 337.0
 rect_min_size = Vector2( 39, 26 )
 focus_mode = 2
-custom_styles/hover = SubResource( 32 )
-custom_styles/pressed = SubResource( 33 )
-custom_styles/disabled = SubResource( 34 )
-custom_styles/normal = SubResource( 35 )
+custom_styles/hover = SubResource( 42 )
+custom_styles/pressed = SubResource( 43 )
+custom_styles/disabled = SubResource( 44 )
+custom_styles/normal = SubResource( 45 )
 disabled = true
 button_texture_id = 191
 button_texture_disabled_opacity = 0.5
@@ -1369,10 +1369,10 @@ margin_top = 310.0
 margin_right = 312.0
 margin_bottom = 336.0
 rect_min_size = Vector2( 39, 26 )
-custom_styles/hover = SubResource( 36 )
-custom_styles/pressed = SubResource( 37 )
-custom_styles/disabled = SubResource( 38 )
-custom_styles/normal = SubResource( 39 )
+custom_styles/hover = SubResource( 46 )
+custom_styles/pressed = SubResource( 47 )
+custom_styles/disabled = SubResource( 48 )
+custom_styles/normal = SubResource( 49 )
 disabled = true
 button_texture_id = 187
 button_texture_disabled_opacity = 0.5
@@ -1564,6 +1564,20 @@ text = "asdasd"
 scroll_active = false
 script = ExtResource( 56 )
 AutoResize = true
+
+[node name="SpinBoxSpeed" type="SpinBox" parent="Debug/DEBUG_LABEL"]
+margin_left = 169.0
+margin_top = 178.0
+margin_right = 267.0
+margin_bottom = 202.0
+max_value = 1000.0
+
+[node name="HSliderSpeed" type="HSlider" parent="Debug/DEBUG_LABEL"]
+margin_left = 170.0
+margin_top = 210.0
+margin_right = 258.0
+margin_bottom = 226.0
+max_value = 1000.0
 
 [node name="DEBUG_LABEL2" type="RichTextLabel" parent="Debug"]
 visible = false
@@ -1784,6 +1798,8 @@ color = Color( 0.733333, 0.733333, 0.733333, 1 )
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnYes" to="Menus/QuitGameConfirm" method="_on_BtnYes_pressed"]
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnNo" to="Menus/QuitGameConfirm" method="_on_BtnNo_pressed"]
 [connection signal="focus_entered" from="Menus/Splash" to="Menus/Splash" method="_on_Splash_focus_entered"]
+[connection signal="value_changed" from="Debug/DEBUG_LABEL/SpinBoxSpeed" to="Debug" method="_on_SpinBoxSpeed_value_changed"]
+[connection signal="value_changed" from="Debug/DEBUG_LABEL/HSliderSpeed" to="Debug" method="_on_HSliderSpeed_value_changed"]
 [connection signal="toggled" from="Debug/DEBUG_LABEL4/BtnTestScribe" to="Debug" method="_on_BtnTestScribe_toggled"]
 [connection signal="pressed" from="Debug/DEBUG_LABEL4/BtnTestScribe2" to="Debug" method="_on_BtnTestScribe2_pressed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnPKWareTest" to="Debug" method="_on_BtnPKWareTest_pressed"]

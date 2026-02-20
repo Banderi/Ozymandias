@@ -1,5 +1,12 @@
 extends CanvasLayer
 	
+func _on_SpinBoxSpeed_value_changed(value):
+	Game.speed = value
+	$DEBUG_LABEL/HSliderSpeed.value = value
+func _on_HSliderSpeed_value_changed(value):
+	Game.speed = value
+	$DEBUG_LABEL/SpinBoxSpeed.value = value
+
 func _on_BtnPKWareTest_pressed():
 	Game.do_PKWare_tests()
 func _on_BtnLoadAutosave_pressed():
@@ -336,7 +343,6 @@ func _process(delta):
 
 func _ready():
 	$DEBUG_LABEL3.bbcode_text = ""
-
 
 
 

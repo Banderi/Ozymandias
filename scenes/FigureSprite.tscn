@@ -15,7 +15,7 @@ texture = ExtResource( 3 )
 [node name="AnimatedSprite" type="AnimatedSprite" parent="."]
 position = Vector2( 5, -20 )
 frames = ExtResource( 1 )
-playing = true
+frame = 11
 flip_h = true
 
 [node name="ReferenceRect" type="ReferenceRect" parent="."]

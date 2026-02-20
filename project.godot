@@ -106,6 +106,7 @@ PKWareMono="*res://scripts/mono/PKWare_mono.cs"
 SGImageMono="*res://scripts/mono/SGImage_mono.cs"
 ScribeMono="*res://scripts/mono/Scribe_mono.cs"
 Scribe="*res://scripts/autoload/Scribe.gd"
+Enums="*res://scripts/mono/Enums.cs"
 Assets="*res://scripts/autoload/Assets.gd"
 Sounds="*res://scripts/autoload/Sounds.gd"
 Viewports="*res://scripts/autoload/Viewports.gd"
@@ -153,12 +154,12 @@ texture={
 
 debug_toggle={
 "deadzone": 0.5,
-"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777246,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777247,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
  ]
 }
 debug_cycle={
 "deadzone": 0.5,
-"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777247,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
+"events": [ Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":0,"alt":false,"shift":false,"control":false,"meta":false,"command":false,"pressed":false,"scancode":16777246,"physical_scancode":0,"unicode":0,"echo":false,"script":null)
  ]
 }
 speed_dec={
