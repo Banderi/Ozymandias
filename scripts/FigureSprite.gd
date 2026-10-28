@@ -17,7 +17,7 @@ func set_figure(idx): # this is index into the Figures.figures global array
 #		print(a)
 	pass
 	
-#	print("spawned figure %d at %s ---> %s" % [idx, tile, position])
+	print("spawned figure %d at %s ---> %s" % [idx, tile, position])
 
 func advance_sprite_animation():
 	var frame_count = SPRITE2.frames.get_frame_count(SPRITE2.animation)

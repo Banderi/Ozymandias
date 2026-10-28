@@ -10,15 +10,13 @@ public class Scribe_mono : Node
 {
 	// Log.error(...)
 	Godot.Collections.Dictionary Errors;
-	bool bail(string Err, string Message)
-	{
+	bool bail(string Err, string Message) {
 		return (bool)Globals.Scribe.Call("bail", Errors[Err], Message);
 	}
 
 	// Called when the node enters the scene tree for the first time.
 	Node Scribe;
-	public override void _Ready()
-	{
+	public override void _Ready() {
 		
 		// GlobalScope.Errors
 		var script = ResourceLoader.Load("res://scripts/classes/GlobalScope.gd") as Script;
@@ -47,8 +45,7 @@ public class Scribe_mono : Node
 		utf8 = 7,
 		raw = 8
 	}
-	private int format_size(ScribeFormat format)
-	{
+	private int format_size(ScribeFormat format) {
 		switch (format) {
 			case ScribeFormat.u8:
 			case ScribeFormat.i8:
@@ -86,8 +83,7 @@ public class Scribe_mono : Node
 
 	private FileStream __file = null;
 	private int __file_flags = -1;
-	public bool openFile(int flags, string path, int offset)
-	{
+	public bool openFile(int flags, string path, int offset) {
 		try {
 			if (flags == 1)
 				__file = new FileStream(path, FileMode.Open, FileAccess.Read);
@@ -102,8 +98,7 @@ public class Scribe_mono : Node
 		_updateStreamStackPointers(__file);
 		return true;
 	}
-	public void closeFile()
-	{
+	public void closeFile() {
 		__file.Close();
 		_path = null;
 		__file = null;
@@ -113,31 +108,26 @@ public class Scribe_mono : Node
 	}
 
 	// public byte stream raw read / write interfaces (_bin_reader / _bin_writer)
-	public byte[] ReadRaw(int n)
-	{
+	public byte[] ReadRaw(int n) {
 		return _bin_reader.ReadBytes(n);
 	}
-	public void WriteRaw(byte[] stream) // TODO?
-	{
+	public void WriteRaw(byte[] stream) { // TODO?
 		_bin_writer.Write(stream);
 	}
 
-	public long GetPosition()
-	{
+	// these operations are executed WITHIN THE CURRENT (top) STREAM.
+	public long GetPosition() {
 		return _top_stream.Position;
 	}
-	public bool Seek(long pos) // TODO: check if EOF / out of bounds
-	{
+	public bool Seek(long pos) { // TODO: check if EOF / out of bounds
 		_top_stream.Position = pos;
 		return true;
 	}
-	public bool Skip(int n) // TODO: check if EOF / out of bounds
-	{
+	public bool Skip(int n) { // TODO: check if EOF / out of bounds
 		_top_stream.Position += n;
 		return true;
 	}
-	public bool AssertEOF()
-	{
+	public bool AssertEOF() {
 		// if (_top_stream is FileStream)
 		if (_top_stream.Position == _top_stream.Length)
 			return true;
@@ -146,8 +136,7 @@ public class Scribe_mono : Node
 	}
 
 	// this copies the WHOLE stream for now! it's only used on stack pushes so MAYBE worth it?
-	private MemoryStream _copyStream(MemoryStream old_stream)
-	{
+	private MemoryStream _copyStream(MemoryStream old_stream) {
 		long start_of_buffer = old_stream.Position;
 		MemoryStream new_stream = new MemoryStream();
 		old_stream.CopyTo(new_stream); // this will COPY data from the parent stream INTO a new separate stream, advancing BOTH streams' heads
@@ -156,22 +145,19 @@ public class Scribe_mono : Node
 	}
 
 	// this creates a new stream from a given array of raw data bytes
-	private MemoryStream _newStreamFromBytes(byte[] bytes)
-	{
+	private MemoryStream _newStreamFromBytes(byte[] bytes) {
 		return new MemoryStream(bytes);
 	}
 
 	// stream stack ops
-	private void _pushStream(MemoryStream new_stream) // push stream onto stack
-	{
+	private void _pushStream(MemoryStream new_stream) { // push stream onto stack
 		// we need both for read / write ops. the bottom (file stream) does NOT need both.
 		_bin_reader = new BinaryReader(new_stream);
 		_bin_writer = new BinaryWriter(new_stream);
 		_streams_stack.Add(new_stream); // I'm assuming here that "new_stream" is correctly dealt with by reference........
 		_updateStreamStackPointers(new_stream);
 	}
-	private bool _popStream() // remove top stream from stack
-	{
+	private bool _popStream() { // remove top stream from stack
 		int stack_size = _streams_stack.Count;
 		if (stack_size > 1)
 		{
@@ -182,8 +168,7 @@ public class Scribe_mono : Node
 		else
 			return bail("ERR_SCRIPT_FAILED", "tried to pop a MemoryStream from stack but there was only one left");
 	}
-	private void _updateStreamStackPointers(Stream stream)
-	{
+	private void _updateStreamStackPointers(Stream stream) {
 		_top_stream = stream;
 		if (_top_stream is FileStream) {
 			_bin_reader = __file_flags == 1 ? new BinaryReader(_top_stream) : null;
@@ -195,9 +180,8 @@ public class Scribe_mono : Node
 	}
 
 	// public compressed push / pop ops & grid helper
-	public bool PushCompressed(uint expected_size)
-	{
-		if (__file_flags == 1) {
+	public bool PushCompressed(uint expected_size) {
+		if (__file_flags == 1) { // reading
 			uint c_size = _bin_reader.ReadUInt32();
 			if (c_size == 0x80000000) { // TODO?
 				// OPTIONS:
@@ -211,13 +195,12 @@ public class Scribe_mono : Node
 					return bail("ERR_SCRIPT_FAILED", "PKWare decompression failed");
 				_pushStream(new MemoryStream(uncompressed)); // creates new MemoryStream from raw bytes
 			}
-		} else { // TODO?
+		} else { // writing (TODO?)
 			_pushStream(new MemoryStream());
 		}
 		return true;
 	}
-	public bool PopCompressed()
-	{
+	public bool PopCompressed() {
 		if (__file_flags == 1) { // reading
 			_popStream();
 		} else { // writing
@@ -239,8 +222,7 @@ public class Scribe_mono : Node
 		}
 		return true;
 	}
-	public bool PutGrid(ScribeFormat format, string grid_name, bool compressed, uint grid_width)
-	{
+	public bool PutGrid(ScribeFormat format, string grid_name, bool compressed, uint grid_width) {
 		// prepare stack buffer
 		uint grid_size = grid_width * grid_width;
 		uint raw_size = (uint)format_size(format) * grid_size;
@@ -271,8 +253,7 @@ public class Scribe_mono : Node
 
 	//////////////////
 	
-	private bool assignToRef(object record, object key, object value)
-	{
+	private bool assignToRef(object record, object key, object value) {
 		if (record is Godot.Collections.Dictionary record_DICT) {
 			record_DICT[(String)key] = value;
 			return true;
@@ -286,8 +267,7 @@ public class Scribe_mono : Node
 			return true;
 		} return bail("ERR_INVALID_DATA", $"the last synced chunk is invalid ({record})");
 	}
-	private object grabFromRef(object record, object key)
-	{
+	private object grabFromRef(object record, object key) {
 		if (record is Godot.Collections.Dictionary record_DICT)
 			return record_DICT[(String)key];
 		else if (record is Godot.Collections.Array record_ARRY)
@@ -296,8 +276,7 @@ public class Scribe_mono : Node
 			return record_NODE.Get((String)key);
 		return bail("ERR_INVALID_DATA", $"the last synced chunk is invalid ({record})");
 	}
-	private object readFromStream(object stream, ScribeFormat format, int format_extra)
-	{
+	private object readFromStream(object stream, ScribeFormat format, int format_extra) {
 		if (stream is BinaryReader stream_BINR)
 		{
 			switch (format) {
@@ -379,8 +358,7 @@ public class Scribe_mono : Node
 		bail("ERR_INVALID_DATA", "byte stream is invalid");
 		return null;
 	}
-	private bool writeToStream(object stream, ScribeFormat format, object value, int format_extra)
-	{
+	private bool writeToStream(object stream, ScribeFormat format, object value, int format_extra) {
 		if (stream is BinaryWriter stream_BINR)
 		{
 			// TODO
@@ -450,8 +428,7 @@ public class Scribe_mono : Node
 		return bail("ERR_INVALID_DATA", "byte stream is invalid");
 	}
 
-	public bool put(int format, object key)
-	{
+	public bool put(int format, object key) {
 		return put(format, key, -1);
 
 
@@ -484,8 +461,7 @@ public class Scribe_mono : Node
 		// 		return writeToStream(_compressed_top, (ScribeFormat)format, grabFromRef(_curr_record_ref, key), -1);
 		// }
 	}
-	public bool put(int format, object key, int format_extra) //, dynamic default_value)
-	{
+	public bool put(int format, object key, int format_extra) { //, dynamic default_value)
 		if (__file_flags == 1)
 			return assignToRef(_curr_record_ref, key, readFromStream(_bin_reader, (ScribeFormat)format, format_extra));
 		else

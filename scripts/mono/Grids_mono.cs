@@ -1,12 +1,13 @@
 using Godot;
 using System;
 using System.IO;
+using GodotArray = Godot.Collections.Array;
+using GodotDictionary = Godot.Collections.Dictionary;
 
 public class Grids_mono : Node
 {
 	// Member variables here, example:
-	public override void _Ready()
-	{
+	public override void _Ready() {
 		GD.Print("*** MONO: GridsMono loaded: " + this);
 	}
 
@@ -25,8 +26,8 @@ public class Grids_mono : Node
 		raw
 	}
 
-	public bool SetGridFromBytes(Godot.Collections.Array grid, byte[] data, int grid_size, int format)
-	{
+	// serialization & deserialization
+	public bool SetGridFromBytes(GodotArray grid, byte[] data, int grid_size, int format) {
 		grid.Clear();
 		grid.Resize(grid_size);
 		BinaryReader stream = new BinaryReader(new MemoryStream(data));
@@ -36,7 +37,7 @@ public class Grids_mono : Node
 			case ScribeFormat.u8:
 				for (int y = 0; y < PH_MAP_WIDTH; y++)
 				{
-					Godot.Collections.Array row = new Godot.Collections.Array();
+					GodotArray row = new GodotArray();
 					row.Resize(grid_size);
 					for (int x = 0; x < PH_MAP_WIDTH; x++)
 						row[x] = stream.ReadByte();
@@ -46,7 +47,7 @@ public class Grids_mono : Node
 			case ScribeFormat.i8:
 				for (int y = 0; y < PH_MAP_WIDTH; y++)
 				{
-					Godot.Collections.Array row = new Godot.Collections.Array();
+					GodotArray row = new GodotArray();
 					row.Resize(grid_size);
 					for (int x = 0; x < PH_MAP_WIDTH; x++)
 						row[x] = stream.ReadSByte();
@@ -56,7 +57,7 @@ public class Grids_mono : Node
 			case ScribeFormat.u16:
 				for (int y = 0; y < PH_MAP_WIDTH; y++)
 				{
-					Godot.Collections.Array row = new Godot.Collections.Array();
+					GodotArray row = new GodotArray();
 					row.Resize(grid_size);
 					for (int x = 0; x < PH_MAP_WIDTH; x++)
 						row[x] = stream.ReadUInt16();
@@ -66,7 +67,7 @@ public class Grids_mono : Node
 			case ScribeFormat.i16:
 				for (int y = 0; y < PH_MAP_WIDTH; y++)
 				{
-					Godot.Collections.Array row = new Godot.Collections.Array();
+					GodotArray row = new GodotArray();
 					row.Resize(grid_size);
 					for (int x = 0; x < PH_MAP_WIDTH; x++)
 						row[x] = stream.ReadInt16();
@@ -76,7 +77,7 @@ public class Grids_mono : Node
 			case ScribeFormat.u32:
 				for (int y = 0; y < PH_MAP_WIDTH; y++)
 				{
-					Godot.Collections.Array row = new Godot.Collections.Array();
+					GodotArray row = new GodotArray();
 					row.Resize(grid_size);
 					for (int x = 0; x < PH_MAP_WIDTH; x++)
 						row[x] = stream.ReadUInt32();
@@ -86,7 +87,7 @@ public class Grids_mono : Node
 			case ScribeFormat.i32:
 				for (int y = 0; y < PH_MAP_WIDTH; y++)
 				{
-					Godot.Collections.Array row = new Godot.Collections.Array();
+					GodotArray row = new GodotArray();
 					row.Resize(grid_size);
 					for (int x = 0; x < PH_MAP_WIDTH; x++)
 						row[x] = stream.ReadInt32();
@@ -99,7 +100,7 @@ public class Grids_mono : Node
 
 		// for (int y = 0; y < PH_MAP_WIDTH; y++)
 		// {
-		// 	Godot.Collections.Array row = new Godot.Collections.Array();
+		// 	GodotArray row = new GodotArray();
 		// 	row.Resize(grid_size);
 		// 	for (int x = 0; x < PH_MAP_WIDTH; x++)
 		// 	{
@@ -133,23 +134,23 @@ public class Grids_mono : Node
 		// }
 		return true;
 	}
-	public byte[] GetBytesFromGrid(Godot.Collections.Array grid, int grid_size, int format)
-	{
-		// byte[] stream = new byte[0]; // TODO
+	public byte[] GetBytesFromGrid(GodotArray grid, int grid_size, int format) { // TODO
+		// byte[] stream = new byte[0];
 		return null;
 	}
-	public bool RedrawMap(TileMap map, Godot.Collections.Dictionary grids)
-	{
-		// Godot.Collections.Array grid_images = (Godot.Collections.Array)grids["images"];
+	
+	// update entire TileMap with grid data
+	public bool RedrawMap(TileMap map, GodotDictionary grids) {
+		// GodotArray grid_images = (GodotArray)grids["images"];
 		for (int y = 0; y < PH_MAP_WIDTH; y++)
 		{
-			// Godot.Collections.Array row = (Godot.Collections.Array)grid_images[y];
+			// GodotArray row = (GodotArray)grid_images[y];
 			for (int x = 0; x < PH_MAP_WIDTH; x++)
 			{
 				// int image = (int)row[x];
-				int image = (int)( (Godot.Collections.Array)( (Godot.Collections.Array)grids["images"] )[y] )[x];
-				int edge = (int)( (Godot.Collections.Array)( (Godot.Collections.Array)grids["edge"] )[y] )[x];
-				// int bitfields = (int)( (Godot.Collections.Array)( (Godot.Collections.Array)grids["bitfields"] )[y] )[x];
+				int image = (int)( (GodotArray)( (GodotArray)grids["images"] )[y] )[x];
+				int edge = (int)( (GodotArray)( (GodotArray)grids["edge"] )[y] )[x];
+				// int bitfields = (int)( (GodotArray)( (GodotArray)grids["bitfields"] )[y] )[x];
 				if ((edge & 64) == 64)
 					map.SetCell(x, y, image);
 			}

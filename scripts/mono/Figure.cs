@@ -7,8 +7,7 @@ using System.Runtime.InteropServices; // Marshal
 public class Figure : Reference
 {
     [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    partial class FigureData
-    {
+    partial class FigureData {
 		public byte alternative_location_index;
 		public byte anim_frame;
 		[MarshalAs(UnmanagedType.U1)]
@@ -137,8 +136,7 @@ public class Figure : Reference
 
 	// constructor
 	public short FIGURE_IDX;
-	Figure(short _IDX)
-	{
+	Figure(short _IDX) {
 		FIGURE_IDX = _IDX;
 	}
     
@@ -146,19 +144,16 @@ public class Figure : Reference
 	public Node FigureSprite; 
 
 	// public I/O
-	public bool Fill() // returns true if this figure block is in use
-	{
+	public bool Fill() { // returns true if this figure block is in use
 		_readFromStream(((Scribe_mono)Globals.ScribeMono).GetReader());
 		return in_use();
 	}
-	public void Dump()
-	{
+	public void Dump() {
 		_writeToStream(((Scribe_mono)Globals.ScribeMono).GetWriter());
 	}
 
 	// private I/O
-	unsafe void _readFromStream(BinaryReader reader)
-	{
+	unsafe void _readFromStream(BinaryReader reader) {
 		int size = Marshal.SizeOf<FigureData>();
 		byte[] buffer = reader.ReadBytes(size);
 		fixed (byte* ptr = buffer)
@@ -166,8 +161,7 @@ public class Figure : Reference
 			Marshal.PtrToStructure((IntPtr)ptr, data);
 		}
 	}
-	unsafe void _writeToStream(BinaryWriter writer)
-    {
+	unsafe void _writeToStream(BinaryWriter writer) {
 		int size = Marshal.SizeOf<FigureData>();
 		byte[] buffer = new byte[size];
 		
@@ -179,15 +173,13 @@ public class Figure : Reference
     }
 
 	// raw data fields set/get
-	public new object get(String fieldName)
-	{
+	public object get(String fieldName) {
 		FieldInfo field = data.GetType().GetField(fieldName);
 		if (field == null)
 			return null;
 		return field.GetValue(data);
 	}
-	public new bool set(String fieldName, object value)
-	{
+	public bool set(String fieldName, object value) {
 		FieldInfo field = data.GetType().GetField(fieldName);
 		if (field == null)
 			return false;
@@ -203,20 +195,17 @@ public class Figure : Reference
 
 	// =============================== Figure =============================== //
 
-	public static Figure getFigure(short figure_id)
-	{
+	public static Figure getFigure(short figure_id) {
         if (figure_id <= 0)
             return null;
 		return (Figure) ((Godot.Collections.Array)Globals.Figures.Get("figures"))[figure_id];
 	}
 
-	void set_state(Enums.FigureStates state)
-	{
+	void set_state(Enums.FigureStates state) {
 		data.state = state;
 	}
 	
-	public bool in_use()
-	{
+	public bool in_use() {
 		return data.state != Enums.FigureStates.NONE;
 	}
     public void kill() {
@@ -225,17 +214,16 @@ public class Figure : Reference
         set_state(Enums.FigureStates.DYING);
         data.action_state = Enums.FigureActions.ACTION_149_CORPSE;
     }
-    public void poof() {
+    public void poof(String reason) {
+		GD.Print($"figure {FIGURE_IDX} poofed -- reason: {reason}");
 		if (data.state != Enums.FigureStates.NONE && data.state != Enums.FigureStates.DEAD)
 	        set_state(Enums.FigureStates.DEAD);
     }
 	
-	public void create(Enums.FigureTypes type, ushort x, ushort y, byte dir) // TODO
-	{
+	public void create(Enums.FigureTypes type, ushort x, ushort y, byte dir) { // TODO
 		
 	}
-	void figure_delete_UNSAFE()
-	{
+	void figure_delete_UNSAFE() {
 		Building b = home();
 		if (b != null) {
 			b.remove_figure(FIGURE_IDX);
@@ -280,27 +268,23 @@ public class Figure : Reference
 
 	// linked buildings: these double as fetchers AND checkers -- if an id is provided, checks that
 	// matches (returns null if not); if no id is provided, returns the building (returns null if unset/invalid)
-	Building home(short building_id = -1) 
-	{
+	Building home(short building_id = -1) {
 		if (building_id == -1 || building_id == data.home_building_id)
 			return Building.getBuilding(data.home_building_id);
 		return null;
 	}
-	Building immigrant_home(short building_id = -1)
-	{
+	Building immigrant_home(short building_id = -1) {
 		if (building_id == -1 || building_id == data.immigrant_home_building_id)
 			return Building.getBuilding(data.immigrant_home_building_id);
 		return null;
 	}
-	Building destination(short building_id = -1)
-	{
+	Building destination(short building_id = -1) {
 		if (building_id == -1 || building_id == data.destination_building_id)
 			return Building.getBuilding(data.destination_building_id);
 		return null;
 	}
 
-	void update_attacker()
-	{
+	void update_attacker() {
 		if (data.targeted_by_figure_id != 0) {
 			Figure attacker = getFigure(data.targeted_by_figure_id);
 			if (attacker.data.state != Enums.FigureStates.ALIVE)
@@ -309,12 +293,10 @@ public class Figure : Reference
 				data.targeted_by_figure_id = 0;
 		}
 	}
-	void update_animation()
-	{
+	void update_animation() {
 		
 	}
-	void update_linked_buildings()
-	{
+	void update_linked_buildings() {
 // 		building *b = home();
 // 		building *b_imm = immigrant_home();
 // 		figure *leader = figure_get(leading_figure_id);
@@ -384,8 +366,7 @@ public class Figure : Reference
 // 				break;
 // 		}
 	}
-	void action_common_pretick()
-	{
+	void action_common_pretick() {
 // 		switch (action_state) {
 // 			case Enums.FigureTypes.ACTION_150_ATTACK:
 // 				figure_combat_handle_attack(); break;
@@ -429,8 +410,7 @@ public class Figure : Reference
 
 
 
-	public bool tick() // return true if the figure has despawned
-	{
+	public bool tick() { // return true if the figure has despawned
 		// if DEAD, delete figure -- this is UNSAFE, and must exit the tick loop immediately
 		if (data.state == Enums.FigureStates.DEAD) {
 			figure_delete_UNSAFE();
@@ -561,7 +541,7 @@ public class Figure : Reference
 
 		// poof if LOST
 		if (data.direction == Enums.FigureDirections.CAN_NOT_REACH)
-			poof();
+			poof("figure is lost (direction=FigureDirections.CAN_NOT_REACH)");
 
 		// advance sprite offset
 		FigureSprite.Call("advance_sprite_animation");

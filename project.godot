@@ -134,6 +134,7 @@ gdscript/warnings/integer_division=false
 
 [display]
 
+window/size/width=1200
 window/size/height=1024
 
 [editor_plugins]

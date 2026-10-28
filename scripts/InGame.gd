@@ -81,10 +81,10 @@ func _process(delta):
 		mouse_worldpos = get_local_mouse_position()
 		
 		# camera zoom - TODO: setting for enabling smooth zoom
-#		CAMERA.zoom = Viewports.clampdamp(CAMERA.zoom, Vector2.ONE * camera_zoom_target, 5.0, delta)
+#		CAMERA.zoom = Viewports.clampdamp(CAMERA.zoom, Vector2.ONE * camera_zoom_target, 10.0, delta)
 		CAMERA.zoom = Vector2.ONE * camera_zoom_target
 		
-		# camera panning
+		# panning by mouse
 		if camera_previous_game_coords != null:
 			# TODO: custom key & sensitivity settings
 			var MOUSE_DRAG_CONT = BUTTON_RIGHT
@@ -96,15 +96,18 @@ func _process(delta):
 			elif Input.is_mouse_button_pressed(MOUSE_DRAG_SIMPLE):
 				var delta_pos = current_click_mousepos[MOUSE_DRAG_SIMPLE-1] - last_click_mousepos[MOUSE_DRAG_SIMPLE-1]
 				camera_position_target = camera_previous_game_coords - delta_pos * camera_zoom_target
+		
+		# panning by keyboard
 		var camera_pan_keyboard_delta = Vector2()
-		if Input.is_key_pressed(KEY_UP):
-			camera_pan_keyboard_delta.y -= 1
-		if Input.is_key_pressed(KEY_DOWN):
-			camera_pan_keyboard_delta.y += 1
-		if Input.is_key_pressed(KEY_LEFT):
-			camera_pan_keyboard_delta.x -= 1
-		if Input.is_key_pressed(KEY_RIGHT):
-			camera_pan_keyboard_delta.x += 1
+		var camera_pan_keyboard_speed = 1.5 * pow(1.0 / CAMERA.zoom.x, 0.5) # TODO: get from settings
+		if Input.is_key_pressed(KEY_UP) || Input.is_key_pressed(KEY_W):
+			camera_pan_keyboard_delta.y -= camera_pan_keyboard_speed
+		if Input.is_key_pressed(KEY_DOWN) || Input.is_key_pressed(KEY_S):
+			camera_pan_keyboard_delta.y += camera_pan_keyboard_speed
+		if Input.is_key_pressed(KEY_LEFT) || Input.is_key_pressed(KEY_A):
+			camera_pan_keyboard_delta.x -= camera_pan_keyboard_speed
+		if Input.is_key_pressed(KEY_RIGHT) || Input.is_key_pressed(KEY_D):
+			camera_pan_keyboard_delta.x += camera_pan_keyboard_speed
 		camera_position_target += camera_pan_keyboard_delta * camera_zoom_target * 10.0
 		
 		# TODO adaptive limits to playable scenario/map area

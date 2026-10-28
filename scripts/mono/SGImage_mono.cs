@@ -4,14 +4,12 @@ using System.IO;
 
 public class SGImage_mono : Node
 {
-	public override void _Ready()
-	{
+	public override void _Ready() {
 		GD.Print("*** MONO: SGImageMono loaded: " + this);
 	}
 	
 	const uint COLOR_SG_TRANSPARENT_MAGENTA = 0x781f;
-	private static Godot.Color color_from_555_u16(ushort c)
-	{
+	private static Godot.Color color_from_555_u16(ushort c) {
 		if ((c & 0x7fff) == COLOR_SG_TRANSPARENT_MAGENTA) // <--- the alpha bit is ignored unlike in RGBA1555. alpha is dictated by a preset magenta color.
 			return new Godot.Color(0);
 		// if ((c & 0x8000) == 0x8000)
@@ -24,8 +22,7 @@ public class SGImage_mono : Node
 			0xff ));
 		return color;
 	}
-	public Godot.Image ReadPlain(Byte[] input, int img_width, int img_height)
-	{
+	public Godot.Image ReadPlain(Byte[] input, int img_width, int img_height) {
 		BinaryReader reader = new BinaryReader(new MemoryStream(input));
 		Godot.Image image = new Godot.Image();
 		image.Create(img_width, img_height, false, Image.Format.Rgba8);
@@ -40,8 +37,7 @@ public class SGImage_mono : Node
 		image.Unlock();
 		return image;
 	}
-	public Godot.Image ReadWithCompressedAlpha(Byte[] input, int img_width, int img_height)
-	{
+	public Godot.Image ReadWithCompressedAlpha(Byte[] input, int img_width, int img_height) {
 		BinaryReader reader = new BinaryReader(new MemoryStream(input));
 		Godot.Image image = new Godot.Image();
 		image.Create(img_width, img_height, false, Image.Format.Rgba8);
@@ -77,8 +73,7 @@ public class SGImage_mono : Node
 		image.Unlock();
 		return image;
 	}
-	public Godot.Image ReadIsometric(Byte[] input, int top_sprite_data_length, int img_width, int img_height, int img_isometric_tile_size, int tile_height, int tile_width)
-	{
+	public Godot.Image ReadIsometric(Byte[] input, int top_sprite_data_length, int img_width, int img_height, int img_isometric_tile_size, int tile_height, int tile_width) {
 		BinaryReader reader = new BinaryReader(new MemoryStream(input));
 		Godot.Image image = new Godot.Image();
 		image.Create(img_width, img_height, false, Image.Format.Rgba8);
@@ -173,8 +168,7 @@ public class SGImage_mono : Node
 		return image;
 	}
 
-	public void SetAlphaMask(Godot.Image image, int img_width, byte[] alpha_input)
-	{
+	public void SetAlphaMask(Godot.Image image, int img_width, byte[] alpha_input) {
 		BinaryReader reader = new BinaryReader(new MemoryStream(alpha_input));
 		image.Lock();
 
