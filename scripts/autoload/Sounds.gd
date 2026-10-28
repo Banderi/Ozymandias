@@ -31,7 +31,7 @@ func set_volume(bus, value):
 #	if pitch_rnd != 0.0:
 #		node.pitch_scale = rand_range(1.0 - pitch_rnd, 1.0 + pitch_rnd)
 #	node.bus = bus
-#	node.stream = load(str("res://audio/sfx/",sound))
+#	node.stream = load(str("res://audio/sfx/", sound))
 #	Game.ROOT_NODE.add_child(node)
 #	node.set_pause_mode(2) # Set pause mode to Process
 #	node.set_process(true)
@@ -42,13 +42,13 @@ var MUSIC_PLAYER2 = null
 var AMBIENT = null
 func play_music(music: String, volume : float = 1.0):
 	MUSIC_PLAYER1.volume_db = linear2db(volume * 0.4)
-	var newstream = load(str("res://audio/music/",music))
+	var newstream = load(str("res://audio/music/", music))
 	if MUSIC_PLAYER1.stream != newstream:
 		MUSIC_PLAYER1.stream = newstream
 		MUSIC_PLAYER1.playing = true
 func play_music2(music: String, volume : float = 1.0):
 	MUSIC_PLAYER2.volume_db = linear2db(volume * 0.4)
-	var newstream = load(str("res://audio/music/",music))
+	var newstream = load(str("res://audio/music/", music))
 	if MUSIC_PLAYER2.stream != newstream:
 		MUSIC_PLAYER2.stream = newstream
 		MUSIC_PLAYER2.playing = true
@@ -69,7 +69,7 @@ func play_ambient(ambient: String, volume : float = 1.0):
 		AMBIENT.playing = false
 		return
 	AMBIENT.volume_db = linear2db(volume * 0.5)
-	var newstream = load(str("res://audio/sfx/",ambient))
+	var newstream = load(str("res://audio/sfx/", ambient))
 	if AMBIENT.stream != newstream:
 		AMBIENT.stream = newstream
 		AMBIENT.playing = true

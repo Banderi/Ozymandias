@@ -99,7 +99,7 @@ func get_incoming_tcp_data(data_peer, printerrors = true): # this DOES NOT SUPPO
 		# check if connected
 		if !is_peer_connected(data_peer):
 			if printerrors:
-				Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, str(host_address(data_peer)," suddenly dropped during exchange."))
+				Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, str(host_address(data_peer), " suddenly dropped during exchange."))
 			return null
 		
 		# get incoming bytes
@@ -195,7 +195,7 @@ func _process(_delta):
 						Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, "the host did not match.")
 						destroy_stream(tcp_stream)
 					StreamPeerSSL.STATUS_DISCONNECTED:
-						Log.generic(self, str(host_address(ssl_peer),": the client disconnected."))
+						Log.generic(self, str(host_address(ssl_peer), ": the client disconnected."))
 						destroy_stream(tcp_stream)
 					StreamPeerSSL.STATUS_HANDSHAKING:
 						Log.generic(self, "TLS Handshaking...")
@@ -209,11 +209,11 @@ func _process(_delta):
 							# attempt to parse HTTPS
 							var http_data = parse_http_data(tcp_data, VERBOSE)
 							if http_data != null: # valid HTTP request
-								Log.generic(self, str(host_address(ssl_peer),": HTTPS <%s> request" % [http_data.method]))
+								Log.generic(self, str(host_address(ssl_peer), ": HTTPS <%s> request" % [http_data.method]))
 								http_data["data_peer"] = ssl_peer
 								emit_signal("http_request", http_data)
 							else: # raw TCP stream
-								Log.generic(self, str(host_address(ssl_peer),": TCP (SSL) data <%d bytes>" % [tcp_data.size()]))
+								Log.generic(self, str(host_address(ssl_peer), ": TCP (SSL) data <%d bytes>" % [tcp_data.size()]))
 								emit_signal("unhandled_tcp_request", {
 									"data": tcp_data,
 									"data_peer": ssl_peer
@@ -224,7 +224,7 @@ func _process(_delta):
 						Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, "the connection failed!")
 						destroy_stream(tcp_stream)
 					StreamPeerTCP.STATUS_NONE:
-						Log.generic(self, str(host_address(tcp_stream),": the client disconnected."))
+						Log.generic(self, str(host_address(tcp_stream), ": the client disconnected."))
 						destroy_stream(tcp_stream)
 					StreamPeerTCP.STATUS_CONNECTING:
 						Log.generic(self, "Connecting...")
@@ -236,11 +236,11 @@ func _process(_delta):
 							# attempt to parse HTTP
 							var http_data = parse_http_data(tcp_data, VERBOSE)
 							if http_data != null: # valid HTTP request
-								Log.generic(self, str(host_address(tcp_stream),": HTTP <%s> request" % [http_data.method]))
+								Log.generic(self, str(host_address(tcp_stream), ": HTTP <%s> request" % [http_data.method]))
 								http_data["data_peer"] = tcp_stream
 								emit_signal("http_request", http_data)
 							else: # raw TCP stream
-								Log.generic(self, str(host_address(tcp_stream),": TCP data <%d bytes>" % [tcp_data.size()]))
+								Log.generic(self, str(host_address(tcp_stream), ": TCP data <%d bytes>" % [tcp_data.size()]))
 								emit_signal("unhandled_tcp_request", {
 									"data": tcp_data,
 									"data_peer": tcp_stream
@@ -257,15 +257,15 @@ signal unhandled_tcp_request(request)
 
 func respond_http(data_peer, response_body, response_code : int = 200, err_message : String = "", content_type : String = "text/plain"):
 	if VERBOSE:
-		Log.generic(self,"Responding to %s with: %s" % [host_address(data_peer),response_body])
+		Log.generic(self, "Responding to %s with: %s" % [host_address(data_peer), response_body])
 	var status_line = "HTTP/1.1 %d %s\r\n" % [response_code, err_message]
 	var header = "Content-Type: " + content_type + "\r\n"
 	var body = response_body
-	var http_response_string = PoolStringArray([status_line,header,"\r\n",body]).join("")
+	var http_response_string = PoolStringArray([status_line, header, "\r\n", body]).join("")
 	data_peer.put_data(http_response_string.to_utf8())
 	destroy_stream(data_peer)
 func respond_tcp(data_peer, response_data):
 	if VERBOSE:
-		Log.generic(self,"Responding to %s with: %s" % [host_address(data_peer),response_data])
+		Log.generic(self, "Responding to %s with: %s" % [host_address(data_peer), response_data])
 	data_peer.put_utf8_string(response_data)
 	destroy_stream(data_peer)

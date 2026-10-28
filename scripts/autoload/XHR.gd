@@ -12,18 +12,18 @@ func construct_url_from_bag(url_bag): # this ASSUMES the bag is VALID!
 	# construct and append query string
 	var query_string = ""
 	var query_article = "?"
-	for q in range(1,url_bag.size()):
+	for q in range(1, url_bag.size()):
 		var query_bag = url_bag[q]
 		
 		# single string
 		if query_bag is String && query_bag != "":
-			query_string += str(query_article,query_bag.http_escape())
+			query_string += str(query_article, query_bag.http_escape())
 			query_article = "&"
 		
 		# dictionary of items
 		elif query_bag is Dictionary && query_bag.size() != 0:
 			for param in query_bag:
-				query_string += str(query_article,param,"=",str(query_bag[param]).http_escape())
+				query_string += str(query_article, param, "=", str(query_bag[param]).http_escape())
 				query_article = "&"
 		
 	return url + query_string
@@ -56,7 +56,7 @@ func ENET(ip : String, port : int, data):
 	if err != OK:
 		return throw(err)
 	get_tree().network_peer = enet_peer # this is needed to actually make the peer run by the Godot system!
-	yield(get_tree(),"idle_frame")
+	yield(get_tree(), "idle_frame")
 	return enet_peer
 
 func TCP(ip : String, port : int, data):

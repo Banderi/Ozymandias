@@ -48,7 +48,7 @@ func create_folder(path: String):
 	if !dir.dir_exists(path):
 		var err = dir.make_dir_recursive(path)
 		if err != OK:
-			Log.error(null,err,str("could not create directory at '",path,"'"))
+			Log.error(null, err, str("could not create directory at '", path, "'"))
 			return false
 	return true
 func write(path: String, data, suppress_log: bool = false, create_folder_if_missing: bool = true, password: String = ""):
@@ -62,18 +62,18 @@ func write(path: String, data, suppress_log: bool = false, create_folder_if_miss
 			err = dir.make_dir_recursive(split_path[0])
 			if err != OK:
 				if !suppress_log:
-					Log.error(null,err,str("could not create directory at '",split_path[0],"' for file '",split_path[1],"'"))
+					Log.error(null, err, str("could not create directory at '", split_path[0], "' for file '", split_path[1], "'"))
 				return false
 		else:
 			if !suppress_log:
-				Log.error(null,7,str("directory '",split_path[0],"' not found for file '",split_path[1],"'"))
+				Log.error(null, 7, str("directory '", split_path[0], "' not found for file '", split_path[1], "'"))
 			return false
 #	if data is Resource:
 #		err = ResourceSaver.save(path, data)
 #		if err != OK:
-#			Log.error(null,err,str("could not write to file '",path,"'"))
+#			Log.error(null, err, str("could not write to file '", path, "'"))
 #			return false
-#		Log.generic(null,str("file '",path,"' written successfully!"))
+#		Log.generic(null, str("file '", path, "' written successfully!"))
 #		return true
 #	else:
 
@@ -85,7 +85,7 @@ func write(path: String, data, suppress_log: bool = false, create_folder_if_miss
 		err = file.open_encrypted_with_pass(path, File.WRITE, password)
 	if err != OK:
 		if !suppress_log:
-			Log.error(null,err,str("could not write to file '",path,"'"))
+			Log.error(null, err, str("could not write to file '", path, "'"))
 		return false
 
 	# write data
@@ -97,7 +97,7 @@ func write(path: String, data, suppress_log: bool = false, create_folder_if_miss
 	# close stream
 	file.close()
 	if !suppress_log:
-		Log.generic(null,str("file '",path,"' written successfully!"))
+		Log.generic(null, str("file '", path, "' written successfully!"))
 	return true
 func read(path: String, get_as_text = false, suppress_log = false, password = ""):
 	# init stream
@@ -109,7 +109,7 @@ func read(path: String, get_as_text = false, suppress_log = false, password = ""
 		err = file.open_encrypted_with_pass(path, File.READ, password)
 	if err != OK:
 		if !suppress_log:
-			Log.error(null,err,str("could not read file '",path,"'"))
+			Log.error(null, err, str("could not read file '", path, "'"))
 		return null
 
 	# read data
@@ -124,7 +124,7 @@ func read(path: String, get_as_text = false, suppress_log = false, password = ""
 	# close stream
 	file.close()
 	if !suppress_log:
-		Log.generic(null,str("file '",path,"' read successfully!"))
+		Log.generic(null, str("file '", path, "' read successfully!"))
 	return data
 func open(path: String, flags, suppress_log = false, password: String = ""): # ***WARNING***: this requires manually CLOSING the file handle.
 	# init stream
@@ -135,10 +135,10 @@ func open(path: String, flags, suppress_log = false, password: String = ""): # *
 	else:
 		err = file.open_encrypted_with_pass(path, flags, password)
 	if err != OK:
-		Log.error(null,err,str("could not read file '",path,"'"))
+		Log.error(null, err, str("could not read file '", path, "'"))
 		return null
 	if !suppress_log:
-		Log.generic(null,str("file '",path,"' read successfully!"))
+		Log.generic(null, str("file '", path, "' read successfully!"))
 	
 	file.set_script(preload("res://scripts/classes/FileEx.gd"))
 	return file
@@ -151,7 +151,7 @@ func find_file_recursive(path: String, file_name: String, dir = null): # this RE
 		dir = Directory.new()
 	var err = dir.open(path)
 	if err != OK:
-		Log.error(null,err,str("could not access directory '",path,"'"))
+		Log.error(null, err, str("could not access directory '", path, "'"))
 		return null
 	else:
 		# traverse dir tree
@@ -174,7 +174,7 @@ func metadata(path: String): # TODO: folder metadata
 	var file = File.new()
 	var err = file.open(path, File.READ)
 	if err != OK:
-		Log.error(null,err,str("could not read file '",path,"'"))
+		Log.error(null, err, str("could not read file '", path, "'"))
 		return null
 	var data = {
 		"extension": path.get_extension(),
@@ -189,29 +189,29 @@ func delete(path: String) -> bool:
 	var dir = Directory.new()
 	var err = dir.remove(path)
 	if err != OK:
-		Log.error(null,err,str("could not delete file '",path,"'"))
+		Log.error(null, err, str("could not delete file '", path, "'"))
 		return false
 	return true
 func rename(path: String, new_filename: String) -> bool:
 	var dir = Directory.new()
 	var err = dir.rename(path, new_filename)
 	if err != OK:
-		Log.error(null,err,str("could not rename file '",path,"' to '",new_filename,"'"))
+		Log.error(null, err, str("could not rename file '", path, "' to '", new_filename, "'"))
 		return false
 	return true
 func move_file(path: String, to: String, remove_previous: bool = true, overwrite: bool = false) -> bool:
 	if !overwrite && file_exists(to):
-		Log.error(null,GlobalScope.Error.ERR_ALREADY_EXISTS,str("could not move file from '",path,"' to '",to,"'"))
+		Log.error(null, GlobalScope.Error.ERR_ALREADY_EXISTS, str("could not move file from '", path, "' to '", to, "'"))
 		return false
 	var dir = Directory.new()
 	var err = dir.copy(path, to)
 	if err != OK:
-		Log.error(null,err,str("could not move file from '",path,"' to '",to,"'"))
+		Log.error(null, err, str("could not move file from '", path, "' to '", to, "'"))
 		return false
 	if remove_previous:
 		err = dir.remove(path)
 		if err != OK:
-			Log.error(null,err,str("could not delete file '",path,"'"))
+			Log.error(null, err, str("could not delete file '", path, "'"))
 			return false
 	return true
 func copy_file(path: String, to: String, overwrite: bool = false) -> bool:
@@ -224,7 +224,7 @@ func dir_contents(path: String, filter_by: String = ""): # this is SLOW. use fin
 	var dir = Directory.new()
 	var err = dir.open(path)
 	if err != OK:
-		Log.error(null,err,str("could not access directory '",path,"'"))
+		Log.error(null, err, str("could not access directory '", path, "'"))
 		return null
 	else:
 		var results = {
@@ -239,7 +239,7 @@ func dir_contents(path: String, filter_by: String = ""): # this is SLOW. use fin
 					if dir.current_is_dir():
 						results.folders[file_name] = null # TODO: folder metadata
 					else:
-						results.files[file_name] = metadata(str(path,"/",file_name))
+						results.files[file_name] = metadata(str(path, "/", file_name))
 			file_name = dir.get_next()
 		return results
 func find_most_recent_file(path: String, filter_by: String = ""):
@@ -261,13 +261,13 @@ func unzip(zip_file, destination):
 	var gdunzip = load("res://addons/gdunzip/gdunzip.gd").new()
 	var r = gdunzip.load(zip_file)
 	if !r:
-		Log.error(null,GlobalScope.Error.ERR_CANT_OPEN,str("could not load zip file '",zip_file,"'"))
+		Log.error(null, GlobalScope.Error.ERR_CANT_OPEN, str("could not load zip file '", zip_file, "'"))
 		return GlobalScope.Error.ERR_CANT_OPEN
 
 	# read zip file contents and adds them to project's virtual workspace
 	r = ProjectSettings.load_resource_pack(zip_file)
 	if !r:
-		Log.error(null,GlobalScope.Error.ERR_CANT_ACQUIRE_RESOURCE,str("could not load file '",zip_file,"' unzipped contents"))
+		Log.error(null, GlobalScope.Error.ERR_CANT_ACQUIRE_RESOURCE, str("could not load file '", zip_file, "' unzipped contents"))
 		return GlobalScope.Error.ERR_CANT_ACQUIRE_RESOURCE
 
 	# extract single files from project workspace and write to disk
@@ -280,12 +280,12 @@ func export_virtual_file(file_name, destination):
 	# open read stream
 	var file = File.new()
 	if !file.file_exists("res://" + file_name):
-		Log.error(null,GlobalScope.Error.ERR_FILE_NOT_FOUND,str("could not find virtual file '",file_name,"'"))
+		Log.error(null, GlobalScope.Error.ERR_FILE_NOT_FOUND, str("could not find virtual file '", file_name, "'"))
 		return GlobalScope.Error.ERR_FILE_NOT_FOUND
 	else:
 		var r = file.open(("res://" + file_name), File.READ)
 		if r != OK:
-			Log.error(null,r,str("could not open virtual file '",file_name,"'"))
+			Log.error(null, r, str("could not open virtual file '", file_name, "'"))
 			return r
 			
 		var content = file.get_buffer(file.get_len())
@@ -296,14 +296,14 @@ func export_virtual_file(file_name, destination):
 		var dir = Directory.new()
 		r = dir.make_dir(base_dir)
 		if r != OK && r != GlobalScope.Error.ERR_ALREADY_EXISTS:
-			Log.error(null,r,str("could not create folder at '",base_dir,"' for file '",file_name,"'"))
+			Log.error(null, r, str("could not create folder at '", base_dir, "' for file '", file_name, "'"))
 			return r
 
 		# open write stream
 		file = File.new()
 		r = file.open(destination + file_name, File.WRITE)
 		if r != OK:
-			Log.error(null,r,str("could not create file at '",destination + file_name,"'"))
+			Log.error(null, r, str("could not create file at '", destination + file_name, "'"))
 			return r
 		file.store_buffer(content)
 		file.close()

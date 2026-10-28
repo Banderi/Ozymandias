@@ -142,7 +142,7 @@ func screen_to_world2D(canvas_transform : Transform2D, screen : Vector2):
 	return canvas_transform.affine_inverse() * screen
 #func world3D_to_screen(camera : Camera, position : Vector3):
 #	if camera.is_position_behind(position):
-#		return Vector2(-9999,-9999)
+#		return Vector2(-9999, -9999)
 #	return camera.unproject_position(position)
 #func screen_to_world3D(camera : Camera, position : Vector2, max_distance = 9999):
 #	pass # TODO: this isn't immediately trivial.

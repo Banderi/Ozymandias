@@ -15,7 +15,7 @@ const default_texture_mappings := {
 """abcdefgh
 ijklmnop
 qrstuvwx
-yz.,!?" """
+yz., !?" """
 }
 
 func _init():
@@ -96,7 +96,7 @@ func build_font():
 		
 		var advance = char_setting.advance + extra_space + gap
 		
-		var rect := Rect2(0,0,0,0)
+		var rect := Rect2(0, 0, 0, 0)
 		add_char(32, 0, rect, Vector2.ZERO, advance)
 	
 	self.height = height

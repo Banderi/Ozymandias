@@ -1,0 +1,3 @@
+14474: some grass inside
+14682: shore corners
+14866: metal mesh(?)

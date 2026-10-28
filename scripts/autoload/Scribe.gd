@@ -45,7 +45,7 @@ func open(flags, path, offset = 0):
 #	_handle = f as FileEx
 #	var r = _handle.open(path, flags)
 #	if r != OK:
-#		return bail(r, str("could not open file handle '",path,"'"))
+#		return bail(r, str("could not open file handle '", path, "'"))
 #	_path = path
 #	_flags = flags
 #	_filesize = _handle.get_len()

@@ -7,7 +7,7 @@ var uri = ""
 signal finished
 
 func _finished(result, response_code, headers, body):
-	Log.generic(XHR,str("<",name,"> ",uri," responded with ",body.size()," bytes"))
+	Log.generic(XHR, str("<", name, "> ", uri, " responded with ", body.size(), " bytes"))
 	var response = {
 		"result": result,
 		"response_code": response_code,

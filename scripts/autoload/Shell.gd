@@ -8,12 +8,12 @@ var thread_for_execute = null
 var queue_for_execute = []
 
 func get_pid(process_name : String):
-	var pid = execute('cmd /r tasklist | find "' + process_name + '"',true)[0].split("Console")[0].split(" ",false)
+	var pid = execute('cmd /r tasklist | find "' + process_name + '"', true)[0].split("Console")[0].split(" ", false)
 	if pid.size() < 2:
 		return -1
 	return pid[1].to_int()
 func kill_process(process_name : String):
-	execute('cmd /r taskkill /IM "' + process_name + '" /F',false)
+	execute('cmd /r taskkill /IM "' + process_name + '" /F', false)
 
 func execute(cmd, blocking : bool):
 	# parse command line & binary
@@ -41,7 +41,7 @@ func run_sync(cmd, node : Node, printcmd = true, printout = false):
 	# invoke OS function & get results back!
 	var output = execute(cmd, true)
 	if printout && output.size() > 0 && output[0].length() > 0:
-		var txt = str(output[0]).substr(0,str(output[0]).length() - 1)
+		var txt = str(output[0]).substr(0, str(output[0]).length() - 1)
 		for line in txt.split("\n"):
 			Log.generic(node, "    " + line)
 	return output
@@ -69,7 +69,7 @@ func _deferred_execute_stack_top():
 
 func _threaded_execute(args):
 	if args.printcmd:
-		Log.generic(args.node, 'sh# ' + args.cmd + '')#, Color(0.5,1,1,0.5))
+		Log.generic(args.node, 'sh# ' + args.cmd + '')#, Color(0.5, 1, 1, 0.5))
 	else:
 		print('sh# \"', args.cmd, '\"')
 	if args.cmd == "": # Empty command!!
@@ -81,7 +81,7 @@ func _threaded_execute(args):
 	
 	args["output"] = output
 	if args.printout && output.size() > 0 && output[0].length() > 0:
-		var txt = str(output[0]).substr(0,str(output[0]).length() - 1)
+		var txt = str(output[0]).substr(0, str(output[0]).length() - 1)
 		for line in txt.split("\n"):
 			Log.generic(args.node, "    " + line)
 	call_deferred('_clean_up_execute_thread')

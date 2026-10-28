@@ -79,7 +79,7 @@ public class Building : Node
 
 	public static Building getBuilding(short building_id)
 	{
-        if (building_id == 0)
+        if (building_id <= 0)
             return null;
 		return (Building) ((Godot.Collections.Array)Globals.Buildings.Get("buildings"))[building_id];
 	}

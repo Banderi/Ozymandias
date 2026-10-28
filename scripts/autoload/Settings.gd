@@ -60,7 +60,7 @@ func reload(import_file_path = ""):
 			# HERE: refresh/reload settings in the game
 			return settings_changed_externally()
 	elif import_file_path == "":
-		Log.generic(null,str("No user data file found, creating a new one..."))
+		Log.generic(null, str("No user data file found, creating a new one..."))
 		save()
 
 # global callback

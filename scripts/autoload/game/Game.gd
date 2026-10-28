@@ -750,6 +750,24 @@ func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	
+	
+	 # Generate new RSA key.
+	var crypto = Crypto.new()
+	var key = CryptoKey.new()
+	key = crypto.generate_rsa(2048)
+	key.save("user://generated.key")
+	key.save("user://generated2.key", true)
+	key.save("user://generated3.key", false)
+	#cert = crypto.generate_self_signed_certificate(key, "CN=mydomain.com, O=My Game Company, C=IT")
+
+
+	
+	
+	
+	
+	
+	
 	yield(Assets.load_game_assets("Pharaoh"), "completed")
 	
 	INGAME_ROOT.show()

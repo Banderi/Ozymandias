@@ -3,22 +3,22 @@ class_name TCPHandler
 
 onready var peer = StreamPeerTCP.new()
 func get_host_uri():
-	return str(peer.get_connected_host(),":",peer.get_connected_port())
+	return str(peer.get_connected_host(), ":", peer.get_connected_port())
 
 signal finished
 signal received(data)
 func _finished():
-	Log.generic(XHR,"<%s> The TCP stream from %s was closed." % [name,get_host_uri()])
+	Log.generic(XHR, "<%s> The TCP stream from %s was closed." % [name, get_host_uri()])
 	emit_signal("finished")
 	queue_free()
 func _received(data : PoolByteArray):
-	Log.generic(XHR,"<%s> %s responded with %d bytes" % [name,get_host_uri(),data.size()])
+	Log.generic(XHR, "<%s> %s responded with %d bytes" % [name, get_host_uri(), data.size()])
 	if !data.empty():
-		var data_str = data.get_string_from_utf8().split("\n",false)
+		var data_str = data.get_string_from_utf8().split("\n", false)
 		var json_data = parse_json(data_str[data_str.size()-1])
 		if json_data != null:
-			if json_data.get("method","") == "Log":
-				print("		JSON-RPC LOG: \"",json_data.params.message,"\"")
+			if json_data.get("method", "") == "Log":
+				print("		JSON-RPC LOG: \"", json_data.params.message, "\"")
 			else:
 				emit_signal("received_jsonrpc", json_data)
 	emit_signal("received", data)
@@ -30,7 +30,7 @@ func put_utf8_data(data):
 		string_formatted = data + "\n"
 	else:
 		string_formatted = JSON.print(data) + "\n"
-	Log.generic(XHR,"<%s> Sending %d bytes to %s" % [name,string_formatted.length(),get_host_uri()])
+	Log.generic(XHR, "<%s> Sending %d bytes to %s" % [name, string_formatted.length(), get_host_uri()])
 	peer.put_data(string_formatted.to_utf8())
 func push_data(data):
 	if data != null:
@@ -42,7 +42,7 @@ func get_incoming_data():
 		print("Incoming TCP: %d bytes..." % [bytes_incoming])
 		var r = peer.get_data(bytes_incoming)
 		if r[0] != OK: # <-- r_code
-			Log.generic(XHR,"<%s> %s attempted to respond, but the stream failed." % [name,get_host_uri()])
+			Log.generic(XHR, "<%s> %s attempted to respond, but the stream failed." % [name, get_host_uri()])
 		else:
 			return r[1] # <-- PoolByteArray
 

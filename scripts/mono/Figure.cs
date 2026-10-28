@@ -205,7 +205,7 @@ public class Figure : Reference
 
 	public static Figure getFigure(short figure_id)
 	{
-        if (figure_id == 0)
+        if (figure_id <= 0)
             return null;
 		return (Figure) ((Godot.Collections.Array)Globals.Figures.Get("figures"))[figure_id];
 	}
@@ -278,31 +278,26 @@ public class Figure : Reference
 		FigureSprite = null;
 	}
 
-
-	// bool has_home(short id = -1)
-	// {
-	// 	if (id == -1)
-	// 		return data.home_building_id != 0;
-	// 	return data.home_building_id == id;
-	// }
-	// bool has_immigrant_home(short _id = -1)
-	// {
-	// 	if (_id == -1)
-	// 		return data.immigrant_home_building_id != 0;
-	// 	return data.immigrant_home_building_id == _id;
-	// }
-	// bool has_destination(short _id = -1) {
-	// 	if (_id == -1)
-	// 		return data.destination_building_id != 0;
-	// 	return data.destination_building_id == _id;
-	// }
-	Building home(short building_id = -1) // if an id is provided, check that the record matches, otherwise it returns null
+	// linked buildings: these double as fetchers AND checkers -- if an id is provided, checks that
+	// matches (returns null if not); if no id is provided, returns the building (returns null if unset/invalid)
+	Building home(short building_id = -1) 
 	{
 		if (building_id == -1 || building_id == data.home_building_id)
 			return Building.getBuilding(data.home_building_id);
 		return null;
 	}
-
+	Building immigrant_home(short building_id = -1)
+	{
+		if (building_id == -1 || building_id == data.immigrant_home_building_id)
+			return Building.getBuilding(data.immigrant_home_building_id);
+		return null;
+	}
+	Building destination(short building_id = -1)
+	{
+		if (building_id == -1 || building_id == data.destination_building_id)
+			return Building.getBuilding(data.destination_building_id);
+		return null;
+	}
 
 	void update_attacker()
 	{

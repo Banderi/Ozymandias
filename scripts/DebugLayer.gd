@@ -112,9 +112,9 @@ func test_scribe():
 		test_scribe_stamps[20] += Stopwatch.query(_t, Stopwatch.Microsecond)
 		
 		for a in (10):
-			for j in range(0,9): ## SCRIBE
+			for j in range(0, 9): ## SCRIBE
 				test_scribe_perform_random(j)
-			for j in range(21,30): ## SCRIBE.MONO
+			for j in range(21, 30): ## SCRIBE.MONO
 				test_scribe_perform_random(j)
 		
 		###########################
@@ -128,9 +128,9 @@ func test_scribe():
 		###########################
 		
 		for a in (10):
-			for j in range(9,18): ## SCRIBE
+			for j in range(9, 18): ## SCRIBE
 				test_scribe_perform_random(j)
-			for j in range(30,39): ## SCRIBE.MONO
+			for j in range(30, 39): ## SCRIBE.MONO
 				test_scribe_perform_random(j)
 		
 		
