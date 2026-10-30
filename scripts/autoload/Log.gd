@@ -1,5 +1,5 @@
 extends Node
-# ANTIMONY 'Log' by Banderi --- v1.4
+# ANTIMONY 'Log' by Banderi --- v1.5
 
 var LOG_EVERYTHING = []
 var LOG_ENGINE = []
@@ -24,7 +24,7 @@ func get_timestamp():
 	var d = Time.get_datetime_dict_from_system()
 	return "%04d/%02d/%02d %02d:%02d:%02d -- " % [d.year, d.month, d.day, d.hour, d.minute, d.second]
 
-func generic(from, message_text, iserror = false):
+func generic(from, message_text, severity = 0):
 	var timestamp = get_timestamp()
 
 	# app name (with brackets)
@@ -41,20 +41,21 @@ func generic(from, message_text, iserror = false):
 	
 	# colored BBCode text
 	var bbcode_msg = str("[color=#888888]", timestamp, "[/color][color=#00aa11]", plain_appname, "[/color]")
-	if iserror:
-		bbcode_msg += str("[color=#ee1100]", message_text, "[/color]")
-	else:
-		bbcode_msg += str("[color=#ffffff]", message_text, "[/color]")
+	match severity:
+		0:
+			bbcode_msg += str("[color=#ffffff]", message_text, "[/color]")
+		1:
+			bbcode_msg += str("[color=#d5ab1d]", message_text, "[/color]")
+			push_warning(plain_msg)
+		2:
+			bbcode_msg += str("[color=#ee1100]", message_text, "[/color]")
+			LOG_ERRORS.push_back(bbcode_msg)
+			limit_array(LOG_ERRORS)
+			push_error(plain_msg)
 	
 	# record on "EVERYTHING" regardless of nature of message
 	LOG_EVERYTHING.push_back(bbcode_msg)
 	limit_array(LOG_EVERYTHING)
-	
-	# record on "ERRORS" if it's an error
-	if iserror:
-		LOG_ERRORS.push_back(bbcode_msg)
-		limit_array(LOG_ERRORS)
-		push_error(plain_msg)
 	
 	# record on node's custom log stack (if present)
 	if from != null && "LOG" in from:
@@ -67,6 +68,10 @@ func generic(from, message_text, iserror = false):
 	
 	LOG_CHANGED = true
 	LAST_MSG = str(message_text)
+func warning(from, message_text):
+	var warning_text = "WARNING: "
+	warning_text += message_text
+	return generic(from, warning_text, 1)
 func error(from, err, message_text, error_enum_set = 0):
 	var error_text = "ERROR: "
 	if err != null:

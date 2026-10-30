@@ -266,8 +266,9 @@ func enscribe_SAV():
 	
 	# buildings
 	Scribe.sync_record([Buildings], TYPE_OBJECT)
-	Scribe.push_compressed(Buildings.MAX_BUILDINGS * 264) # <----------------------------- TODO
-	Scribe.pop_compressed()
+#	Scribe.push_compressed(Buildings.MAX_BUILDINGS * 264) # <----------------------------- TODO
+	Buildings.enscribe_buildings()
+#	Scribe.pop_compressed()
 	
 	# camera orientation
 	Scribe.sync_record([Map], TYPE_OBJECT)

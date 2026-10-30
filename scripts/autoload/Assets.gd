@@ -24,6 +24,9 @@ var GAME_SET = null
 func set_gameset(game): # TODO - for the future
 	GAME_SET = game
 	GAME_FILES = {} # clear cached paths
+	
+	Figures.init_figure_stack()
+	Buildings.init_building_stack()
 
 # user / res & game data paths
 onready var INSTALL_PATH_SELECT_DIALOG = get_tree().root.get_node("Root/Menus/FileDialog") as FileDialog

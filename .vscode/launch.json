@@ -17,8 +17,7 @@
             "request": "launch",
             "mode": "executable",
             "preLaunchTask": "build",
-            // "executable": "E:/Softwares/Godot/Godot_v3.6-stable_mono_win64/Godot_v3.6-stable_mono_win64.exe\r",
-            "executable": "E:/Softwares/Godot/Godot_v3.6-stable_mono_win64/g.exe\r",
+            "executable": "E:/Softwares/Godot/Godot_v3.6-stable_mono_win64/g.exe",
             "executableArguments": [
                 "--path",
                 "${workspaceRoot}"
@@ -30,7 +29,7 @@
             "request": "launch",
             "mode": "executable",
             "preLaunchTask": "build",
-            "executable": "E:/Softwares/Godot/Godot_v3.6-stable_mono_win64/g.exe\r",
+            "executable": "E:/Softwares/Godot/Godot_v3.6-stable_mono_win64/g.exe",
             "executableArguments": [
                 "--path",
                 "${workspaceRoot}",

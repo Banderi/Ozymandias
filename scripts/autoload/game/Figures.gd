@@ -27,6 +27,7 @@ var total_formations
 var ferry_queues = []
 var ferry_transiting = []
 
+# figure sprites
 onready var figure_sprite_TSCN = load("res://scenes/FigureSprite.tscn")
 func spawn_sprites():
 	var _t = Stopwatch.start()
@@ -42,14 +43,29 @@ func create_sprite(i):
 #	Map.TILEMAP_ANIM.add_child(n)
 	figures[i].FigureSprite = n
 
+# figure C# objects
+func init_figure_stack(): # prepare array of figure objects
+	if figures != []:
+		Log.warning(self, "Attempting to re-init non-empty Figures stack. Clearing...")
+		figures = []
+	var FIGURE_CS = load("res://scripts/mono/" + Assets.GAME_SET + "/Figure.cs")
+	for i in MAX_FIGURES:
+		figures.push_back(FIGURE_CS.new(i))
+	assert(figures.size() == MAX_FIGURES)
+func spawn(): # TODO
+	pass
+
+# scribe
 func enscribe_figures():
-	Scribe.push_compressed(Figures.MAX_FIGURES * 388)
+	Scribe.push_compressed(MAX_FIGURES * 388)
 	var _t = Stopwatch.start()
 	var _empty = 0
-	for i in Figures.MAX_FIGURES:
+	for i in MAX_FIGURES:
 		var _p = ScribeMono.GetPosition()
 		assert(_p % 388 == 0)
-		if !figures[i].Fill(): # 3~5 ms compared to 30~50 ms with ScribeMono
+		var figure = figures[i]
+		figure.Fill() # 3~5 ms compared to 30~50 ms with ScribeMono
+		if !figure.in_use():
 			_empty += 1
 	
 	print("figures: %d (%d empty)    ms taken: %d" % [
@@ -59,9 +75,5 @@ func enscribe_figures():
 	])
 	Scribe.pop_compressed()
 
-func _enter_tree():
-	var FIGURE_CS = load("res://scripts/mono/Figure.cs")
-	for i in MAX_FIGURES: # prepare array of figure objects
-		figures.push_back(FIGURE_CS.new(i))
-func _ready():
-	assert(figures.size() == MAX_FIGURES)
+#func _enter_tree():
+#	init_figure_objs()

@@ -293,7 +293,60 @@ public class Enums : Node
 		WALLS = 4,
 		ANIMAL = 5,
 	}
+	public enum BuildingStates : byte {
+		UNUSED = 0,
+		VALID = 1,
+		UNDO = 2,
+		CREATED = 3,
+		RUBBLE = 4,
+		DELETED_BY_GAME = 5, // used for earthquakes, fires, house mergers
+		DELETED_BY_PLAYER = 6,
+		MOTHBALLED = 7
+	}
 
-
+	public enum RecourceTypes : byte {
+		NONE = 0,
+		GRAIN = 1,
+		MEAT = 2,
+		LETTUCE = 3,
+		CHICKPEAS = 4,
+		POMEGRANATES = 5,
+		FIGS = 6,
+		FISH = 7,
+		GAMEMEAT = 8,
+		STRAW = 9,
+		WEAPONS = 10,
+		CLAY = 11,
+		BRICKS = 12,
+		POTTERY = 13,
+		BARLEY = 14,
+		BEER = 15,
+		FLAX = 16,
+		LINEN = 17,
+		GEMS = 18,
+		LUXURY_GOODS = 19,
+		TIMBER = 20,
+		GOLD = 21,
+		REEDS = 22,
+		PAPYRUS = 23,
+		STONE = 24,
+		LIMESTONE = 25,
+		GRANITE = 26,
+		UNUSED12 = 27,
+		CHARIOTS = 28,
+		COPPER = 29,
+		SANDSTONE = 30,
+		OIL = 31,
+		HENNA = 32,
+		PAINT = 33,
+		LAMPS = 34,
+		MARBLE = 35,
+		//
+		DEBEN = 36,
+		TROOPS = 37,
+		// helper constants
+		// MIN = 1,
+		// MIN_FOOD = 1
+	}
 
 }

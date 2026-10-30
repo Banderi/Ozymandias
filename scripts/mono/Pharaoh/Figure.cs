@@ -4,175 +4,173 @@ using System.IO; // BinaryReader / BinaryWriter
 using System.Reflection; // FieldInfo
 using System.Runtime.InteropServices; // Marshal
 
-public class Figure : Reference
+public class Figure : ReferenceEx
 {
-    [StructLayout(LayoutKind.Sequential, Pack = 1)]
-    partial class FigureData {
-		public byte alternative_location_index;
-		public byte anim_frame;
-		[MarshalAs(UnmanagedType.U1)]
-		public bool is_enemy_image; // public byte is_enemy_image;
-		public byte flotsam_visible; // is this boolean?
-		public short sprite_image_id; // this is off by 18 with respect to the normal SG global ids!
-		public short unk_00; // cart_image_id was here in C3
-		public short next_figure;
-		public Enums.FigureTypes type;
-		public byte resource_id;
-		[MarshalAs(UnmanagedType.U1)] // public byte use_cross_country;
-		public bool use_cross_country;
-		[MarshalAs(UnmanagedType.U1)]
-		public bool is_friendly; // public byte is_friendly;
-		public Enums.FigureStates state; // public byte state;
-		public byte faction_id;
-		public Enums.FigureActions action_state_before_attack;
-		public Enums.FigureDirections direction;
-		public Enums.FigureDirections previous_tile_direction;
-		public Enums.FigureDirections attack_direction;
-		public ushort tile_x;
-		public ushort tile_y;
-		public ushort previous_tile_x;
-		public ushort previous_tile_y;
-		public ushort missile_damage;
-		public ushort damage;
-		public int tile_grid;
-		public ushort destination_tile_x;
-		public ushort destination_tile_y;
-		public int destination_tile_grid;
-		public ushort source_tile_x;
-		public ushort source_tile_y;
-		public ushort formation_position_x_soldier;
-		public ushort formation_position_y_soldier;
-		public short __unused_24; // 0
-		public short wait_ticks; // 0
-		public Enums.FigureActions action_state; // 9
-		public byte progress_on_tile; // 11
-		public short routing_path_id; // 12
-		public short routing_path_current_tile; // 4
-		public short routing_path_length; // 28
-		public byte in_building_wait_ticks; // 0
-		public byte outside_road_ticks; // 1
-		public short max_roam_length;
-		public short roam_length;
-		public byte roam_wander_freely;
-		public byte roam_random_counter;
-		public sbyte roam_turn_direction;
-		public sbyte roam_ticks_until_next_turn; // 0 ^^^^
-		public short cc_coords_x;
-		public short cc_coords_y;
-		public short cc_destination_x;
-		public short cc_destination_y;
-		public short cc_delta_x;
-		public short cc_delta_y;
-		public short cc_delta_xy;
-		public byte cc_direction;
-		public byte speed_multiplier;
-		public short home_building_id;
-		public short immigrant_home_building_id;
-		public short destination_building_id;
-		public short formation_id; // formation: 10
-		public byte index_in_formation; // 3
-		public byte formation_at_rest;
-		public byte migrant_num_people;
-		[MarshalAs(UnmanagedType.U1)]
-		public bool is_ghost; // public byte is_ghost;
-		public byte min_max_seen;
-		public byte __unused_57;
-		public short leading_figure_id;
-		public byte attack_image_offset;
-		public byte wait_ticks_missile;
-		public sbyte cart_offset_x;
-		public sbyte cart_offset_y;
-		public byte empire_city_id;
-		public byte trader_amount_bought;
-		public short name; // 6
-		public Enums.TerrainUsage terrain_usage; // public byte terrain_usage;
-		public byte is_boat;
-		public ushort resource_amount_full; // 4772 >>>> 112 (resource amount! 2-bytes)
-		public byte height_adjusted_ticks;
-		public byte current_height;
-		public byte target_height;
-		public byte collecting_item_id;
-		public byte trade_ship_failed_dock_attempts;
-		public byte phrase_sequence_exact;
-		public sbyte phrase_id;
-		public byte phrase_sequence_city;
-		public byte __unused_6f;
-		public byte trader_id;
-		public byte wait_ticks_next_target;
-		public short target_figure_id;
-		public short targeted_by_figure_id;
-		public ushort created_sequence;
-		public ushort target_figure_created_sequence;
-		public byte unk_01; // public byte figures_sametile_num;
-		public byte num_attackers;
-		public short attacker_id1;
-		public short attacker_id2;
-		public short opponent_id;
+    [StructLayout(LayoutKind.Explicit)] public unsafe struct FigureData {
+		[FieldOffset(0)] public byte alternative_location_index;
+		[FieldOffset(1)] public byte anim_frame;
+		[FieldOffset(2)] public bool8 is_enemy_image; // public byte is_enemy_image;
+		[FieldOffset(3)] public byte flotsam_visible; // is this boolean?
+		[FieldOffset(4)] public short sprite_image_id; // this is off by 18 with respect to the normal SG global ids!
+		[FieldOffset(6)] public short _unk_00; // cart_image_id was here in C3
+		[FieldOffset(8)] public short next_figure;
+		[FieldOffset(10)] public Enums.FigureTypes type;
+		[FieldOffset(11)] public byte resource_id;
+		[FieldOffset(12)] public bool8 use_cross_country;
+		[FieldOffset(13)] public bool8 is_friendly;
+		[FieldOffset(14)] public Enums.FigureStates state;
+		[FieldOffset(15)] public byte faction_id;
+		[FieldOffset(16)] public Enums.FigureActions action_state_before_attack;
+		[FieldOffset(17)] public Enums.FigureDirections direction;
+		[FieldOffset(18)] public Enums.FigureDirections previous_tile_direction;
+		[FieldOffset(19)] public Enums.FigureDirections attack_direction;
+		[FieldOffset(20)] public ushort tile_x;
+		[FieldOffset(22)] public ushort tile_y;
+		[FieldOffset(24)] public ushort previous_tile_x;
+		[FieldOffset(26)] public ushort previous_tile_y;
+		[FieldOffset(28)] public ushort missile_damage;
+		[FieldOffset(30)] public ushort damage;
+		[FieldOffset(32)] public int tile_grid;
+		[FieldOffset(36)] public ushort destination_tile_x;
+		[FieldOffset(38)] public ushort destination_tile_y;
+		[FieldOffset(40)] public int destination_tile_grid;
+		[FieldOffset(44)] public ushort source_tile_x;
+		[FieldOffset(46)] public ushort source_tile_y;
+		[FieldOffset(48)] public ushort formation_position_x_soldier;
+		[FieldOffset(50)] public ushort formation_position_y_soldier;
+		[FieldOffset(52)] public short __unused_24; // 0
+		[FieldOffset(54)] public short wait_ticks; // 0
+		[FieldOffset(56)] public Enums.FigureActions action_state; // 9
+		[FieldOffset(57)] public byte progress_on_tile; // 11
+		[FieldOffset(58)] public short routing_path_id; // 12
+		[FieldOffset(60)] public short routing_path_current_tile; // 4
+		[FieldOffset(62)] public short routing_path_length; // 28
+		[FieldOffset(64)] public byte in_building_wait_ticks; // 0
+		[FieldOffset(65)] public byte outside_road_ticks; // 1
+		[FieldOffset(66)] public short max_roam_length;
+		[FieldOffset(68)] public short roam_length;
+		[FieldOffset(70)] public byte roam_wander_freely;
+		[FieldOffset(71)] public byte roam_random_counter;
+		[FieldOffset(72)] public sbyte roam_turn_direction;
+		[FieldOffset(73)] public sbyte roam_ticks_until_next_turn; // 0 ^^^^
+		[FieldOffset(74)] public short cc_coords_x;
+		[FieldOffset(76)] public short cc_coords_y;
+		[FieldOffset(78)] public short cc_destination_x;
+		[FieldOffset(80)] public short cc_destination_y;
+		[FieldOffset(82)] public short cc_delta_x;
+		[FieldOffset(84)] public short cc_delta_y;
+		[FieldOffset(86)] public short cc_delta_xy;
+		[FieldOffset(88)] public byte cc_direction;
+		[FieldOffset(89)] public byte speed_multiplier;
+		[FieldOffset(90)] public short home_building_id;
+		[FieldOffset(92)] public short immigrant_home_building_id;
+		[FieldOffset(94)] public short destination_building_id;
+		[FieldOffset(96)] public short formation_id; // formation: 10
+		[FieldOffset(98)] public byte index_in_formation; // 3
+		[FieldOffset(99)] public byte formation_at_rest;
+		[FieldOffset(100)] public byte migrant_num_people;
+		[FieldOffset(101)] public bool8 is_ghost;
+		[FieldOffset(102)] public byte min_max_seen;
+		[FieldOffset(103)] public byte __unused_57;
+		[FieldOffset(104)] public short leading_figure_id;
+		[FieldOffset(106)] public byte attack_image_offset;
+		[FieldOffset(107)] public byte wait_ticks_missile;
+		[FieldOffset(108)] public sbyte cart_offset_x;
+		[FieldOffset(109)] public sbyte cart_offset_y;
+		[FieldOffset(110)] public byte empire_city_id;
+		[FieldOffset(111)] public byte trader_amount_bought;
+		[FieldOffset(112)] public short name; // 6
+		[FieldOffset(114)] public Enums.TerrainUsage terrain_usage; // [FieldOffset()] public byte terrain_usage;
+		[FieldOffset(115)] public byte is_boat;
+		[FieldOffset(116)] public ushort resource_amount_full; // 4772 >>>> 112 (resource amount! 2-bytes)
+		[FieldOffset(118)] public byte height_adjusted_ticks;
+		[FieldOffset(119)] public byte current_height;
+		[FieldOffset(120)] public byte target_height;
+		[FieldOffset(121)] public byte collecting_item_id;
+		[FieldOffset(122)] public byte trade_ship_failed_dock_attempts;
+		[FieldOffset(123)] public byte phrase_sequence_exact;
+		[FieldOffset(124)] public sbyte phrase_id;
+		[FieldOffset(125)] public byte phrase_sequence_city;
+		[FieldOffset(126)] public byte __unused_6f;
+		[FieldOffset(127)] public byte trader_id;
+		[FieldOffset(128)] public byte wait_ticks_next_target;
+		// these are misaligned?????
+		// [FieldOffset(129)] public short target_figure_id;
+		// [FieldOffset(131)] public short targeted_by_figure_id;
+		// [FieldOffset(133)] public ushort created_sequence;
+		// [FieldOffset(135)] public ushort target_figure_created_sequence;
+		// [FieldOffset(137)] public byte _unk_01; // [FieldOffset()] public byte figures_sametile_num;
+		// [FieldOffset(138)] public byte num_attackers;
+		// [FieldOffset(139)] public short attacker_id1;
+		// [FieldOffset(141)] public short attacker_id2;
+		// [FieldOffset(143)] public short opponent_id;
 		// below are added in Pharaoh
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 7)]
-		public byte[] unk_02;
-		public short unk_03_269; // 269
-		public short unk_04; // 0
-		public int market_lady_resource_image_offset; // 03 00 00 00
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 12)]
-		public byte[] unk_05_ff; // FF FF FF FF FF ...
-		public short market_lady_returning_home_id; // 26
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 14)]
-		public byte[] unk_06_00; // 00 00 00 00 00 00 00 ...
-		public short market_lady_bought_amount; // 200
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 115)]
-		public byte[] unk_07;
-		public sbyte unk_08_6; // 6
-		public short unk_09_ffff; // -1
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 48)]
-		public byte[] unk_10;
-		public sbyte festival_remaining_dances;
-		[MarshalAs(UnmanagedType.ByValArray, SizeConst = 27)]
-		public byte[] unk_11;
-		public short cart_image_id; // this is off by 18 with respect to the normal SG global ids!
-		public short unk_12;
+		[FieldOffset(145)] public fixed byte unk_02[7];
+		[FieldOffset(152)] public short _unk_03_269; // 269
+		[FieldOffset(154)] public short _unk_04; // 0
+		[FieldOffset(156)] public int market_lady_resource_image_offset; // 03 00 00 00
+		[FieldOffset(160)] public fixed byte unk_05_ff[12]; // FF FF FF FF FF ...
+		[FieldOffset(172)] public short market_lady_returning_home_id; // 26
+		[FieldOffset(174)] public fixed byte unk_06_00[14]; // 00 00 00 00 00 00 00 ...
+		[FieldOffset(188)] public short market_lady_bought_amount; // 200
+		[FieldOffset(190)] public fixed byte unk_07[115];
+		[FieldOffset(305)] public sbyte _unk_08_6; // 6
+		[FieldOffset(307)] public short _unk_09_ffff; // -1
+		[FieldOffset(308)] public fixed byte unk_10[48];
+		[FieldOffset(356)] public sbyte festival_remaining_dances;
+		[FieldOffset(357)] public fixed byte unk_11[27];
+		[FieldOffset(384)] public short cart_image_id; // this is off by 18 with respect to the normal SG global ids!
+		[FieldOffset(386)] public short _unk_12;
     }
-	FigureData data = new FigureData();
+	FigureData data = new FigureData(); // Feature 'target-typed object creation' is not available in C# 7.3. Please use language version 9.0 or greater.
 
 	// constructor
 	public short FIGURE_IDX;
 	Figure(short _IDX) {
 		FIGURE_IDX = _IDX;
 	}
+	~Figure() { // this should ONLY HAPPEN WHEN RE-INITIALIZING THE Figures ARRAY IN GD (e.g. on gameset change)
+		if (in_use())
+			figure_delete_UNSAFE();
+		// GD.Print("DESPAWNING FIGURE CS OBJECT");
+	}
     
 	// FigureSprite bridge (hacky but works, for now)
 	public Node FigureSprite; 
 
 	// public I/O
-	public bool Fill() { // returns true if this figure block is in use
-		_readFromStream(((Scribe_mono)Globals.ScribeMono).GetReader());
-		return in_use();
+	public bool Fill() {
+		try {
+			_readFromStream(((Scribe_mono)Globals.ScribeMono).GetReader());
+		} catch (Exception e) {
+			PrintError(e.ToString());
+			return false;
+		}
+		return true;
 	}
-	public void Dump() {
-		_writeToStream(((Scribe_mono)Globals.ScribeMono).GetWriter());
+	public bool Dump() {
+		try {
+			_writeToStream(((Scribe_mono)Globals.ScribeMono).GetWriter());
+		} catch (Exception e) {
+			PrintError(e.ToString());
+			return false;
+		}
+		return true;
 	}
 
 	// private I/O
 	unsafe void _readFromStream(BinaryReader reader) {
-		int size = Marshal.SizeOf<FigureData>();
-		byte[] buffer = reader.ReadBytes(size);
-		fixed (byte* ptr = buffer)
-		{
-			Marshal.PtrToStructure((IntPtr)ptr, data);
-		}
+		fixed (byte* ptr = reader.ReadBytes(Marshal.SizeOf<FigureData>()))
+			data = Marshal.PtrToStructure<FigureData>((IntPtr)ptr);
 	}
 	unsafe void _writeToStream(BinaryWriter writer) {
-		int size = Marshal.SizeOf<FigureData>();
-		byte[] buffer = new byte[size];
-		
+		byte[] buffer = new byte[Marshal.SizeOf<FigureData>()];
 		fixed (byte* ptr = buffer)
-		{
-			Marshal.StructureToPtr(data, (IntPtr)ptr, false);
-		}
+			Marshal.StructureToPtr<FigureData>(data, (IntPtr)ptr, false);
 		writer.Write(buffer);
     }
 
-	// raw data fields set/get
+	// raw data fields set/get (for accessing from GDScript)
 	public object get(String fieldName) {
 		FieldInfo field = data.GetType().GetField(fieldName);
 		if (field == null)
@@ -186,20 +184,13 @@ public class Figure : Reference
 		try {
 			field.SetValue(data, Convert.ChangeType(value, field.FieldType));
 		} catch (Exception e) {
-			GD.PrintErr(e.ToString());
-			GD.PushError(e.ToString());
+			PrintError(e.ToString());
 			return false;
 		}
 		return true;
 	}
 
 	// =============================== Figure =============================== //
-
-	public static Figure getFigure(short figure_id) {
-        if (figure_id <= 0)
-            return null;
-		return (Figure) ((Godot.Collections.Array)Globals.Figures.Get("figures"))[figure_id];
-	}
 
 	void set_state(Enums.FigureStates state) {
 		data.state = state;
@@ -270,28 +261,28 @@ public class Figure : Reference
 	// matches (returns null if not); if no id is provided, returns the building (returns null if unset/invalid)
 	Building home(short building_id = -1) {
 		if (building_id == -1 || building_id == data.home_building_id)
-			return Building.getBuilding(data.home_building_id);
+			return GameInterfaces.getBuilding(data.home_building_id);
 		return null;
 	}
 	Building immigrant_home(short building_id = -1) {
 		if (building_id == -1 || building_id == data.immigrant_home_building_id)
-			return Building.getBuilding(data.immigrant_home_building_id);
+			return GameInterfaces.getBuilding(data.immigrant_home_building_id);
 		return null;
 	}
 	Building destination(short building_id = -1) {
 		if (building_id == -1 || building_id == data.destination_building_id)
-			return Building.getBuilding(data.destination_building_id);
+			return GameInterfaces.getBuilding(data.destination_building_id);
 		return null;
 	}
 
 	void update_attacker() {
-		if (data.targeted_by_figure_id != 0) {
-			Figure attacker = getFigure(data.targeted_by_figure_id);
-			if (attacker.data.state != Enums.FigureStates.ALIVE)
-				data.targeted_by_figure_id = 0;
-			if (attacker.data.target_figure_id != FIGURE_IDX)
-				data.targeted_by_figure_id = 0;
-		}
+		// if (data.targeted_by_figure_id != 0) {
+		// 	Figure attacker = getFigure(data.targeted_by_figure_id);
+		// 	if (attacker.data.state != Enums.FigureStates.ALIVE)
+		// 		data.targeted_by_figure_id = 0;
+		// 	if (attacker.data.target_figure_id != FIGURE_IDX)
+		// 		data.targeted_by_figure_id = 0;
+		// }
 	}
 	void update_animation() {
 		
