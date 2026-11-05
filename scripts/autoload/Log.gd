@@ -24,7 +24,7 @@ func get_timestamp():
 	var d = Time.get_datetime_dict_from_system()
 	return "%04d/%02d/%02d %02d:%02d:%02d -- " % [d.year, d.month, d.day, d.hour, d.minute, d.second]
 
-func generic(from, message_text, severity = 0):
+func generic(from, message_text, severity = 0) -> void:
 	var timestamp = get_timestamp()
 
 	# app name (with brackets)
@@ -32,7 +32,7 @@ func generic(from, message_text, severity = 0):
 	if from is String:
 		app_name = from
 	elif from != null:
-		app_name = from.APP_NAME if "APP_NAME" in from else from.name
+		app_name = from.APP_NAME if "APP_NAME" in from else from.name if "name" in from else str(from)
 	var plain_appname = str("[", app_name, "]: ") if app_name != "" else ""
 	
 	# plain text for normal console
@@ -68,16 +68,16 @@ func generic(from, message_text, severity = 0):
 	
 	LOG_CHANGED = true
 	LAST_MSG = str(message_text)
-func warning(from, message_text):
+func warning(from, message_text) -> void:
 	var warning_text = "WARNING: "
 	warning_text += message_text
-	return generic(from, warning_text, 1)
-func error(from, err, message_text, error_enum_set = 0):
+	generic(from, warning_text, 1)
+func error(from, err, message_text, error_enum_set = 0) -> void:
 	var error_text = "ERROR: "
 	if err != null:
 		error_text += str("(", err, ":", get_enum_string(GlobalScope.Error if error_enum_set == 0 else GlobalScope.WinError, err), ") ")
 	error_text += str(message_text)
-	return generic(from, error_text, true)
+	generic(from, error_text, 2)
 
 func clear_log(from):
 	from.LOG = []

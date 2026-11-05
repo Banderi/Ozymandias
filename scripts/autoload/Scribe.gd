@@ -54,7 +54,7 @@ func stop_stopwatch():
 var _curr_record_ref = null
 func sync_record(chunk_path: Array, leaf_type) -> bool:
 	if chunk_path.size() < 1:
-		return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the supplied path is empty")
+		return bail(ERR_INVALID_PARAMETER, "the supplied path is empty")
 	
 	# reset chunk ref
 	_curr_record_ref = null
@@ -63,7 +63,7 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 	# root -- this MUST be a reference-able object (dict or array)
 	var root = chunk_path[0]
 	if !(root is Dictionary || root is Array || root is Node):
-		return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the supplied root is invalid (%s)" % [root])
+		return bail(ERR_INVALID_PARAMETER, "the supplied root is invalid (%s)" % [root])
 	_curr_record_ref = root
 	
 	# traverse the rest of the path / tree
@@ -73,7 +73,7 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 		# node is describing an array element -- parent MUST be an array type.
 		if key is int:
 			if !(_curr_record_ref is Array):
-				return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' requires a parent of type Array" % [key])
+				return bail(ERR_INVALID_PARAMETER, "the key '%s' requires a parent of type Array" % [key])
 			if _curr_record_ref.size() < key + 1:
 				
 				if i < chunk_path.size() - 1:
@@ -83,7 +83,7 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 						TYPE_INT:
 							_curr_record_ref.push_back([])
 						_:
-							return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' is describing a disallowed type (%s)" % [chunk_path[i + 1], typeof(chunk_path[i + 1])])
+							return bail(ERR_INVALID_PARAMETER, "the key '%s' is describing a disallowed type (%s)" % [chunk_path[i + 1], typeof(chunk_path[i + 1])])
 				else:
 					match leaf_type:
 						TYPE_DICTIONARY:
@@ -91,7 +91,7 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 						TYPE_ARRAY:
 							_curr_record_ref.push_back([])
 						_:
-							return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the leaf type '%s' is not allowed" % [leaf_type])
+							return bail(ERR_INVALID_PARAMETER, "the leaf type '%s' is not allowed" % [leaf_type])
 		
 		# node is describint a dictionary element -- parent MUST be a dictionary or a node.
 		elif key is String:
@@ -106,7 +106,7 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 							TYPE_INT:
 								_curr_record_ref[key] = []
 							_:
-								return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' is describing a disallowed type (%s)" % [chunk_path[i + 1], typeof(chunk_path[i + 1])])
+								return bail(ERR_INVALID_PARAMETER, "the key '%s' is describing a disallowed type (%s)" % [chunk_path[i + 1], typeof(chunk_path[i + 1])])
 					else:
 						match leaf_type:
 							TYPE_DICTIONARY:
@@ -114,12 +114,12 @@ func sync_record(chunk_path: Array, leaf_type) -> bool:
 							TYPE_ARRAY:
 								_curr_record_ref[key] = []
 							_:
-								return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the leaf type '%s' is not allowed" % [leaf_type])
+								return bail(ERR_INVALID_PARAMETER, "the leaf type '%s' is not allowed" % [leaf_type])
 			elif _curr_record_ref is Node:
 				if !(key in _curr_record_ref):
-					return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' is not a member of %s" % [key, _curr_record_ref])
+					return bail(ERR_INVALID_PARAMETER, "the key '%s' is not a member of %s" % [key, _curr_record_ref])
 			else:
-				return bail(GlobalScope.Error.ERR_INVALID_PARAMETER, "the key '%s' requires a parent of type Dictionary or Node" % [key])
+				return bail(ERR_INVALID_PARAMETER, "the key '%s' requires a parent of type Dictionary or Node" % [key])
 			
 			
 			

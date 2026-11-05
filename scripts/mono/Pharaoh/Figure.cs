@@ -4,9 +4,9 @@ using System.IO; // BinaryReader / BinaryWriter
 using System.Reflection; // FieldInfo
 using System.Runtime.InteropServices; // Marshal
 
-public class Figure : ReferenceEx
+public partial class Figure : ReferenceEx
 {
-    [StructLayout(LayoutKind.Explicit)] public unsafe struct FigureData {
+	[StructLayout(LayoutKind.Explicit)] public unsafe struct FigureData {
 		[FieldOffset(0)] public byte alternative_location_index;
 		[FieldOffset(1)] public byte anim_frame;
 		[FieldOffset(2)] public bool8 is_enemy_image; // public byte is_enemy_image;
@@ -81,7 +81,7 @@ public class Figure : ReferenceEx
 		[FieldOffset(111)] public byte trader_amount_bought;
 		[FieldOffset(112)] public short name; // 6
 		[FieldOffset(114)] public Enums.TerrainUsage terrain_usage; // [FieldOffset()] public byte terrain_usage;
-		[FieldOffset(115)] public byte is_boat;
+		[FieldOffset(115)] public bool8 is_boat;
 		[FieldOffset(116)] public ushort resource_amount_full; // 4772 >>>> 112 (resource amount! 2-bytes)
 		[FieldOffset(118)] public byte height_adjusted_ticks;
 		[FieldOffset(119)] public byte current_height;
@@ -91,9 +91,10 @@ public class Figure : ReferenceEx
 		[FieldOffset(123)] public byte phrase_sequence_exact;
 		[FieldOffset(124)] public sbyte phrase_id;
 		[FieldOffset(125)] public byte phrase_sequence_city;
-		[FieldOffset(126)] public byte __unused_6f;
+		[FieldOffset(126)] public byte __unused_6f; // same as phrase_id?
 		[FieldOffset(127)] public byte trader_id;
 		[FieldOffset(128)] public byte wait_ticks_next_target;
+		// [FieldOffset(129)] public bool8 dont_draw_elevated;
 		// these are misaligned?????
 		// [FieldOffset(129)] public short target_figure_id;
 		// [FieldOffset(131)] public short targeted_by_figure_id;
@@ -104,25 +105,46 @@ public class Figure : ReferenceEx
 		// [FieldOffset(139)] public short attacker_id1;
 		// [FieldOffset(141)] public short attacker_id2;
 		// [FieldOffset(143)] public short opponent_id;
+		
 		// below are added in Pharaoh
-		[FieldOffset(145)] public fixed byte unk_02[7];
+		// [FieldOffset(145)] public fixed byte unk_02[7];
+		[FieldOffset(145)] public byte _unk_02_1;
+		[FieldOffset(146)] public byte ostrich_panic_ticks; // increases when ostrich_animation_length is 1, up to 21
+
+
 		[FieldOffset(152)] public short _unk_03_269; // 269
 		[FieldOffset(154)] public short _unk_04; // 0
 		[FieldOffset(156)] public int market_lady_resource_image_offset; // 03 00 00 00
-		[FieldOffset(160)] public fixed byte unk_05_ff[12]; // FF FF FF FF FF ...
+		// [FieldOffset(160)] public fixed byte unk_05_ff[12]; // FF FF FF FF FF ...
 		[FieldOffset(172)] public short market_lady_returning_home_id; // 26
-		[FieldOffset(174)] public fixed byte unk_06_00[14]; // 00 00 00 00 00 00 00 ...
+		// [FieldOffset(174)] public fixed byte unk_06_00[14]; // 00 00 00 00 00 00 00 ...
 		[FieldOffset(188)] public short market_lady_bought_amount; // 200
-		[FieldOffset(190)] public fixed byte unk_07[115];
-		[FieldOffset(305)] public sbyte _unk_08_6; // 6
-		[FieldOffset(307)] public short _unk_09_ffff; // -1
-		[FieldOffset(308)] public fixed byte unk_10[48];
+		// [FieldOffset(190)] public fixed byte unk_07[115];
+		[FieldOffset(284)] public byte ferry_transiting_list_id;
+		[FieldOffset(304)] public sbyte _unk_05;
+		[FieldOffset(305)] public sbyte _unk_06_tutorial_2; // 6
+		[FieldOffset(306)] public short _unk_09_event_id; // -1
+
+		// [FieldOffset(308)] public fixed byte unk_10[48];
+		[FieldOffset(308)] public int _unk_10_1;
+		[FieldOffset(312)] public int ostrich_panic_something1; // 16, changes to 0 or 1 or 16 sometimes
+		[FieldOffset(316)] public int _unk_10_3;
+		[FieldOffset(320)] public int _unk_10_4;
+		[FieldOffset(324)] public int ostrich_panic_anim_length; // 12, 8 or 1
+		[FieldOffset(328)] public int ostrich_panic_anim_frame; // increases up to ostrich_animation_length
+		[FieldOffset(332)] public int _unk_10_7;
+		[FieldOffset(336)] public int _unk_10_8;
+		[FieldOffset(340)] public int _unk_10_9;
+		[FieldOffset(344)] public int _unk_10_10;
+		[FieldOffset(348)] public int _unk_10_11;
+		[FieldOffset(352)] public int ostrich_panic_something4; // 0, 1 or 2, increases when ostrich_animation_length is 12
+
 		[FieldOffset(356)] public sbyte festival_remaining_dances;
-		[FieldOffset(357)] public fixed byte unk_11[27];
+		// [FieldOffset(357)] public fixed byte unk_11[27];
 		[FieldOffset(384)] public short cart_image_id; // this is off by 18 with respect to the normal SG global ids!
 		[FieldOffset(386)] public short _unk_12;
-    }
-	FigureData data = new FigureData(); // Feature 'target-typed object creation' is not available in C# 7.3. Please use language version 9.0 or greater.
+	}
+	public FigureData data = new FigureData(); // Feature 'target-typed object creation' is not available in C# 7.3. Please use language version 9.0 or greater.
 
 	// constructor
 	public short FIGURE_IDX;
@@ -134,7 +156,7 @@ public class Figure : ReferenceEx
 			figure_delete_UNSAFE();
 		// GD.Print("DESPAWNING FIGURE CS OBJECT");
 	}
-    
+	
 	// FigureSprite bridge (hacky but works, for now)
 	public Node FigureSprite; 
 
@@ -168,7 +190,7 @@ public class Figure : ReferenceEx
 		fixed (byte* ptr = buffer)
 			Marshal.StructureToPtr<FigureData>(data, (IntPtr)ptr, false);
 		writer.Write(buffer);
-    }
+	}
 
 	// raw data fields set/get (for accessing from GDScript)
 	public object get(String fieldName) {
@@ -199,17 +221,17 @@ public class Figure : ReferenceEx
 	public bool in_use() {
 		return data.state != Enums.FigureStates.NONE;
 	}
-    public void kill() {
-        if (data.state != Enums.FigureStates.ALIVE)
-            return;
-        set_state(Enums.FigureStates.DYING);
-        data.action_state = Enums.FigureActions.ACTION_149_CORPSE;
-    }
-    public void poof(String reason) {
+	public void kill() {
+		if (data.state != Enums.FigureStates.ALIVE)
+			return;
+		set_state(Enums.FigureStates.DYING);
+		data.action_state = Enums.FigureActions.ACTION_149_CORPSE;
+	}
+	public void poof(String reason) {
 		GD.Print($"figure {FIGURE_IDX} poofed -- reason: {reason}");
 		if (data.state != Enums.FigureStates.NONE && data.state != Enums.FigureStates.DEAD)
-	        set_state(Enums.FigureStates.DEAD);
-    }
+			set_state(Enums.FigureStates.DEAD);
+	}
 	
 	public void create(Enums.FigureTypes type, ushort x, ushort y, byte dir) { // TODO
 		
@@ -259,20 +281,14 @@ public class Figure : ReferenceEx
 
 	// linked buildings: these double as fetchers AND checkers -- if an id is provided, checks that
 	// matches (returns null if not); if no id is provided, returns the building (returns null if unset/invalid)
-	Building home(short building_id = -1) {
-		if (building_id == -1 || building_id == data.home_building_id)
-			return GameInterfaces.getBuilding(data.home_building_id);
-		return null;
+	Building home() {
+		return GameInterfaces.GetBuilding(data.home_building_id);
 	}
-	Building immigrant_home(short building_id = -1) {
-		if (building_id == -1 || building_id == data.immigrant_home_building_id)
-			return GameInterfaces.getBuilding(data.immigrant_home_building_id);
-		return null;
+	Building immigrant_home() {
+		return GameInterfaces.GetBuilding(data.immigrant_home_building_id);
 	}
-	Building destination(short building_id = -1) {
-		if (building_id == -1 || building_id == data.destination_building_id)
-			return GameInterfaces.getBuilding(data.destination_building_id);
-		return null;
+	Building destination() {
+		return GameInterfaces.GetBuilding(data.destination_building_id);
 	}
 
 	void update_attacker() {
@@ -286,6 +302,23 @@ public class Figure : ReferenceEx
 	}
 	void update_animation() {
 		
+
+		int[] a = {1, 2};
+
+
+
+
+
+
+		try {
+
+			FigureSprite.Call("set_sprite", "SprMain.sg3", 1, 0);
+
+			// advance sprite offset
+			FigureSprite.Call("advance_sprite_animation", data.anim_frame);
+		} catch (Exception e) {
+			PrintError($"FIGURE{FIGURE_IDX}.update_animation():" + e.ToString());
+		}
 	}
 	void update_linked_buildings() {
 // 		building *b = home();
@@ -358,54 +391,54 @@ public class Figure : ReferenceEx
 // 		}
 	}
 	void action_common_pretick() {
-// 		switch (action_state) {
-// 			case Enums.FigureTypes.ACTION_150_ATTACK:
-// 				figure_combat_handle_attack(); break;
-// 			case Enums.FigureTypes.ACTION_149_CORPSE:
-// 				figure_combat_handle_corpse(); break;
-// 			case Enums.FigureTypes.ACTION_125_ROAMING:
-// 			case ACTION_1_ROAMING:
-// 				if (type == FIGURE_IMMIGRANT || type == FIGURE_EMIGRANT || type == FIGURE_HOMELESS)
-// 					break;
-// 				do_roam();
-// 				break;
-// 			case Enums.FigureTypes.ACTION_126_ROAMER_RETURNING:
-// 			case ACTION_2_ROAMERS_RETURNING:
-// 				if (type == FIGURE_IMMIGRANT || type == FIGURE_EMIGRANT || type == FIGURE_HOMELESS)
-// 					break;
-// 				do_returnhome();
-// 				break;
-// 		}
-// 		if (state == FIGURE_STATE_DYING) // update corpses / dying animation
-// 		figure_combat_handle_corpse();
-// 		if (map_terrain_is(tile.grid_offset(), TERRAIN_ROAD)) { // update road flag
-// 			outside_road_ticks = 0;
-// 			if (map_terrain_is(tile.grid_offset(), TERRAIN_WATER)) // bridge
-// 				set_target_height_bridge();
-// 		} else {
-// 			if (outside_road_ticks < 255)
-// 				outside_road_ticks++;
-// 			if (!is_boat && map_terrain_is(tile.grid_offset(), TERRAIN_WATER))
-// 				kill();
-// 			if (is_boat && !map_terrain_is(tile.grid_offset(), TERRAIN_WATER))
-// 				kill();
-// 			if (terrain_usage == TERRAIN_USAGE_ROADS) { // walkers outside of roads for too long?
-// 				if (destination_tile.x() && destination_tile.y() &&
-// 					outside_road_ticks > 100) // dudes with destination have a bit of lee way
-// 					poof();
-// 				if (!destination_tile.x() && !destination_tile.y() && state == Enums.FigureStates.ALIVE && outside_road_ticks > 0)
-// 					poof();
-// 			}
-// 		}
+		// switch (data.action_state) {
+		// 	case Enums.FigureActions.ACTION_150_ATTACK:
+		// 		figure_combat_handle_attack(); break;
+		// 	case Enums.FigureActions.ACTION_149_CORPSE:
+		// 		figure_combat_handle_corpse(); break;
+		// 	case Enums.FigureActions.ACTION_125_ROAMING:
+		// 	case Enums.FigureActions.ACTION_1_ROAMING:
+		// 		if (data.type == Enums.FigureTypes.IMMIGRANT || data.type == Enums.FigureTypes.EMIGRANT || data.type == Enums.FigureTypes.HOMELESS)
+		// 			break;
+		// 		do_roam();
+		// 		break;
+		// 	case Enums.FigureActions.ACTION_126_ROAMER_RETURNING:
+		// 	case Enums.FigureActions.ACTION_2_ROAMERS_RETURNING:
+		// 		if (data.type == Enums.FigureTypes.IMMIGRANT || data.type == Enums.FigureTypes.EMIGRANT || data.type == Enums.FigureTypes.HOMELESS)
+		// 			break;
+		// 		do_returnhome();
+		// 		break;
+		// }
+		// if (data.state == FIGURE_STATE_DYING) // update corpses / dying animation
+		// 	figure_combat_handle_corpse();
+		// if (map_terrain_is(tile.grid_offset(), TERRAIN_ROAD)) { // update road flag
+		// 	outside_road_ticks = 0;
+		// 	if (map_terrain_is(tile.grid_offset(), TERRAIN_WATER)) // bridge
+		// 		set_target_height_bridge();
+		// } else {
+		// 	if (outside_road_ticks < 255)
+		// 		outside_road_ticks++;
+		// 	if (!is_boat && map_terrain_is(tile.grid_offset(), TERRAIN_WATER))
+		// 		kill();
+		// 	if (is_boat && !map_terrain_is(tile.grid_offset(), TERRAIN_WATER))
+		// 		kill();
+		// 	if (terrain_usage == TERRAIN_USAGE_ROADS) { // walkers outside of roads for too long?
+		// 		if (destination_tile.x() && destination_tile.y() &&
+		// 			outside_road_ticks > 100) // dudes with destination have a bit of lee way
+		// 			poof();
+		// 		if (!destination_tile.x() && !destination_tile.y() && state == Enums.FigureStates.ALIVE && outside_road_ticks > 0)
+		// 			poof();
+		// 	}
+		// }
 	}
 
 
 
-	public bool tick() { // return true if the figure has despawned
+	public void tick() { // return true if the figure has despawned
 		// if DEAD, delete figure -- this is UNSAFE, and must exit the tick loop immediately
 		if (data.state == Enums.FigureStates.DEAD) {
 			figure_delete_UNSAFE();
-			return true;
+			return;
 		}
 		
 		// invalid action states?
@@ -426,8 +459,6 @@ public class Figure : ReferenceEx
 		// max_roam_length = action_properties.max_roam_length;
 		// speed_multiplier = action_properties.speed_mult;
 
-		// image_set_animation(action_properties.base_image_collection, action_properties.base_image_group);
-		update_animation();
 
 		// check for building being alive (at the start of the action)
 		update_linked_buildings();
@@ -529,13 +560,12 @@ public class Figure : ReferenceEx
 // 		}
 
 		
+		// image_set_animation(action_properties.base_image_collection, action_properties.base_image_group);
+		update_animation();
 
 		// poof if LOST
 		if (data.direction == Enums.FigureDirections.CAN_NOT_REACH)
 			poof("figure is lost (direction=FigureDirections.CAN_NOT_REACH)");
 
-		// advance sprite offset
-		FigureSprite.Call("advance_sprite_animation");
-		return false;
 	}
 }

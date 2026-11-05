@@ -10,7 +10,8 @@ func _on_HSliderSpeed_value_changed(value):
 func _on_BtnPKWareTest_pressed():
 	Game.do_PKWare_tests()
 func _on_BtnLoadAutosave_pressed():
-	Game.load_game("res://tests/autosave.sav")
+#	Game.load_game("res://tests/autosave.sav")
+	Game.load_game("res://tests/autosave_history.sav")
 #	Game.load_game("res://tests/Alexandria.sav")
 
 var prev_tile_test_value = 2
@@ -29,10 +30,20 @@ func _on_BtnTestTerrainImages_value_changed(value):
 func _on_BtnRedrawMap_pressed():
 	Map.redraw()
 
-func _on_BtnTestSprites_value_changed(value):
+func _on_BtnTestSprites_value_changed(value): # BUG: this double-sets when pressing ENTER on a new number, oh WELL. not worth the trouble fixing it.
+#	if value == $DEBUG_BTNS/BtnTestSprites.value:
+	if value == -1:
+		$TextureRect.texture = null
+		return
 #	get_tree().set_input_as_handled()
 #	$TextureRect.texture = Assets.get_sg_texture("Pharaoh_Terrain.sg3", value)
-	$TextureRect.texture = Assets.get_gameset_sg_texture(value)
+#	print(value)
+#	$TextureRect.texture = Assets.get_gameset_sg_texture(value)
+	$TextureRect.texture = Assets.get_tagged_sg_texture("SprMain.sg3", value, 0, false)
+#func _on_BtnTestSprites_gui_input(event):
+#	if event is InputEventKey:
+#		if event.pressed && (event as InputEventKey).scancode == KEY_ENTER:
+#			$TextureRect.texture = Assets.get_gameset_sg_texture($DEBUG_BTNS/BtnTestSprites.value)
 
 func _on_BtnChangeFPS_value_changed(value):
 	Engine.target_fps = value
@@ -183,121 +194,175 @@ onready var DEBUG_LABEL = $DEBUG_LABEL
 onready var DEBUG_LABEL2 = $DEBUG_LABEL2
 onready var DEBUG_LABEL3 = $DEBUG_LABEL3
 onready var DEBUG_LABEL4 = $DEBUG_LABEL4
+onready var DEBUG_LABEL5 = $DEBUG_LABEL5
 
 onready var FONT_BASIS33 = load("res://assets/fonts/basis33_thick_outline.tres") as Font
 onready var CURSOR = Game.INGAME_ROOT.get_node("CURSOR")
 enum DebugDisplays {
 	GRIDS = 0,
 	TILEMAPS = 1,
-	FIGURES = 2,
-	BUILDINGS = 3,
+#	FIGURES = 2,
+#	BUILDINGS = 3,
 }
 var debug_display_mode = 1
-func present_debug():
+func print_tile_debug():
 	var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position()
-	var tile_coords = Map.TILEMAP_FLAT.world_to_map(mouse_pos)
-	CURSOR.position = Map.TILEMAP_FLAT.map_to_world(tile_coords) # TODO: move do InGame / separate Cursor logic
+	var tile: GameTile = GameTile.new(Map.TILEMAP_FLAT.world_to_map(mouse_pos), false)
+	CURSOR.position = Map.TILEMAP_FLAT.map_to_world(tile.grid_Vector2) # TODO: move do InGame / separate Cursor logic
 	
-	var tile_text = ""
-	if Rect2(0, 0, Map.PH_MAP_WIDTH, Map.PH_MAP_WIDTH).has_point(tile_coords):
+	
+	var debug_text = ""
+	if Rect2(0, 0, Map.PH_MAP_WIDTH, Map.PH_MAP_WIDTH).has_point(tile.grid_Vector2):
 		CURSOR.show()
 		$DEBUG_LABEL3.show()
 		
+		debug_text += "grid: %s\n" % [tile.grid_Vector2]
+		debug_text += "map: %s\n" % [tile.map_Vector2]
 		match debug_display_mode:
 			DebugDisplays.GRIDS:
-				tile_text += "tile: %s\n" % [tile_coords]
-				tile_text += "[color=#ffcc00]image:[/color]      %d\n" % [Map.grids.images[tile_coords.y][tile_coords.x]]
-				tile_text += "[color=#ffcc00]buildings:[/color]  %d\n" % [Map.grids.buildings[tile_coords.y][tile_coords.x]]
+				debug_text += "[color=#ffcc00]image:[/color]      %d\n" % [Map.grids.images[tile.grid_y][tile.grid_x]]
+				debug_text += "[color=#ffcc00]buildings:[/color]  %d\n" % [Map.grids.buildings[tile.grid_y][tile.grid_x]]
 				
 				# terrain
-				var _terrain = Map.grids.terrain[tile_coords.y][tile_coords.x]
-				tile_text += "[color=#ffcc00]terrain:[/color]    %d\n" % [_terrain]
+				var _terrain = Map.grids.terrain[tile.grid_y][tile.grid_x]
+				debug_text += "[color=#ffcc00]terrain:[/color]    %d\n" % [_terrain]
 				for flag in Map.TerrainFlags:
 					if _terrain & Map.TerrainFlags[flag]:
-						tile_text += "  [color=#888888]%s[/color]\n" % [flag]
+						debug_text += "  [color=#888888]%s[/color]\n" % [flag]
 						
 				# edge
-				var _edge = Map.grids.edge[tile_coords.y][tile_coords.x]
-				tile_text += "[color=#ffcc00]edge:[/color]       %d\n" % [_edge]
+				var _edge = Map.grids.edge[tile.grid_y][tile.grid_x]
+				debug_text += "[color=#ffcc00]edge:[/color]       %d\n" % [_edge]
 				if _terrain & Map.TerrainFlags.BUILDING == Map.TerrainFlags.BUILDING:
 					for i in 6:
 						var flag = str("ROW_", i)
 						if _edge & Map.EdgeFlags.MASK_ROW == Map.EdgeFlags[flag]:
-							tile_text += "  [color=#888888]%s[/color]\n" % [flag]
+							debug_text += "  [color=#888888]%s[/color]\n" % [flag]
 					for i in 6:
 						var flag = str("COLUMN_", i)
 						if _edge & Map.EdgeFlags.MASK_COLUMN == Map.EdgeFlags[flag]:
-							tile_text += "  [color=#888888]%s[/color]\n" % [flag]
+							debug_text += "  [color=#888888]%s[/color]\n" % [flag]
 				if _edge & Map.EdgeFlags.DRAW_TILE == Map.EdgeFlags.DRAW_TILE:
-					tile_text += "  [color=#888888]DRAW_TILE[/color]\n"
+					debug_text += "  [color=#888888]DRAW_TILE[/color]\n"
 				if _edge & Map.EdgeFlags.NATIVE_LAND == Map.EdgeFlags.NATIVE_LAND:
-					tile_text += "  [color=#888888]NATIVE_LAND[/color]\n"
+					debug_text += "  [color=#888888]NATIVE_LAND[/color]\n"
 						
 				# bitfields
-				var _bitfields = Map.grids.bitfields[tile_coords.y][tile_coords.x]
-				tile_text += "[color=#ffcc00]bitfields:[/color]  %d\n" % [_bitfields]
+				var _bitfields = Map.grids.bitfields[tile.grid_y][tile.grid_x]
+				debug_text += "[color=#ffcc00]bitfields:[/color]  %d\n" % [_bitfields]
 				if _terrain & Map.TerrainFlags.BUILDING == Map.TerrainFlags.BUILDING:
 					for i in 8:
 						var flag = str("SIZE_", i + 1)
 						if _bitfields & Map.BitFlags.MASK_SIZE == Map.BitFlags[flag]:
-							tile_text += "  [color=#888888]%s[/color]\n" % [flag]
+							debug_text += "  [color=#888888]%s[/color]\n" % [flag]
 				for flag in Map.BitFlags:
 					if _bitfields & Map.BitFlags[flag] in [16, 32, 64, 128]:
-						tile_text += "  [color=#888888]%s[/color]\n" % [flag]
+						debug_text += "  [color=#888888]%s[/color]\n" % [flag]
 			DebugDisplays.TILEMAPS:
-				tile_text += "tile: %s\n" % [tile_coords]
-				tile_text += "[color=#ccff00]Map_Flat:[/color]       %d\n" % [Map.TILEMAP_FLAT.get_cell(tile_coords.x, tile_coords.y)]
-				tile_text += "[color=#ccff00]Map_Features:[/color]   %d\n" % [Map.TILEMAP_FEATURES.get_cell(tile_coords.x, tile_coords.y)]
-				tile_text += "[color=#ccff00]Map_Top:[/color]        %d\n" % [Map.TILEMAP_TOP.get_cell(tile_coords.x, tile_coords.y)]
-				tile_text += "[color=#ccff00]Map_Anim:[/color]       %d\n" % [Map.TILEMAP_ANIM.get_cell(tile_coords.x, tile_coords.y)]
+				debug_text += "[color=#ccff00]Map_Flat:[/color]       %d\n" % [Map.TILEMAP_FLAT.get_cell(tile.grid_x, tile.grid_y)]
+				debug_text += "[color=#ccff00]Map_Features:[/color]   %d\n" % [Map.TILEMAP_FEATURES.get_cell(tile.grid_x, tile.grid_y)]
+				debug_text += "[color=#ccff00]Map_Top:[/color]        %d\n" % [Map.TILEMAP_TOP.get_cell(tile.grid_x, tile.grid_y)]
+				debug_text += "[color=#ccff00]Map_Anim:[/color]       %d\n" % [Map.TILEMAP_ANIM.get_cell(tile.grid_x, tile.grid_y)]
+#			DebugDisplays.FIGURES:
+#				var figure_id_on_tile = Map.grids.figures[grid_coords.y][grid_coords.x]
+#				if figure_id_on_tile != 0:
+#					debug_text += "[color=#ccff00]ID:[/color]           %d\n" % [figure_id_on_tile]
+#					var figure = Figures.figures[figure_id_on_tile]
+#					var type = figure.get("type")
+#					var type_name = CS_ENUMS.FigureTypes.get(type, null)
+#					if type_name != null:
+#						debug_text += "[color=#ccff00]Type:[/color]         %d:%s\n" % [type, type_name]
+#					else:
+#						debug_text += "[color=#ccff00]Type:[/color]         [color=#dd0000]%d:??[/color]\n" % [type]
+#			DebugDisplays.BUILDINGS:
+#				var building_id_on_tile = Map.grids.buildings[grid_coords.y][grid_coords.x]
+#				if building_id_on_tile != 0:
+#					debug_text += "[color=#ccff00]ID:[/color]           %d\n" % [building_id_on_tile]
+#					var building = Buildings.buildings[building_id_on_tile]
+#					var type = building.get("type")
+#					var type_name = CS_ENUMS.BuildingTypes.get(type, null)
+#					if type_name != null:
+#						debug_text += "[color=#ccff00]Type:[/color]         %d:%s\n" % [type, type_name]
+#					else:
+#						debug_text += "[color=#ccff00]Type:[/color]         [color=#dd0000]%d:??[/color]\n" % [type]
+				
+				
+#				debug_text += "[color=#ccff00]Map_Flat:[/color]       %d\n" % [figure_id_on_tile]
+#
+#				debug_text += "[color=#ccff00]Map_Features:[/color]   %d\n" % [Map.TILEMAP_FEATURES.get_cell(grid_coords.x, grid_coords.y)]
+#				debug_text += "[color=#ccff00]Map_Top:[/color]        %d\n" % [Map.TILEMAP_TOP.get_cell(grid_coords.x, grid_coords.y)]
+#				debug_text += "[color=#ccff00]Map_Anim:[/color]       %d\n" % [Map.TILEMAP_ANIM.get_cell(grid_coords.x, grid_coords.y)]
 				
 		
-		if $DEBUG_LABEL3.bbcode_text != tile_text:
-			$DEBUG_LABEL3.bbcode_text = tile_text
+		if $DEBUG_LABEL3.bbcode_text != debug_text:
+			$DEBUG_LABEL3.bbcode_text = debug_text
 		$DEBUG_LABEL3.rect_position = $DEBUG_LABEL3.get_global_mouse_position() - Vector2(220, 170)
 			
 	else:
 		CURSOR.hide()
 		$DEBUG_LABEL3.hide()
 
+	# figures
+	debug_text = "[color=#ffff00]Figures:   %4d/%d                           \n[/color]" % [Figures._in_use, Figures.MAX_FIGURES]
+	var figure_id_on_tile = Map.grids.figures[tile.grid_y][tile.grid_x]
+	if figure_id_on_tile != 0:
+		debug_text += "  [color=#ffff00]ID:[/color]           %d\n" % [figure_id_on_tile]
+		var figure = Figures.figures[figure_id_on_tile]
+		var type = figure.get("type") # + rand_seed(Game.tick)[0] % 50
+		debug_text += "  [color=#ffff00]Type:[/color]         %s\n" % [Debug.enum_print_bbcode(Debug.CS_ENUMS.FigureTypes, type)]
 	
-#	# stylebox
-#	var long = ""
-#	var lon = 0
-#	var lines = $DEBUG_LABEL3.text.split("\n")
-#	for l in lines:
-#		if l.length() > lon:
-#			lon = l.length()
-#			long = l
-#	var box = $DEBUG_LABEL3.get_stylebox("normal")
-#	$DEBUG_LABEL3.rect_size.x = FONT_BASIS33.get_string_size(long).x + box.content_margin_left + box.content_margin_right
-#	$DEBUG_LABEL3.rect_size.y = (lines.size() - 1) * (FONT_BASIS33.get_height() + $DEBUG_LABEL3.get("custom_constants/line_separation")) +\
-#		box.content_margin_top + box.content_margin_bottom
-
-
+	# buildings
+	debug_text += "[color=#00ffcc]Buildings: %4d/%d\n[/color]" % [Buildings._in_use, Buildings.MAX_BUILDINGS]
+	var building_id_on_tile = Map.grids.buildings[tile.grid_y][tile.grid_x]
+	if building_id_on_tile != 0:
+		debug_text += "  [color=#00ffcc]ID:[/color]           %d\n" % [building_id_on_tile]
+		var building = Buildings.buildings[building_id_on_tile]
+		var type = building.get("type")
+		debug_text += "  [color=#00ffcc]Type:[/color]         %s\n" % [Debug.enum_print_bbcode(Debug.CS_ENUMS.BuildingTypes, type)]
+	
+	if $DEBUG_LABEL5.bbcode_text != debug_text:
+		$DEBUG_LABEL5.bbcode_text = debug_text
+	
+var ingame_camera_has_moved = false
 func _input(event):
 	
+	if Input.is_action_just_pressed("ui_accept"):
+		if $DEBUG_BTNS/BtnTestSprites.has_focus() || $DEBUG_BTNS/BtnTestSprites.get_child(0).has_focus():
+			_on_BtnTestSprites_value_changed($DEBUG_BTNS/BtnTestSprites.value)
+	
+	# copy to cliboard DEBUG_LABEL4 test results...
 	if Input.is_key_pressed(KEY_CONTROL) && Input.is_key_pressed(KEY_C) && DEBUG_LABEL4.has_focus():
 		var selection = DEBUG_LABEL4.get_selected_text()
 		OS.clipboard = selection
 		print(selection)
 	
+	# extra debugging
 	if Input.is_action_just_pressed("debug_toggle"):
 		visible = !visible
 		CURSOR.visible = visible
-		if visible:
-			present_debug()
-#		Input.parse_input_event(InputEventAction.new())
 	if Input.is_action_just_pressed("debug_cycle"):
 		if visible:
-			debug_display_mode = (debug_display_mode + 1) % 3
-			present_debug()
-	
-	if visible && Game.STATE != Game.States.MainMenu:
-		if event is InputEventMouseMotion:
-			present_debug()
+			if Input.is_key_pressed(KEY_SHIFT):
+				debug_display_mode = (debug_display_mode - 1) % DebugDisplays.keys().size()
+			else:
+				debug_display_mode = (debug_display_mode + 1) % DebugDisplays.keys().size()
 
-var last_fps = 60
+func print_friendly(thing, padding = ""):
+	if thing is Vector2:
+		return "(%.02f, %.02f)" % [thing.x, thing.y]
+	if thing is Vector3:
+		return "(%.02f, %.02f, %.02f)" % [thing.x, thing.y, thing.z]
+	if thing is Array:
+		var content = ""
+		for child in thing:
+			content += "%s%s" % [", " if content != "" else "", print_friendly(child, padding)]
+		return "[%s]" % [content]
+	if thing is Dictionary: # this is INDENTED.... 
+		var content = ""
+		for key in thing:
+			content += "%s%s%s: %s" % [",\n" if content != "" else "\n", padding + "    ", key, print_friendly(thing[key], padding + "    ")]
+		return "{%s\n%s}" % [content, padding]
+	return "%s" % [thing]
 func _process(delta):
 	
 	if test_scribe_enabled:
@@ -314,12 +379,13 @@ func _process(delta):
 	debug_text += col1 + "current_family:[/color]      %s\n" % [Family.current_family]
 	debug_text += col1 + "families:[/color]            %s\n\n" % [Family.data.size()]
 	#
-	debug_text += col1 + "camera:[/color]              %s\n" % [Game.INGAME_ROOT.camera_position_target]
-	debug_text += col1 + "zoom:[/color]                %s\n" % [Game.INGAME_ROOT.camera_zoom_target]
-	debug_text += col1 + "mouse_worldpos:[/color]      %s\n" % [Game.INGAME_ROOT.mouse_worldpos]
-	debug_text += col1 + "curr_click_mouse:[/color]    %s\n" % [Game.INGAME_ROOT.current_click_game_coords]
-	debug_text += col1 + "last_click_mouse:[/color]    %s\n" % [Game.INGAME_ROOT.last_click_game_coords]
-	debug_text += col1 + "last_click_camera:[/color]   %s\n\n" % [Game.INGAME_ROOT.camera_previous_game_coords]
+	debug_text += col1 + "camera:[/color]              %s\n" % [print_friendly(Game.INGAME_ROOT.camera_position_target)]
+	debug_text += col1 + "zoom:[/color]                %s\n" % [print_friendly(Game.INGAME_ROOT.camera_zoom_target)]
+	debug_text += col1 + "mouse_worldpos:[/color]      %s\n" % [print_friendly(Game.INGAME_ROOT.mouse_worldpos)]
+	debug_text += col1 + "curr_click_mouse:[/color]    %s\n" % [print_friendly(Game.INGAME_ROOT.current_click_game_coords)]
+	debug_text += col1 + "last_click_mouse:[/color]    %s\n" % [print_friendly(Game.INGAME_ROOT.last_click_game_coords)]
+	debug_text += col1 + "last_click_camera:[/color]   %s\n\n" % [print_friendly(Game.INGAME_ROOT.camera_previous_game_coords)]
+#	debug_text += col1 + "\n\n\n\n\ntest:[/color]    \n%s\n\n" % [print_friendly({"aa": 2, "fdyt": [1,2], "b": {"aa": 2, "fdyt": [1,2]}})]
 	#
 	debug_text += col1 + "game_speed:[/color]   %d\n" % [Game.speed]
 	debug_text += col1 + "ENGINE_t:[/color]     %.2f\n" % [Game.t]
@@ -338,8 +404,13 @@ func _process(delta):
 	if DEBUG_LABEL.bbcode_text != debug_text:
 		DEBUG_LABEL.bbcode_text = debug_text
 	
-	last_fps = Engine.get_frames_per_second()
-	DEBUG_FPS.text = str(last_fps, " FPS")
+	DEBUG_FPS.text = str(Game.last_fps, " FPS")
+	
+	if visible && Game.STATE != Game.States.NoGameLoaded:
+		print_tile_debug()
+	else:
+		$DEBUG_LABEL3.hide()
+#		$DEBUG_LABEL5.hide()
 
 func _ready():
 	$DEBUG_LABEL3.bbcode_text = ""

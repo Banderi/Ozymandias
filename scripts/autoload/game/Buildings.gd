@@ -1,6 +1,6 @@
 extends Node
 
-const MAX_BUILDINGS = 4000
+const MAX_BUILDINGS = 4000 # REMEMBER ---- the first id in the stack (0) is a NULL/DUMMY BUILDING OBJECT and can NOT BE USED.
 const MAX_STORAGE_YARDS = 200
 
 var buildings = []
@@ -30,23 +30,27 @@ func init_building_stack(): # prepare array of building objects
 	assert(buildings.size() == MAX_BUILDINGS)
 func spawn(): # TODO
 	pass
+#func clear_all():
+#	pass
 
 # scribe
+var _in_use = 0
 func enscribe_buildings():
+#	init_building_stack()
 	Scribe.push_compressed(MAX_BUILDINGS * 264)
 	var _t = Stopwatch.start()
-	var _empty = 0
+	_in_use = 0
 	for i in MAX_BUILDINGS:
 		var _p = ScribeMono.GetPosition()
 		assert(_p % 264 == 0)
 		var building = buildings[i]
 		building.Fill() # 3~5 ms compared to 30~50 ms with ScribeMono
-		if !building.in_use():
-			_empty += 1
+		if building.in_use():
+			_in_use += 1
 
-	print("buildings: %d (%d empty)    ms taken: %d" % [
-		MAX_BUILDINGS - _empty,
-		_empty,
+	print("buildings: %4d / %d    ms taken: %3d" % [
+		_in_use,
+		MAX_BUILDINGS,
 		Stopwatch.query(_t)
 	])
 	Scribe.pop_compressed()

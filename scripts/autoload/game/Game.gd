@@ -8,6 +8,8 @@ onready var MENUS_ROOT = ROOT_NODE.get_node("Menus")
 onready var DEBUG_ROOT = ROOT_NODE.get_node("Debug")
 
 onready var TEST_SPR_ATLAS = ROOT_NODE.get_node("TEST_SPR_ATLAS")
+onready var LOADING_BACKDROP = MENUS_ROOT.get_node("Loading") as TextureRect
+onready var LOADING_TEXT = MENUS_ROOT.get_node("Loading/LabelEx") as LabelEx
 
 # generics
 func is_valid_objref(node):
@@ -16,11 +18,14 @@ func is_valid_objref(node):
 	return false
 
 # MENUS
+# I'm not doing a menu stack for now, just a straight up "open menu" or "popup menu" (i.e. the exact same, but without closing all other menus)
 var debug_last_menu = null
 func go_to_menu(menu_name, data = null):
+	if debug_last_menu == menu_name:
+		return
 	var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
 	if menu_node == null:
-		Log.error(self, GlobalScope.Error.ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
+		Log.error(self, ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
 		return
 	close_all_menus()
 	if menu_node.has_method("_on_menu_open"):
@@ -28,9 +33,11 @@ func go_to_menu(menu_name, data = null):
 	debug_last_menu = menu_name
 	menu_node.show()
 func popup_menu(menu_name, data = null):
+	if debug_last_menu == menu_name:
+		return
 	var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
 	if menu_node == null:
-		Log.error(self, GlobalScope.Error.ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
+		Log.error(self, ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
 		return
 	if menu_node.has_method("_on_menu_open"):
 		menu_node._on_menu_open(data)
@@ -40,6 +47,18 @@ func close_all_menus():
 	for m in MENUS_ROOT.get_children():
 		m.hide()
 	debug_last_menu = null
+
+func loading_screen(backdrop_img_idx, loading_text = null, is_localized_key: bool = true):
+	go_to_menu("Loading")
+	if backdrop_img_idx != null:
+		LOADING_BACKDROP.texture = Assets.get_gameset_sg_texture(backdrop_img_idx)
+	if loading_text != null:
+		if !is_localized_key:
+			LOADING_TEXT.text = loading_text
+		else:
+			LOADING_TEXT.set_from_localized_key(loading_text)
+	yield(get_tree(), "idle_frame")
+	yield(get_tree(), "idle_frame") # idea why, but we need TWO empty frames here...... >:(
 
 func right_click_pressed(relevant_node, event): # TODO: capture right click when over ANY element of the currently open menu
 	if event is InputEventMouseButton && event.button_index == BUTTON_RIGHT:
@@ -123,20 +142,29 @@ var bizarre_ordered_fields_9 = null
 #############
 
 enum States {
-	MainMenu,
+	NoGameLoaded,
 	Ingame,
 	Paused }
-var STATE = States.MainMenu
-func load_game(path) -> bool:
+var STATE = States.NoGameLoaded
+func load_game(path) -> bool: # TODO: stuff rendering over the loading screen!!
+	Log.generic(self, "Loading new game: " + path)
+	STATE = States.NoGameLoaded
+	INGAME_ROOT.hide()
+	yield(loading_screen(509, "TEXT_11_3"), "completed")
+	
 	if !IO.file_exists(path):
-		Log.error(self, GlobalScope.Error.ERR_DOES_NOT_EXIST, "the savefile '%s' does not exist" % [path])
+		Log.error(self, ERR_DOES_NOT_EXIST, "the savefile '%s' does not exist" % [path])
+		INGAME_ROOT.show()
 		return false
 	else:
 		if !clear_ingame():
+			INGAME_ROOT.show()
 			return false
 		if !Scribe.enscribe(path, File.READ, false, funcref(self, "enscribe_SAV")):
+			INGAME_ROOT.show()
 			return false
 		
+		yield(loading_screen(509, "TEXT_11_0"), "completed")
 		Map.tilesets_load_scenario_specifics()
 		Map.redraw()
 		Figures.spawn_sprites()
@@ -144,29 +172,28 @@ func load_game(path) -> bool:
 		####
 		
 		STATE = States.Ingame
+		INGAME_ROOT.show()
 		close_all_menus()
 		
 		return true
 func save_game(path) -> bool: # TODO
-	if STATE == States.MainMenu:
-		Log.error(self, GlobalScope.Error.ERR_LOCKED, "can not save without a game loaded first")
+	if STATE == States.NoGameLoaded:
+		Log.error(self, ERR_LOCKED, "can not save without a game loaded first")
 		return false
 	else:
 #		if !Scribe.enscribe(path, File.WRITE, false, funcref(self, "enscribe_SAV")):
 #			return false
 		print("TODO: saving ------- ", path)
 		return true
-func clear_ingame() -> bool:
+func clear_ingame() -> bool: # N.B. this DOES NOT free up the Figures and Buildings stacks!!! that is left up to the destructors, paused tick, and C#!
 	for n in Map.TILEMAP_FLAT.get_children():
-		n.queue_free()
+		n.free()
 	for n in Map.TILEMAP_FEATURES.get_children():
-		n.queue_free()
+		n.free()
 	for n in Map.TILEMAP_TOP.get_children():
-		n.queue_free()
+		n.free()
 	for n in Map.TILEMAP_ANIM.get_children():
-		n.queue_free()
-#	INGAME_ROOT.camera_position_target = Vector2(-97, 3505)
-#	INGAME_ROOT.camera_zoom_target = 1.0
+		n.free()
 	return true
 
 var debug_schema = { # default schema used
@@ -718,10 +745,7 @@ func game_tick():
 	for f in Figures.figures:
 		if f.in_use():
 			f.tick()
-			
-#			if randi() % 15 == 1:
-#				f.poof("RANDOM DESPAWN TESTING...")
-	
+
 	###
 	
 	tick += 1
@@ -735,6 +759,7 @@ var speed_tps = 0.1
 var ticks_per_frame = 0.1
 var game_refresh_rate = 60.0
 var ticks_to_do = 0
+var last_fps = 60
 
 var t = 0
 func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup if performance drops the ticks' compute time over the impositions?
@@ -751,26 +776,27 @@ func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	MENUS_ROOT.show()
+	INGAME_ROOT.hide() # not really necessary, but maybe?
+	DEBUG_ROOT.hide()
+
+	# TODO:
+	# select different gamesets
+	
+	# loading:
+	yield(loading_screen(null, "", true), "completed")
 	yield(Assets.load_game_assets("Pharaoh"), "completed")
 	
-	INGAME_ROOT.show()
-	MENUS_ROOT.show()
-	DEBUG_ROOT.show()
-	
-#	debug_test_button.connect("pressed", self, "_on_DebugTestBtn_Pressed")
-	
-#	Assets.load_locales()
-#	Assets.load_tilesets()
-
-	
-#	close_all_menus()
-	
-	# TODO:
-	# loading:
-	
+	# TODO...?
 	# bink video: intro
 	
-#	go_to_menu("Splash")
+	# game ready!
+	INGAME_ROOT.show()
+	go_to_menu("Splash")
+	
+	
+	# ------------------------------------ DEBUGGING ------------------------------------ #
+	
 #	go_to_menu("FamilySelection")
 #	go_to_menu("GameSelection", "Banhutep")
 #	popup_menu("SavegameSelection", false)
@@ -783,20 +809,18 @@ func _ready():
 #	Family.DAT_load("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep.dat", "Banhutep")
 #	Family.DAT_save("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep2.dat", "Banhutep")
 
-
-#	var a = YourCustomClass.new()
-#	var a = load("res://scripts/mono/YourCustomClass.cs").new()
-	
-#	yield(get_tree(), "idle_frame")
-	Game.load_game("res://tests/autosave.sav")
-#	Game.load_game("res://tests/Alexandria.sav")
-#	STATE = States.Ingame
-#	close_all_menus()
+	# auto-load testing savegame
+	yield(Game.load_game("res://tests/autosave.sav"), "completed")
+#	yield(Game.load_game("res://tests/Alexandria.sav"), "completed")
+#	yield(Game.load_game("res://tests/autosave_history.sav"), "completed")
+#	yield(Game.load_game("res://tests/SteamSaves/Alexandria.sav"), "completed")
+	DEBUG_ROOT.show()
 
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	last_fps = Engine.get_frames_per_second()
 	game_refresh_rate = 1.0 / delta
 	ticks_per_frame = speed_tps / game_refresh_rate
 	game_loop(delta)

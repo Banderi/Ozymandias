@@ -75,7 +75,7 @@ func update(key_path, value, force_commit = false):
 		var parent = self
 		for key in key_path:
 			if parent != self || !(parent is Array) || !(parent is Dictionary):
-				Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "path '%s' is not a valid setting" % [key_path])
+				Log.error(self, ERR_INVALID_PARAMETER, "path '%s' is not a valid setting" % [key_path])
 			if key in parent:
 				if key == key_path[-1]: # reached the final key in the path
 					if parent is Array:
@@ -92,7 +92,7 @@ func update(key_path, value, force_commit = false):
 					else:
 						parent = parent.key
 			else:
-				return Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "path '%s' is not a valid setting" % [key_path])
+				return Log.error(self, ERR_INVALID_PARAMETER, "path '%s' is not a valid setting" % [key_path])
 	
 	# naked var
 	elif key_path is String:
@@ -101,9 +101,9 @@ func update(key_path, value, force_commit = false):
 				set(key_path, value)
 				save()
 		else:
-			return Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "key '%s' is not a valid setting" % [key_path])
+			return Log.error(self, ERR_INVALID_PARAMETER, "key '%s' is not a valid setting" % [key_path])
 	else:
-		return Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "key '%s' is not a valid setting" % [key_path])
+		return Log.error(self, ERR_INVALID_PARAMETER, "key '%s' is not a valid setting" % [key_path])
 func clear(key_path, force_commit = false):
 
 	# complex key paths
@@ -112,7 +112,7 @@ func clear(key_path, force_commit = false):
 		var parent_DEFAULT = self
 		for key in key_path:
 			if parent != self || !(parent is Array) || !(parent is Dictionary):
-				Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "path '%s' is not a valid setting" % [key_path])
+				Log.error(self, ERR_INVALID_PARAMETER, "path '%s' is not a valid setting" % [key_path])
 			if key in parent:
 				if key == key_path[-1]: # reached the final key in the path
 					
@@ -133,7 +133,7 @@ func clear(key_path, force_commit = false):
 						parent = parent.key
 						parent_DEFAULT = parent_DEFAULT.key
 			else:
-				return Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "path '%s' is not a valid setting" % [key_path])
+				return Log.error(self, ERR_INVALID_PARAMETER, "path '%s' is not a valid setting" % [key_path])
 	
 	# naked var
 	elif key_path is String:
@@ -143,6 +143,6 @@ func clear(key_path, force_commit = false):
 				set(key_path, value_DEFAULT)
 				save()
 		else:
-			return Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "key '%s' is not a valid setting" % [key_path])
+			return Log.error(self, ERR_INVALID_PARAMETER, "key '%s' is not a valid setting" % [key_path])
 	else:
-		return Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "key '%s' is not a valid setting" % [key_path])
+		return Log.error(self, ERR_INVALID_PARAMETER, "key '%s' is not a valid setting" % [key_path])

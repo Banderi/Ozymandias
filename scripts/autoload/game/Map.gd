@@ -123,18 +123,21 @@ func set_tileset(flats: TileSet, anims: TileSet): # does this require node setup
 	TILEMAP_TOP.tile_set = flats
 	TILEMAP_ANIM.tile_set = anims # TODO
 func tilesets_load_scenario_specifics(): # TODO: anims?
-	var tileset = TILEMAP_FLAT.tile_set
+#	var tileset = TILEMAP_FLAT.tile_set
+#	var tileset = Assets.SHARED_TILESET
+	var tileset = Assets.FULL_TILESET
 	TILEMAP_FLAT.tile_set = null
 	
 	# parse various paks (TODO, for now it's just a few selected paks)
 	var success = true
-	if !Assets.add_pak_sprites_into_tileset(tileset, "Temple_bast.sg3"): success = false
-	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk5x5a.sg3"): success = false
-	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk3x3a.sg3"): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "Temple_bast.sg3", true): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk5x5a.sg3", true): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk3x3a.sg3", true): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk_extra.sg3", true): success = false
 	
 	# MUST reach here even on errors, otherwise the tileset will disappear into the ether.
 	if tileset == null:
-		success = Log.error("tilesets_load_scenario_specifics", GlobalScope.Error.FAILED, "something went horribly wrong!")
+		success = Log.error("tilesets_load_scenario_specifics", FAILED, "something went horribly wrong!")
 	TILEMAP_FLAT.tile_set = tileset
 	return success
 
@@ -147,7 +150,7 @@ func set_grid(grid_name, x, y, value): # TODO
 func redraw():
 	var _t = Stopwatch.start()
 	if !GridsMono.RedrawMap(TILEMAP_FLAT, grids): # around ~360 ms (120 ms afterwards)
-		return Log.error(self, GlobalScope.Error.FAILED, "(GridsMono) could not set TileMap")
+		return Log.error(self, FAILED, "(GridsMono) could not set TileMap")
 	Stopwatch.stop(self, _t, "GridsMono.RedrawMap")
 
 var city_orientation = 0
@@ -162,14 +165,7 @@ var map_height = 0
 var map_grid_start = 0
 var map_border_size = 0
 
-func coords_to_cantor(x, y, grid_width: int = PH_MAP_WIDTH) -> int:
-	return int(x) + (grid_width * int(y))
-func tile_to_cantor(tile: Vector2, grid_width: int = PH_MAP_WIDTH) -> int:
-	return int(tile.x) + (grid_width * int(tile.x))
-func cantor_to_x(grid_offset: int, grid_width: int = PH_MAP_WIDTH) -> int:
-	return grid_offset % grid_width
-func cantor_to_y(grid_offset: int, grid_width: int = PH_MAP_WIDTH) -> int:
-	return grid_offset / grid_width
+## coord transformations / calcs have been moved to the MapTile helper class.
 
 func tile_into_game_area(tile: Vector2, grid_width: int = PH_MAP_WIDTH) -> Vector2:
 	

@@ -7,5 +7,8 @@ func _enter_tree():
 	if !Engine.is_editor_hint():
 		if localized_key != "":
 			text = localized_key
+func set_from_localized_key(_lkey):
+	localized_key = _lkey
+	text = TranslationServer.translate(localized_key)
 func _process(delta):
 	Assets.editor_debug_translate_labels(self)

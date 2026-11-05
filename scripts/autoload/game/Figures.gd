@@ -1,7 +1,7 @@
 extends Node
 
 # TODO: get these from gameset
-const MAX_FIGURES = 2000
+const MAX_FIGURES = 2000 # REMEMBER ---- the first id in the stack (0) is a NULL/DUMMY FIGURE OBJECT and can NOT BE USED.
 const MAX_ROUTES = 1000
 const MAX_FORMATIONS = 50
 const MAX_TRADERS = 100
@@ -54,23 +54,27 @@ func init_figure_stack(): # prepare array of figure objects
 	assert(figures.size() == MAX_FIGURES)
 func spawn(): # TODO
 	pass
+#func clear_all():
+#	pass
 
 # scribe
+var _in_use = 0
 func enscribe_figures():
+#	init_figure_stack()
 	Scribe.push_compressed(MAX_FIGURES * 388)
 	var _t = Stopwatch.start()
-	var _empty = 0
+	_in_use = 0
 	for i in MAX_FIGURES:
 		var _p = ScribeMono.GetPosition()
 		assert(_p % 388 == 0)
 		var figure = figures[i]
 		figure.Fill() # 3~5 ms compared to 30~50 ms with ScribeMono
-		if !figure.in_use():
-			_empty += 1
+		if figure.in_use():
+			_in_use += 1
 	
-	print("figures: %d (%d empty)    ms taken: %d" % [
-		MAX_FIGURES - _empty,
-		_empty,
+	print("figures:   %4d / %d    ms taken: %3d" % [
+		_in_use,
+		MAX_FIGURES,
 		Stopwatch.query(_t)
 	])
 	Scribe.pop_compressed()

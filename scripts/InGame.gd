@@ -67,7 +67,7 @@ func update_mouse_press_coords(button_id):
 	current_click_mousepos[i] = mousepos
 
 func _input(event):
-	if Game.STATE != Game.States.MainMenu:
+	if Game.STATE != Game.States.NoGameLoaded:
 		
 		update_mouse_press_coords(BUTTON_LEFT)
 		update_mouse_press_coords(BUTTON_RIGHT)
@@ -77,7 +77,8 @@ func _input(event):
 
 func _process(delta):
 #	mouse_worldpos = get_local_mouse_position()
-	if Game.STATE != Game.States.MainMenu:
+	if Game.STATE != Game.States.NoGameLoaded:
+		var fps_coeff = delta * 60.0
 		mouse_worldpos = get_local_mouse_position()
 		
 		# camera zoom - TODO: setting for enabling smooth zoom
@@ -92,14 +93,14 @@ func _process(delta):
 			
 			if Input.is_mouse_button_pressed(MOUSE_DRAG_CONT):
 				var delta_pos = current_click_mousepos[MOUSE_DRAG_CONT-1] - last_click_mousepos[MOUSE_DRAG_CONT-1]
-				camera_position_target += delta_pos * camera_zoom_target* 0.25
+				camera_position_target += delta_pos * camera_zoom_target * 0.25 * fps_coeff
 			elif Input.is_mouse_button_pressed(MOUSE_DRAG_SIMPLE):
 				var delta_pos = current_click_mousepos[MOUSE_DRAG_SIMPLE-1] - last_click_mousepos[MOUSE_DRAG_SIMPLE-1]
 				camera_position_target = camera_previous_game_coords - delta_pos * camera_zoom_target
 		
 		# panning by keyboard
 		var camera_pan_keyboard_delta = Vector2()
-		var camera_pan_keyboard_speed = 1.5 * pow(1.0 / CAMERA.zoom.x, 0.5) # TODO: get from settings
+		var camera_pan_keyboard_speed = 1.5 * pow(1.0 / CAMERA.zoom.x, 0.5) * fps_coeff # TODO: get from settings
 		if Input.is_key_pressed(KEY_UP) || Input.is_key_pressed(KEY_W):
 			camera_pan_keyboard_delta.y -= camera_pan_keyboard_speed
 		if Input.is_key_pressed(KEY_DOWN) || Input.is_key_pressed(KEY_S):

@@ -35,10 +35,10 @@ func start(port : int, ssl_key : CryptoKey = null, ssl_cert : X509Certificate = 
 		
 		# validate TLS data
 		if SERVER_KEY == null || SERVER_CERT == null:
-			Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "both a valid key and a certificate are required for HTTPS.")
+			Log.error(self, ERR_INVALID_PARAMETER, "both a valid key and a certificate are required for HTTPS.")
 			return false
 		if SERVER_KEY.is_public_only():
-			Log.error(self, GlobalScope.Error.ERR_INVALID_DATA, "supplied TLS data contains no private key.")
+			Log.error(self, ERR_INVALID_DATA, "supplied TLS data contains no private key.")
 			return false
 		Log.generic(self, "Loaded SSL key and certificate.");
 	
@@ -88,7 +88,7 @@ func accept_tcp_stream(tcp_stream : StreamPeerTCP):
 			return true
 	else:
 		if tcp_stream.get_status() != StreamPeerTCP.STATUS_CONNECTED:
-			Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, "attempted TLS connection but failed.")
+			Log.error(self, ERR_CONNECTION_ERROR, "attempted TLS connection but failed.")
 			return false
 		TCP_STREAMS[tcp_stream] = null
 		return true
@@ -99,7 +99,7 @@ func get_incoming_tcp_data(data_peer, printerrors = true): # this DOES NOT SUPPO
 		# check if connected
 		if !is_peer_connected(data_peer):
 			if printerrors:
-				Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, str(host_address(data_peer), " suddenly dropped during exchange."))
+				Log.error(self, ERR_CONNECTION_ERROR, str(host_address(data_peer), " suddenly dropped during exchange."))
 			return null
 		
 		# get incoming bytes
@@ -110,7 +110,7 @@ func get_incoming_tcp_data(data_peer, printerrors = true): # this DOES NOT SUPPO
 			var _data = data_peer.get_data(bytes_incoming)
 			if _data[0] != OK:
 				if printerrors:
-					Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, "failure receiving incoming data! (%s)" % [_data[0]])
+					Log.error(self, ERR_CONNECTION_ERROR, "failure receiving incoming data! (%s)" % [_data[0]])
 				return null
 			data.append_array(_data[1])
 	if data.empty():
@@ -122,7 +122,7 @@ func parse_http_data(data : PoolByteArray, printerrors = true):
 	var content_parts = content_string.split("\r\n")
 	if content_parts.empty():
 		if printerrors:
-			Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "no valid CRLF-terminated lines found.")
+			Log.error(self, ERR_PARSE_ERROR, "no valid CRLF-terminated lines found.")
 		return null
 
 	# read HTTP request-line
@@ -130,7 +130,7 @@ func parse_http_data(data : PoolByteArray, printerrors = true):
 	var request_line_parts = request_line.split(" ")
 	if request_line_parts.size() != 3:
 		if printerrors:
-			Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "request-line is malformed / missing required fields.")
+			Log.error(self, ERR_PARSE_ERROR, "request-line is malformed / missing required fields.")
 		return null
 	var method = request_line_parts[0]
 	var full_url = request_line_parts[1]
@@ -140,7 +140,7 @@ func parse_http_data(data : PoolByteArray, printerrors = true):
 	var headers_endl = content_parts.find("") # the headers block is split from the HTTP body with a double CRLF
 	if headers_endl == -1:
 		if printerrors:
-			Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "end of headers block not found.")
+			Log.error(self, ERR_PARSE_ERROR, "end of headers block not found.")
 		return null
 	var headers = {}
 	for i in range(1, headers_endl):
@@ -189,10 +189,10 @@ func _process(_delta):
 			if ssl_peer != null:
 				match ssl_peer.get_status():
 					StreamPeerSSL.STATUS_ERROR:
-						Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, "the connection failed!")
+						Log.error(self, ERR_CONNECTION_ERROR, "the connection failed!")
 						destroy_stream(tcp_stream)
 					StreamPeerSSL.STATUS_ERROR_HOSTNAME_MISMATCH:
-						Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, "the host did not match.")
+						Log.error(self, ERR_CONNECTION_ERROR, "the host did not match.")
 						destroy_stream(tcp_stream)
 					StreamPeerSSL.STATUS_DISCONNECTED:
 						Log.generic(self, str(host_address(ssl_peer), ": the client disconnected."))
@@ -221,7 +221,7 @@ func _process(_delta):
 			else:
 				match tcp_stream.get_status():
 					StreamPeerTCP.STATUS_ERROR:
-						Log.error(self, GlobalScope.Error.ERR_CONNECTION_ERROR, "the connection failed!")
+						Log.error(self, ERR_CONNECTION_ERROR, "the connection failed!")
 						destroy_stream(tcp_stream)
 					StreamPeerTCP.STATUS_NONE:
 						Log.generic(self, str(host_address(tcp_stream), ": the client disconnected."))

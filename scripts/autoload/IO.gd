@@ -1,5 +1,5 @@
 extends Node
-# ANTIMONY 'IO' by Banderi --- v2.0
+# ANTIMONY 'IO' by Banderi --- v2.1
 
 # check if running via Godot editor Play/F5 function (NOT in-editor "tool" scripts)
 func is_editor() -> bool:
@@ -30,6 +30,11 @@ func naked_filename(path: String): # this trims the DIRECTORIES and returns the 
 		return null if file_name == "" else file_name
 func strip_extension(path: String):
 	return path.rsplit(".", false, 1)[0]
+func get_extension(path: String):
+	var s = path.rsplit(".", false, 1)
+	if s.size() == 1:
+		return null
+	return s[1]
 func get_abs_path(path: String):
 #	if path.begins_with("res://"):
 #		return ProjectSettings.globalize_path(path)
@@ -145,8 +150,9 @@ func open(path: String, flags, suppress_log = false, password: String = ""): # *
 func file_exists(path: String):
 	var file = File.new()
 	return file.file_exists(path)
-func find_file_recursive(path: String, file_name: String, dir = null): # this REQUIRES a naked filename AND path.
+func find_file_recursive(path: String, file_name: String, case_insensitive = false, _passed_dir_obj = null): # this REQUIRES a naked filename AND path.
 	# open dir at path
+	var dir = _passed_dir_obj
 	if dir == null:
 		dir = Directory.new()
 	var err = dir.open(path)
@@ -159,7 +165,7 @@ func find_file_recursive(path: String, file_name: String, dir = null): # this RE
 		dir.list_dir_begin()
 		var fn = dir.get_next()
 		while fn != "":
-			if fn == file_name:
+			if !case_insensitive && (fn == file_name) || case_insensitive && (fn.to_lower() == file_name.to_lower()):
 				return str(path, "/", file_name) # found!
 			elif dir.current_is_dir() && fn != "." && fn != "..":
 				folders.push_back(fn)
@@ -167,7 +173,7 @@ func find_file_recursive(path: String, file_name: String, dir = null): # this RE
 		
 		# recursion into subfolders
 		for folder in folders:
-			var r = find_file_recursive(str(path, "/", folder), file_name, dir)
+			var r = find_file_recursive(str(path, "/", folder), file_name, case_insensitive, dir)
 			if r != null:
 				return r
 func metadata(path: String): # TODO: folder metadata
@@ -201,7 +207,7 @@ func rename(path: String, new_filename: String) -> bool:
 	return true
 func move_file(path: String, to: String, remove_previous: bool = true, overwrite: bool = false) -> bool:
 	if !overwrite && file_exists(to):
-		Log.error(null, GlobalScope.Error.ERR_ALREADY_EXISTS, str("could not move file from '", path, "' to '", to, "'"))
+		Log.error(null, ERR_ALREADY_EXISTS, str("could not move file from '", path, "' to '", to, "'"))
 		return false
 	var dir = Directory.new()
 	var err = dir.copy(path, to)
@@ -261,14 +267,14 @@ func unzip(zip_file, destination):
 	var gdunzip = load("res://addons/gdunzip/gdunzip.gd").new()
 	var r = gdunzip.load(zip_file)
 	if !r:
-		Log.error(null, GlobalScope.Error.ERR_CANT_OPEN, str("could not load zip file '", zip_file, "'"))
-		return GlobalScope.Error.ERR_CANT_OPEN
+		Log.error(null, ERR_CANT_OPEN, str("could not load zip file '", zip_file, "'"))
+		return ERR_CANT_OPEN
 
 	# read zip file contents and adds them to project's virtual workspace
 	r = ProjectSettings.load_resource_pack(zip_file)
 	if !r:
-		Log.error(null, GlobalScope.Error.ERR_CANT_ACQUIRE_RESOURCE, str("could not load file '", zip_file, "' unzipped contents"))
-		return GlobalScope.Error.ERR_CANT_ACQUIRE_RESOURCE
+		Log.error(null, ERR_CANT_ACQUIRE_RESOURCE, str("could not load file '", zip_file, "' unzipped contents"))
+		return ERR_CANT_ACQUIRE_RESOURCE
 
 	# extract single files from project workspace and write to disk
 	for f in gdunzip.files:
@@ -280,8 +286,8 @@ func export_virtual_file(file_name, destination):
 	# open read stream
 	var file = File.new()
 	if !file.file_exists("res://" + file_name):
-		Log.error(null, GlobalScope.Error.ERR_FILE_NOT_FOUND, str("could not find virtual file '", file_name, "'"))
-		return GlobalScope.Error.ERR_FILE_NOT_FOUND
+		Log.error(null, ERR_FILE_NOT_FOUND, str("could not find virtual file '", file_name, "'"))
+		return ERR_FILE_NOT_FOUND
 	else:
 		var r = file.open(("res://" + file_name), File.READ)
 		if r != OK:
@@ -295,7 +301,7 @@ func export_virtual_file(file_name, destination):
 		var base_dir = destination + file_name.get_base_dir()
 		var dir = Directory.new()
 		r = dir.make_dir(base_dir)
-		if r != OK && r != GlobalScope.Error.ERR_ALREADY_EXISTS:
+		if r != OK && r != ERR_ALREADY_EXISTS:
 			Log.error(null, r, str("could not create folder at '", base_dir, "' for file '", file_name, "'"))
 			return r
 

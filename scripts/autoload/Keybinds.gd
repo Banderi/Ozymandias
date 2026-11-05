@@ -59,7 +59,7 @@ func get_from_settings(action):
 	if mappings != null:
 		for m in mappings:
 			if !validate_mapping(m):
-				Log.error(null, GlobalScope.Error.ERR_INVALID_DATA, "Keybind mappings in storage are invalid.")
+				Log.error(null, ERR_INVALID_DATA, "Keybind mappings in storage are invalid.")
 				mappings = null
 				break
 	if mappings != null:

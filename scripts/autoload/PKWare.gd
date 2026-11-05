@@ -125,11 +125,11 @@ func _input_func(length) -> int:
 func _output_func(length):
 	if !token_stop:
 		if token_output_ptr >= token_output_length:
-			Log.error(self, GlobalScope.Error.ERR_OUT_OF_MEMORY, "COMP2 out of buffer space")
+			Log.error(self, ERR_OUT_OF_MEMORY, "COMP2 out of buffer space")
 			token_stop = true
 		else:
 			if token_output_length - token_output_ptr < length:
-				Log.error(self, GlobalScope.Error.ERR_FILE_CORRUPT, "COMP1 corrupt")
+				Log.error(self, ERR_FILE_CORRUPT, "COMP1 corrupt")
 				token_stop = true
 			else:
 				for i in range(length):
@@ -183,7 +183,7 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 	# read initial buffer
 	d_input_buffer_end = _input_func(2048)
 	if d_input_buffer_end <= 4:
-		return Log.error(self, GlobalScope.Error.ERR_INVALID_DATA, "compressed data too small")
+		return Log.error(self, ERR_INVALID_DATA, "compressed data too small")
 	d_output_buffer_ptr = 4096;
 
 	# fetch header params
@@ -192,10 +192,10 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 	d_current_input_byte = d_input_buffer[2]
 	d_input_buffer_ptr = 3
 	if d_window_size < 4 || d_window_size > 6:
-		return Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "invalid window size '%s'" % [d_window_size])
+		return Log.error(self, ERR_INVALID_PARAMETER, "invalid window size '%s'" % [d_window_size])
 	d_dictionary_size = 0xFFFF >> (16 - d_window_size)
 	if has_literal_encoding != 0:
-		return Log.error(self, GlobalScope.Error.ERR_INVALID_PARAMETER, "literal encoding not supported")
+		return Log.error(self, ERR_INVALID_PARAMETER, "literal encoding not supported")
 
 	# main loop
 	var token = null
@@ -209,25 +209,25 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 #		print_debug_stuff(token, __rounds)
 		if d_current_input_byte & 1: # copy token
 			if _set_bits_used(1):
-				return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
+				return Log.error(self, ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 			else:
 				var index = d_copy_length_jump_table[d_current_input_byte & 0xFF]
 				if _set_bits_used(COPY_LENGTH_BASE_BITS[index]):
-					return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
+					return Log.error(self, ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 				else:
 					var extra_bits = COPY_LENGTH_EXTRA_BITS[index]
 					if extra_bits > 0:
 						var extra_bits_value = d_current_input_byte & ((1 << extra_bits) - 1)
 						if _set_bits_used(extra_bits) && index + extra_bits_value != 270:
-							return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
+							return Log.error(self, ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 						index = COPY_LENGTH_BASE_VALUE[index] + extra_bits_value
 					token = index + 256
 		else: # literal token
 			if _set_bits_used(1):
-				return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
+				return Log.error(self, ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 			token = d_current_input_byte & 0xFF
 			if _set_bits_used(8):
-				return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
+				return Log.error(self, ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 
 		if token == Codes.PK_EOF:
 			break
@@ -235,7 +235,7 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 			var length = token - 254
 			var offset = _get_copy_offset(length) # <--------- at round 2
 			if offset == 0:
-				return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
+				return Log.error(self, ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 			var src_ptr = d_output_buffer_ptr - offset
 			for i in range(length):
 				d_output_buffer[d_output_buffer_ptr + i] = d_output_buffer[src_ptr + i]
@@ -258,11 +258,11 @@ func decompress(compressed_data: PoolByteArray, expected_size: int):
 	
 #	print_debug_stuff(token, __rounds)
 	if token != Codes.PK_EOF:
-		return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
+		return Log.error(self, ERR_PARSE_ERROR, "decompression error: '%s'" % [Codes.PK_ERROR_VALUE])
 	if token_stop:
-		return Log.error(self, GlobalScope.Error.ERR_PARSE_ERROR, "COMP error uncompressing")
+		return Log.error(self, ERR_PARSE_ERROR, "COMP error uncompressing")
 	if token_output_ptr != expected_size:
-		return Log.error(self, GlobalScope.Error.ERR_FILE_EOF, "decompression completed with incorrect size")
+		return Log.error(self, ERR_FILE_EOF, "decompression completed with incorrect size")
 	return r_output_data
 
 

@@ -1,8 +1,11 @@
 using Godot;
 using System;
+using System.Security.AccessControl;
 
 public class Enums : Node
 {
+	public const int GRID_LENGTH = 228;
+
 	public enum FigureTypes : byte {
 		NONE = 0,
 		IMMIGRANT = 1,
@@ -14,15 +17,15 @@ public class Enums : Node
 		TAX_COLLECTOR = 7,
 		ENGINEER = 8,
 		WAREHOUSEMAN = 9,
-		PREFECT = 10,
+		FIREMAN = 10,
 		FORT_JAVELIN = 11,
 		FORT_MOUNTED = 12,
 		FORT_LEGIONARY = 13,
 		FORT_STANDARD = 14,
-		ACTOR = 15, JUGGLER = 15,
-		GLADIATOR = 16, MUSICIAN = 16,
-		LION_TAMER = 17, DANCER = 17,
-		CHARIOTEER = 18,
+		JUGGLER = 15,
+		MUSICIAN = 16,
+		DANCER = 17,
+		SENET_PLAYER = 18,
 		TRADE_CARAVAN = 19,
 		TRADE_SHIP = 20,
 		TRADE_CARAVAN_DONKEY = 21,
@@ -35,10 +38,10 @@ public class Enums : Node
 		SCHOOL_CHILD = 28,
 		TEACHER = 29,
 		LIBRARIAN = 30,
-		BARBER = 31, DENTIST = 31,
-		BATHHOUSE_WORKER = 32, //PHYSICIAN = 32,
-		DOCTOR = 33, //PHYSICIAN = 33,
-		SURGEON = 34,
+		DENTIST = 31,
+		PHYSICIAN = 32,
+		APOTHECARY = 33,
+		MORTUARY = 34,
 		WORKER = 35,
 		MAP_FLAG = 36,
 		FLOTSAM = 37,
@@ -47,64 +50,84 @@ public class Enums : Node
 		PATRICIAN = 40,
 		INDIGENOUS_NATIVE = 41,
 		TOWER_SENTRY = 42,
-		ENEMY43_SPEAR = 43,
-		ENEMY44_SWORD = 44,
-		ENEMY45_SWORD = 45,
-		ENEMY46_CAMEL = 46,
-		ENEMY47_ELEPHANT = 47,
-		ENEMY48_CHARIOT = 48,
-		ENEMY49_FAST_SWORD = 49,
-		ENEMY50_SWORD = 50,
-		ENEMY51_SPEAR = 51,
-		ENEMY52_MOUNTED_ARCHER = 52,
-		ENEMY53_AXE = 53,
-		ENEMY54_GLADIATOR = 54,
-		ENEMY_CAESAR_JAVELIN = 55,
-		ENEMY_CAESAR_MOUNTED = 56,
-		ENEMY_CAESAR_LEGIONARY = 57,
-		NATIVE_TRADER = 58,
+		// ENEMY43_SPEAR = 43,
+		// ENEMY44_SWORD = 44,
+		// ENEMY45_SWORD = 45,
+		// ENEMY46_CAMEL = 46,
+		// ENEMY47_ELEPHANT = 47,
+		// ENEMY48_CHARIOT = 48,
+		// ENEMY49_FAST_SWORD = 49,
+		// ENEMY50_SWORD = 50,
+		// ENEMY51_SPEAR = 51,
+		// ENEMY52_MOUNTED_ARCHER = 52,
+		// ENEMY53_AXE = 53,
+		// ENEMY54_GLADIATOR = 54,
+		// ENEMY_CAESAR_JAVELIN = 55,
+		// ENEMY_CAESAR_MOUNTED = 56,
+		// ENEMY_CAESAR_LEGIONARY = 57,
+		// NATIVE_TRADER = 58,
 		ARROW = 59,
 		JAVELIN = 60,
-		BOLT = 61,
-		BALLISTA = 62,
-		CREATURE = 63,
-		MISSIONARY = 64,
+		// BOLT = 61,
+		// BALLISTA = 62,
+		// CREATURE = 63,
+		// MISSIONARY = 64,
 		FISH_GULLS = 65,
 		DELIVERY_BOY = 66,
 		SHIPWRECK = 67,
-		SHEEP = 68,
-		WOLF = 69, OSTRICH = 69,
-		ZEBRA = 70,
+		SEAGULLS = 68,
+		OSTRICH = 69,
+		ANTELOPE = 70,
 		SPEAR = 71,
-		HIPPODROME_HORSES = 72,
-
-		// pharaoh
-
+		// HIPPODROME_HORSES = 72,
 		HUNTER = 73,
-		HUNTER_ARROW = 74,
+		// HUNTER_ARROW = 74,
 		LUMBERJACK = 75,
-		//
-		TYPE_77, // TODO
-		TYPE_78, // TODO
-		//
+		FERRY = 76,
+		WARSHIP = 77,
+		// = 78
+		CARPENTER = 79,
+		BRICKLAYER = 80,
+		STONEMASON = 81,
 		CROCODILE = 82,
-		//
+		HYENA = 83,
 		HIPPO = 84,
-		WORKER_PH = 85,
-		//
+		LABORER = 85,
+		// = 86
 		WATER_CARRIER = 87,
 		POLICEMAN = 88,
 		MAGISTRATE = 89,
 		REED_GATHERER = 90,
-		//
 		FESTIVAL_PRIEST = 91,
-		TYPE_92, // TODO
-		TYPE_93, // TODO
-		//
+		// = 92
+		TRANSPORT_SHIP = 93,
+		// = 94
 		FISHING_SPOT = 95,
-		//
-		TYPE_100, // TODO
-		TYPE_101, // TODO
+		// LABORER_2 = 96,
+		// = 97
+		PLAGUE_GUY = 98,
+		// MILITIA = 99,
+		// WARSHIP_2 = 100,
+		// = 101
+		// = 102
+		// = 103
+		// = 104
+		// = 105
+		// = 106
+		// = 107
+		// = 108
+		// = 109
+		// HUNTER_2 = 110,
+		HUNTER_WITH_BIRDS = 111,
+		// PRIEST_2 = 112,
+		// PRIEST_3 = 113,
+		// PRIEST_4 = 114,
+		// PRIEST_5 = 115,
+		// = 116
+		// = 117
+		// = 118
+		// = 119
+		// = 120
 	}
 	public enum FigureStates : byte {
 		NONE = 0,
@@ -285,6 +308,7 @@ public class Enums : Node
 		CAN_NOT_REACH = 10,
 		ATTACK = 11,
 	}
+	
 	public enum TerrainUsage : byte {
 		ANY = 0,
 		ROADS = 1,
@@ -292,6 +316,206 @@ public class Enums : Node
 		PREFER_ROADS = 3,
 		WALLS = 4,
 		ANIMAL = 5,
+	}
+	public enum Terrain : uint {
+		
+	}
+	
+	public enum BuildingTypes : byte {
+		NONE = 0,
+		// MENU_FARMS = 2,
+		// MENU_RAW_MATERIALS = 3,
+		// MENU_WORKSHOPS = 4,
+		MENU_GUILDS = 4,
+		ROAD = 5,
+		// WALL = 6,
+		WATER_LIFT2 = 7,
+		IRRIGATION_DITCH = 8,
+		CLEAR_LAND = 9,
+		VACANT_LOT = 10,
+		HOUSE_CRUDE_HUT = 10,
+		HOUSE_STURDY_HUT = 11,
+		HOUSE_MEAGER_SHANTY = 12,
+		HOUSE_COMMON_SHANTY = 13,
+		HOUSE_ROUGH_COTTAGE = 14,
+		HOUSE_ORDINARY_COTTAGE = 15,
+		HOUSE_MODEST_HOMESTEAD = 16,
+		HOUSE_SPACIOUS_HOMESTEAD = 17,
+		HOUSE_MODEST_APARTMENT = 18,
+		HOUSE_SPACIOUS_APARTMENT = 19,
+		HOUSE_COMMON_RESIDENCE = 20,
+		HOUSE_SPACIOUS_RESIDENCE = 21,
+		HOUSE_ELEGANT_RESIDENCE = 22,
+		HOUSE_FANCY_RESIDENCE = 23,
+		HOUSE_COMMON_MANOR = 24,
+		HOUSE_SPACIOUS_MANOR = 25,
+		HOUSE_ELEGANT_MANOR = 26,
+		HOUSE_STATELY_MANOR = 27,
+		HOUSE_MODEST_ESTATE = 28,
+		HOUSE_PALATIAL_ESTATE = 29,
+		BANDSTAND = 30,
+		BOOTH = 31,
+		SENET_HOUSE = 32,
+		PAVILLION = 33,
+		CONSERVATORY = 34,
+		DANCE_SCHOOL = 35,
+		JUGGLER_SCHOOL = 36,
+		_UNUSED_SENET_TRAINERS = 37,
+		PLAZA = 38,
+		GARDENS = 39,
+		FORT_CHARIOTEERS = 40,
+		STATUE_SMALL = 41,
+		STATUE_MEDIUM = 42,
+		STATUE_LARGE = 43,
+		FORT_ARCHERS = 44,
+		FORT_INFANTRY = 45,
+		APOTHECARY = 46,
+		MORTUARY = 47,
+		MENU_MONUMENTS = 48,
+		DENTIST = 49,
+		_UNUSED_DISTRIBUTION_CENTER = 50,
+		SCHOOL = 51,
+		MENU_WATER_CROSSINGS = 52,
+		LIBRARY = 53,
+		FORT_GROUNDS = 54,
+		POLICE = 55,
+		// ARCH = 56,
+		// FORT_NONDESCRIPT = 57,
+		// GATEHOUSE = 58,
+		// TOWER = 59,
+		TEMPLE_OSIRIS = 60,
+		TEMPLE_RA = 61,
+		TEMPLE_PTAH = 62,
+		TEMPLE_SETH = 63,
+		TEMPLE_BAST = 64,
+		COMPLEX_OSIRIS = 65,
+		COMPLEX_RA = 66,
+		COMPLEX_PTAH = 67,
+		COMPLEX_SETH = 68,
+		COMPLEX_BAST = 69,
+		BAZAAR = 70,
+		GRANARY = 71,
+		WAREHOUSE_BOOTH = 72,
+		WAREHOUSE_TILE = 73,
+		SHIPYARD = 74,
+		DOCK = 75,
+		FISHING_WHARF = 76,
+		PERSONAL_MANSION = 77,
+		FAMILY_MANSION = 78,
+		FAMILY_PALACE = 79,
+		_UNUSED_MISSION_POST = 80,
+		ENGINEER = 81,
+		BRIDGE = 82,
+		// TALL_BRIDGE = 83,
+		// SENATE = 84,
+		// SENATE_UPGRADED = 85,
+		TAX_COLLECTOR = 86,
+		// TAX_COLLECTOR_UPGRADED = 87,
+		_UNUSED_NATIVE_HUT = 88,
+		_UNUSED_MEETING_HUT = 89,
+		WATER_LIFT = 90,
+		MENU_BEAUTIFICATIONS = 91,
+		WELL = 92,
+		_UNUSED_NATIVE_CROPS = 93,
+		ACADEMY = 94,
+		RECRUITER = 95,
+		MENU_TEMPLES = 96,
+		MENU_TEMPLE_COMPLEXES = 97,
+		// ORACLE = 98,
+		BURNING_RUIN = 99,
+		FARM_BARLEY = 100,
+		FARM_FLAX = 101,
+		FARM_GRAIN = 102,
+		FARM_LETTUCE = 103,
+		FARM_POMEGRANATES = 104,
+		FARM_CHICKPEAS = 105,
+		QUARRY_STONE = 106,
+		QUARRY_LIMESTONE = 107,
+		TIMBER_YARD = 108,
+		CLAY_PIT = 109,
+		WORKSHOP_BEER = 110,
+		WORKSHOP_LINEN = 111,
+		WORKSHOP_WEAPONS = 112,
+		WORKSHOP_JEWELS = 113,
+		WORKSHOP_POTTERY = 114,
+		HUNTING_LODGE = 115,
+		//
+		FERRY = 136,
+		//
+		ROADBLOCK = 138,
+		//
+		SHRINE_OSIRIS = 140,
+		SHRINE_RA = 141,
+		SHRINE_PTAH = 142,
+		SHRINE_SETH = 143,
+		SHRINE_BAST = 144,
+		//
+		MENU_SHRINES = 150,
+		//
+		GOLD_MINE = 161,
+		GEMSTONE_MINE = 162,
+		//
+		FIREHOUSE = 167,
+		//
+		WALL = 169,
+		//
+		GATEHOUSE = 171,
+		//
+		TOWER = 173,
+		//
+		MENU_DEFENSES = 176,
+		GUILD_CARPENTERS = 177,
+		GUILD_BRICKLAYERS = 178,
+		GUILD_STONEMASONS = 179,
+		WATER_SUPPLY = 180,
+		TRANSPORT_WHARF = 181,
+		WARSHIP_WHARF = 182,
+		PYRAMID = 183,
+		COURTHOUSE = 184,
+		//
+		VILLAGE_PALACE = 187,
+		TOWN_PALACE = 188,
+		CITY_PALACE = 189,
+		//
+		_UNUSED_STORAGE_YARD = 193,
+		CATTLE_RANCH = 194,
+		REED_GATHERERS = 195,
+		FARM_FIGS = 196,
+		//
+		WORK_CAMP = 199,
+		//
+		GATEHOUSE2 = 202,
+		WORKSHOP_PAPYRUS = 203,
+		WORKSHOP_BRICKS = 204,
+		WORKSHOP_CHARIOTS = 205,
+		PHYSICIAN = 206,
+		SMALL_OBELISK = 207,
+		LARGE_OBELISK = 208,
+		FESTIVAL_SQUARE = 209,
+		SPHYNX = 210,
+		//
+		SUN_TEMPLE = 213,
+		//
+		MONUMENT_ACCESS = 215,
+		QUARRY_GRANITE = 216,
+		COPPER_MINE = 217,
+		//
+		QUARRY_SANDSTONE = 221,
+		MAUSOLEUM = 222,
+		//
+		FARM_HENNA = 224,
+		ALEXANDRIA_LIBRARY = 225,
+		ZOO = 226,
+		CAESAREUM = 227,
+		PHAROS_LIGHTHOUSE = 228,
+		SMALL_ROYAL_TOMB = 229,
+		ABU_SIMBEL = 230,
+		GUILD_ARTISANS = 231,
+		WORKSHOP_LAMPS = 232,
+		WORKSHOP_PAINT = 233,
+		MEDIUM_ROYAL_TOMB = 234,
+		LARGE_ROYAL_TOMB = 234,
+		GRAND_ROYAL_TOMB = 235,
 	}
 	public enum BuildingStates : byte {
 		UNUSED = 0,
@@ -304,7 +528,7 @@ public class Enums : Node
 		MOTHBALLED = 7
 	}
 
-	public enum RecourceTypes : byte {
+	public enum ResourceTypes : byte {
 		NONE = 0,
 		GRAIN = 1,
 		MEAT = 2,
@@ -349,4 +573,28 @@ public class Enums : Node
 		// MIN_FOOD = 1
 	}
 
+	Enums() {}
+	Godot.Collections.Dictionary GetEnumAsDict(Type enumType) {
+		var keys = Enum.GetNames(enumType);
+		var values = Enum.GetValues(enumType);
+		Godot.Collections.Dictionary r = new Godot.Collections.Dictionary();
+		// this assumes the keys are UNIQUE!
+		for (int i = 0; i < keys.Length; i++)
+			r[values.GetValue(i)] = keys.GetValue(i);
+			// r[keys.GetValue(i)] = values.GetValue(i);
+		return r;
+	}
+	Godot.Collections.Dictionary GetEnums() {
+		Godot.Collections.Dictionary r = new Godot.Collections.Dictionary();
+		r["FigureTypes"] = GetEnumAsDict(typeof(FigureTypes));
+		r["FigureStates"] = GetEnumAsDict(typeof(FigureStates));
+		r["FigureActions"] = GetEnumAsDict(typeof(FigureActions));
+		r["FigureDirections"] = GetEnumAsDict(typeof(FigureDirections));
+		r["TerrainUsage"] = GetEnumAsDict(typeof(TerrainUsage));
+		// r["Terrain"] = GetEnumAsDict(typeof(Terrain));
+		r["BuildingTypes"] = GetEnumAsDict(typeof(BuildingTypes));
+		r["BuildingStates"] = GetEnumAsDict(typeof(BuildingStates));
+		r["ResourceTypes"] = GetEnumAsDict(typeof(ResourceTypes));
+		return r;
+	}
 }
