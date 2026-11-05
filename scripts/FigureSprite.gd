@@ -8,9 +8,7 @@ var _IDX = null
 func set_figure(idx): # this is index into the Figures.figures global array
 	_IDX = idx
 	figure_data = Figures.figures[_IDX]
-	var tile = Vector2(figure_data.get("tile_x"), figure_data.get("tile_y"))
-	var world_pos = Map.map_to_world(tile, true)
-	position = world_pos + Vector2(-1, 30)
+	update_position()
 	
 	
 #	print(figure_data.test())
@@ -20,7 +18,20 @@ func set_figure(idx): # this is index into the Figures.figures global array
 	
 #	set_sprite()
 	
-	print("spawned figure %d at %s ---> %s" % [_IDX, tile, position])
+#	print("spawned figure %d at %s ---> %s" % [_IDX, tile, position])
+
+func update_position():
+	if figure_data == null:
+		return
+	var tile = Vector2(figure_data.get("tile_x"), figure_data.get("tile_y"))
+	var grid_pos = GameTile.new(tile, true).grid_Vector2
+#	var oriented_pos = grid_pos
+#	match Map.city_orientation:
+#		4:
+#			oriented_pos = Vector2(Map.PH_MAP_WIDTH - grid_pos.x, Map.PH_MAP_WIDTH - grid_pos.y)
+#	var world_pos = Map.map_to_world(oriented_pos)
+	var world_pos = Map.map_to_world(Map.correct_orientation(grid_pos))
+	position = world_pos + Vector2(-1, 30)
 
 #const animated_sprites = [
 #
@@ -53,6 +64,7 @@ func advance_sprite_animation(anim_frame):
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
+	update_position()
 	if !$CanvasLayer.visible:
 		return
 	if figure_data == null:
@@ -72,7 +84,8 @@ func _process(delta):
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
 		if figure_data == null:
-			print("FigureSprite[%s] free(): figure_data was null!" % [_IDX])
+			pass
+#			print("FigureSprite[%s] free(): figure_data was null!" % [_IDX])
 		else:
-			print("FigureSprite[%s] free(): removing reference from linked Figure.cs object..." % [_IDX])
+#			print("FigureSprite[%s] free(): removing reference from linked Figure.cs object..." % [_IDX])
 			figure_data.FigureSprite = null

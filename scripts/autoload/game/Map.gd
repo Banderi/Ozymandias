@@ -149,7 +149,7 @@ func set_grid(grid_name, x, y, value): # TODO
 
 func redraw():
 	var _t = Stopwatch.start()
-	if !GridsMono.RedrawMap(TILEMAP_FLAT, grids): # around ~360 ms (120 ms afterwards)
+	if !GridsMono.RedrawMap(TILEMAP_FLAT, grids, city_orientation): # around ~360 ms (120 ms afterwards)
 		return Log.error(self, FAILED, "(GridsMono) could not set TileMap")
 	Stopwatch.stop(self, _t, "GridsMono.RedrawMap")
 
@@ -167,14 +167,37 @@ var map_border_size = 0
 
 ## coord transformations / calcs have been moved to the MapTile helper class.
 
-func tile_into_game_area(tile: Vector2, grid_width: int = PH_MAP_WIDTH) -> Vector2:
+#func tile_into_game_area(tile: Vector2, grid_width: int = PH_MAP_WIDTH) -> Vector2:
+#
+#	var x_offset = map_grid_start % grid_width
+#	var y_offset = map_grid_start / grid_width
+#
+#	return Vector2(tile.x + x_offset, tile.y + y_offset)
+func correct_orientation(tile: Vector2) -> Vector2:
+	match Map.city_orientation:
+#		0:
+#			return tile
+		2:
+			return Vector2(tile.y, PH_MAP_WIDTH - tile.x)
+		4:
+			return Vector2(PH_MAP_WIDTH - tile.x, PH_MAP_WIDTH - tile.y)
+		6:
+			return Vector2(PH_MAP_WIDTH - tile.y, tile.x)
+	return tile
+func map_to_world(tile: Vector2) -> Vector2:
+#	var grid_space =
+#	if game_area:
+#		return TILEMAP_FLAT.map_to_world(tile_into_game_area(tile))
+#	else:
+	var grid_space = TILEMAP_FLAT.map_to_world(tile)
 	
-	var x_offset = map_grid_start % grid_width
-	var y_offset = map_grid_start / grid_width
-	
-	return Vector2(tile.x + x_offset, tile.y + y_offset)
-func map_to_world(tile: Vector2, game_area: bool) -> Vector2:
-	if game_area:
-		return TILEMAP_FLAT.map_to_world(tile_into_game_area(tile))
-	else:
-		return TILEMAP_FLAT.map_to_world(tile)
+	return grid_space
+
+func _input(event):
+	var _city_orientation = city_orientation
+	if Input.is_action_just_pressed("map_rotate_left"):
+		city_orientation = (city_orientation + 2) % 8
+	if Input.is_action_just_pressed("map_rotate_right"):
+		city_orientation = (city_orientation - 2 + 8) % 8
+	if city_orientation != _city_orientation:
+		redraw()

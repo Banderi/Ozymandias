@@ -140,7 +140,7 @@ public class Grids_mono : Node
 	}
 	
 	// update entire TileMap with grid data
-	public bool RedrawMap(TileMap map, GodotDictionary grids) {
+	public bool RedrawMap(TileMap map, GodotDictionary grids, Enums.Directions orientation) {
 		// GodotArray grid_images = (GodotArray)grids["images"];
 		for (int y = 0; y < PH_MAP_WIDTH; y++)
 		{
@@ -151,8 +151,23 @@ public class Grids_mono : Node
 				int image = (int)( (GodotArray)( (GodotArray)grids["images"] )[y] )[x];
 				int edge = (int)( (GodotArray)( (GodotArray)grids["edge"] )[y] )[x];
 				// int bitfields = (int)( (GodotArray)( (GodotArray)grids["bitfields"] )[y] )[x];
-				if ((edge & 64) == 64)
-					map.SetCell(x, y, image);
+				if ((edge & 64) == 64) {
+					switch (orientation) {
+						case Enums.Directions.CITY_0_DEG:
+							map.SetCell(x, y, image);
+							break;
+						case Enums.Directions.CITY_90_DEG:
+							map.SetCell(y, PH_MAP_WIDTH-x, image);
+							break;
+						case Enums.Directions.CITY_180_DEG:
+							map.SetCell(PH_MAP_WIDTH-x, PH_MAP_WIDTH-y, image);
+							break;
+						case Enums.Directions.CITY_270:
+							map.SetCell(PH_MAP_WIDTH-y, x, image);
+							break;
+					}
+					
+				}
 			}
 		}
 		return true;

@@ -21,9 +21,9 @@ public partial class Figure : ReferenceEx
 		[FieldOffset(14)] public Enums.FigureStates state;
 		[FieldOffset(15)] public byte faction_id;
 		[FieldOffset(16)] public Enums.FigureActions action_state_before_attack;
-		[FieldOffset(17)] public Enums.FigureDirections direction;
-		[FieldOffset(18)] public Enums.FigureDirections previous_tile_direction;
-		[FieldOffset(19)] public Enums.FigureDirections attack_direction;
+		[FieldOffset(17)] public Enums.Directions direction;
+		[FieldOffset(18)] public Enums.Directions previous_tile_direction;
+		[FieldOffset(19)] public Enums.Directions attack_direction;
 		[FieldOffset(20)] public ushort tile_x;
 		[FieldOffset(22)] public ushort tile_y;
 		[FieldOffset(24)] public ushort previous_tile_x;
@@ -300,25 +300,31 @@ public partial class Figure : ReferenceEx
 		// 		data.targeted_by_figure_id = 0;
 		// }
 	}
-	void update_animation() {
+	void update_animation() { // this should NOT CALL THE SPRITE FOR UPDATES, THAT's DUMB.
+
+		// image_set_animation(action_properties.base_image_collection, action_properties.base_image_group);
+
+
+		// data.anim_frame += 1;
 		
+		// return;
 
-		int[] a = {1, 2};
-
-
-
+		// int[] a = {1, 2};
 
 
 
-		try {
 
-			FigureSprite.Call("set_sprite", "SprMain.sg3", 1, 0);
 
-			// advance sprite offset
-			FigureSprite.Call("advance_sprite_animation", data.anim_frame);
-		} catch (Exception e) {
-			PrintError($"FIGURE{FIGURE_IDX}.update_animation():" + e.ToString());
-		}
+
+		// try {
+
+		// 	FigureSprite.Call("set_sprite", "SprMain.sg3", 1, 0);
+
+		// 	// advance sprite offset
+		// 	FigureSprite.Call("advance_sprite_animation", data.anim_frame);
+		// } catch (Exception e) {
+		// 	PrintError($"FIGURE{FIGURE_IDX}.update_animation():" + e.ToString());
+		// }
 	}
 	void update_linked_buildings() {
 // 		building *b = home();
@@ -560,12 +566,10 @@ public partial class Figure : ReferenceEx
 // 		}
 
 		
-		// image_set_animation(action_properties.base_image_collection, action_properties.base_image_group);
 		update_animation();
 
 		// poof if LOST
-		if (data.direction == Enums.FigureDirections.CAN_NOT_REACH)
+		if (data.direction == Enums.Directions.CAN_NOT_REACH)
 			poof("figure is lost (direction=FigureDirections.CAN_NOT_REACH)");
-
 	}
 }

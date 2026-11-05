@@ -1576,7 +1576,6 @@ localized_key = "TEXT_11_0"
 
 [node name="Debug" type="CanvasLayer" parent="."]
 layer = 2
-visible = false
 script = ExtResource( 46 )
 
 [node name="DEBUG_LABEL" type="RichTextLabel" parent="Debug"]
@@ -1600,16 +1599,16 @@ AutoResize = true
 
 [node name="SpinBoxSpeed" type="SpinBox" parent="Debug/DEBUG_LABEL"]
 margin_left = 169.0
-margin_top = 178.0
+margin_top = 194.0
 margin_right = 267.0
-margin_bottom = 202.0
+margin_bottom = 218.0
 max_value = 1000.0
 
 [node name="HSliderSpeed" type="HSlider" parent="Debug/DEBUG_LABEL"]
 margin_left = 170.0
-margin_top = 210.0
+margin_top = 226.0
 margin_right = 258.0
-margin_bottom = 226.0
+margin_bottom = 242.0
 max_value = 1000.0
 
 [node name="DEBUG_LABEL2" type="RichTextLabel" parent="Debug"]

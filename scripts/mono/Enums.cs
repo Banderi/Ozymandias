@@ -84,8 +84,8 @@ public class Enums : Node
 		// HUNTER_ARROW = 74,
 		LUMBERJACK = 75,
 		FERRY = 76,
-		WARSHIP = 77,
-		// = 78
+		TRANSPORT_SHIP = 77,
+		WARSHIP = 78,
 		CARPENTER = 79,
 		BRICKLAYER = 80,
 		STONEMASON = 81,
@@ -100,7 +100,7 @@ public class Enums : Node
 		REED_GATHERER = 90,
 		FESTIVAL_PRIEST = 91,
 		// = 92
-		TRANSPORT_SHIP = 93,
+		// TRANSPORT_SHIP = 93,
 		// = 94
 		FISHING_SPOT = 95,
 		// LABORER_2 = 96,
@@ -293,14 +293,15 @@ public class Enums : Node
 
 	//    ACTION_NONE = -1,
 	}
-	public enum FigureDirections : sbyte { // why would this need to be signed????
-		TOP_RIGHT = 0,
+	
+	public enum Directions : sbyte { // why would this need to be signed????
+		TOP_RIGHT = 0,		CITY_0_DEG = 0,
 		RIGHT = 1,
-		BOTTOM_RIGHT = 2,
+		BOTTOM_RIGHT = 2,	CITY_90_DEG = 2,
 		BOTTOM = 3,
-		BOTTOM_LEFT = 4,
+		BOTTOM_LEFT = 4,	CITY_180_DEG = 4,
 		LEFT = 5,
-		TOP_LEFT = 6,
+		TOP_LEFT = 6,		CITY_270 = 6,
 		TOP = 7,
 		//
 		NONE = 8,
@@ -308,7 +309,6 @@ public class Enums : Node
 		CAN_NOT_REACH = 10,
 		ATTACK = 11,
 	}
-	
 	public enum TerrainUsage : byte {
 		ANY = 0,
 		ROADS = 1,
@@ -363,12 +363,12 @@ public class Enums : Node
 		_UNUSED_SENET_TRAINERS = 37,
 		PLAZA = 38,
 		GARDENS = 39,
-		FORT_CHARIOTEERS = 40,
+		FORT_CHARIOTEERS = 40, // these are only used in the MENUS
 		STATUE_SMALL = 41,
 		STATUE_MEDIUM = 42,
 		STATUE_LARGE = 43,
-		FORT_ARCHERS = 44,
-		FORT_INFANTRY = 45,
+		FORT_ARCHERS = 44, // these are only used in the MENUS
+		FORT_INFANTRY = 45, // these are only used in the MENUS
 		APOTHECARY = 46,
 		MORTUARY = 47,
 		MENU_MONUMENTS = 48,
@@ -380,7 +380,7 @@ public class Enums : Node
 		FORT_GROUNDS = 54,
 		POLICE = 55,
 		// ARCH = 56,
-		// FORT_NONDESCRIPT = 57,
+		FORT = 57, // this is the actual BUILDING
 		// GATEHOUSE = 58,
 		// TOWER = 59,
 		TEMPLE_OSIRIS = 60,
@@ -589,7 +589,7 @@ public class Enums : Node
 		r["FigureTypes"] = GetEnumAsDict(typeof(FigureTypes));
 		r["FigureStates"] = GetEnumAsDict(typeof(FigureStates));
 		r["FigureActions"] = GetEnumAsDict(typeof(FigureActions));
-		r["FigureDirections"] = GetEnumAsDict(typeof(FigureDirections));
+		r["Directions"] = GetEnumAsDict(typeof(Directions));
 		r["TerrainUsage"] = GetEnumAsDict(typeof(TerrainUsage));
 		// r["Terrain"] = GetEnumAsDict(typeof(Terrain));
 		r["BuildingTypes"] = GetEnumAsDict(typeof(BuildingTypes));

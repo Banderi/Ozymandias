@@ -810,10 +810,7 @@ func _ready():
 #	Family.DAT_save("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep2.dat", "Banhutep")
 
 	# auto-load testing savegame
-	yield(Game.load_game("res://tests/autosave.sav"), "completed")
-#	yield(Game.load_game("res://tests/Alexandria.sav"), "completed")
-#	yield(Game.load_game("res://tests/autosave_history.sav"), "completed")
-#	yield(Game.load_game("res://tests/SteamSaves/Alexandria.sav"), "completed")
+	yield(Debug.load_testing_save(), "completed")
 	DEBUG_ROOT.show()
 
 

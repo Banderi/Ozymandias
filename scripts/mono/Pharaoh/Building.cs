@@ -33,7 +33,7 @@ public class Building : ReferenceEx
 		[FieldOffset(40)] public ushort road_access_tile_y;
 		[FieldOffset(42)] public fixed ushort figures[4];
 		[FieldOffset(50)] public ushort figure_spawn_delay;
-		[FieldOffset(52)] public Enums.FigureDirections figure_roam_direction;
+		[FieldOffset(52)] public Enums.Directions figure_roam_direction;
 		[FieldOffset(53)] public bool8 has_water_access;
 
 		[FieldOffset(54)] public short _unk_03; // something related to fire/collapse risk...?

@@ -10,9 +10,7 @@ func _on_HSliderSpeed_value_changed(value):
 func _on_BtnPKWareTest_pressed():
 	Game.do_PKWare_tests()
 func _on_BtnLoadAutosave_pressed():
-#	Game.load_game("res://tests/autosave.sav")
-	Game.load_game("res://tests/autosave_history.sav")
-#	Game.load_game("res://tests/Alexandria.sav")
+	Debug.load_testing_save()
 
 var prev_tile_test_value = 2
 func _on_BtnTestTerrainImages_value_changed(value):
@@ -207,9 +205,18 @@ enum DebugDisplays {
 var debug_display_mode = 1
 func print_tile_debug():
 	var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position()
-	var tile: GameTile = GameTile.new(Map.TILEMAP_FLAT.world_to_map(mouse_pos), false)
-	CURSOR.position = Map.TILEMAP_FLAT.map_to_world(tile.grid_Vector2) # TODO: move do InGame / separate Cursor logic
+	var raw_tileset_space = Map.TILEMAP_FLAT.world_to_map(mouse_pos)
+	raw_tileset_space.x = clamp(raw_tileset_space.x, 0, Map.PH_MAP_WIDTH - 1)
+	raw_tileset_space.y = clamp(raw_tileset_space.y, 0, Map.PH_MAP_WIDTH - 1)
+	CURSOR.position = Map.TILEMAP_FLAT.map_to_world(raw_tileset_space) # TODO: move do InGame / separate Cursor logic
 	
+	var tile = GameTile.new(Map.correct_orientation(raw_tileset_space), false)
+#	var tile: GameTile = null
+#	match Map.city_orientation:
+#		0:
+#			tile = GameTile.new(raw_tileset_space, false)
+#		4:
+#			tile = GameTile.new([Map.PH_MAP_WIDTH - raw_tileset_space.x, Map.PH_MAP_WIDTH - raw_tileset_space.y], false)
 	
 	var debug_text = ""
 	if Rect2(0, 0, Map.PH_MAP_WIDTH, Map.PH_MAP_WIDTH).has_point(tile.grid_Vector2):
@@ -365,6 +372,16 @@ func print_friendly(thing, padding = ""):
 	return "%s" % [thing]
 func _process(delta):
 	
+	if Game.STATE == Game.States.NoGameLoaded:
+		$DEBUG_LABEL.hide()
+		$DEBUG_LABEL3.hide()
+		$DEBUG_LABEL5.hide()
+		return
+	else:
+		$DEBUG_LABEL.show()
+		$DEBUG_LABEL3.show()
+		$DEBUG_LABEL5.show()
+	
 	if test_scribe_enabled:
 		test_scribe()
 	
@@ -384,7 +401,8 @@ func _process(delta):
 	debug_text += col1 + "mouse_worldpos:[/color]      %s\n" % [print_friendly(Game.INGAME_ROOT.mouse_worldpos)]
 	debug_text += col1 + "curr_click_mouse:[/color]    %s\n" % [print_friendly(Game.INGAME_ROOT.current_click_game_coords)]
 	debug_text += col1 + "last_click_mouse:[/color]    %s\n" % [print_friendly(Game.INGAME_ROOT.last_click_game_coords)]
-	debug_text += col1 + "last_click_camera:[/color]   %s\n\n" % [print_friendly(Game.INGAME_ROOT.camera_previous_game_coords)]
+	debug_text += col1 + "last_click_camera:[/color]   %s\n" % [print_friendly(Game.INGAME_ROOT.camera_previous_game_coords)]
+	debug_text += col1 + "orientation:[/color]         %s\n\n" % [Debug.enum_print_bbcode(Debug.CS_ENUMS.Directions, Map.city_orientation)]
 #	debug_text += col1 + "\n\n\n\n\ntest:[/color]    \n%s\n\n" % [print_friendly({"aa": 2, "fdyt": [1,2], "b": {"aa": 2, "fdyt": [1,2]}})]
 	#
 	debug_text += col1 + "game_speed:[/color]   %d\n" % [Game.speed]
@@ -399,18 +417,15 @@ func _process(delta):
 	debug_text += col1 + "tick:[/color]         %d\n" % [Game.tick]
 	debug_text += col1 + "day:[/color]          %d\n" % [Game.day]
 	debug_text += col1 + "month:[/color]        %d\n" % [Game.month]
-	debug_text += col1 + "year:[/color]         %d\n" % [Game.year]
+	debug_text += col1 + "year:[/color]         %d\n\n" % [Game.year]
+	#
 	
 	if DEBUG_LABEL.bbcode_text != debug_text:
 		DEBUG_LABEL.bbcode_text = debug_text
 	
 	DEBUG_FPS.text = str(Game.last_fps, " FPS")
 	
-	if visible && Game.STATE != Game.States.NoGameLoaded:
-		print_tile_debug()
-	else:
-		$DEBUG_LABEL3.hide()
-#		$DEBUG_LABEL5.hide()
+	print_tile_debug()
 
 func _ready():
 	$DEBUG_LABEL3.bbcode_text = ""
