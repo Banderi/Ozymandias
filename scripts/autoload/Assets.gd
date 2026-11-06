@@ -25,6 +25,7 @@ func set_gameset(game): # TODO - for the future
 	GAME_SET = game
 	GAME_FILES = {} # clear cached paths
 	
+	Map.init()
 	Figures.init_figure_stack()
 	Buildings.init_building_stack()
 

@@ -1,17 +1,17 @@
 extends Node2D
 
-var figure_data = null setget set_figure
+var FIGURE_CS = null setget set_figure
 onready var SPRITE = $Sprite
 onready var SPRITE2 = $AnimatedSprite
 
 var _IDX = null
 func set_figure(idx): # this is index into the Figures.figures global array
 	_IDX = idx
-	figure_data = Figures.figures[_IDX]
+	FIGURE_CS = Figures.figures[_IDX]
 	update_position()
 	
 	
-#	print(figure_data.test())
+#	print(FIGURE_CS.test())
 #	var a = Enums.
 #	for a in Enums.get_property_list():
 #		print(a)
@@ -21,15 +21,9 @@ func set_figure(idx): # this is index into the Figures.figures global array
 #	print("spawned figure %d at %s ---> %s" % [_IDX, tile, position])
 
 func update_position():
-	if figure_data == null:
+	if FIGURE_CS == null:
 		return
-	var tile = Vector2(figure_data.get("tile_x"), figure_data.get("tile_y"))
-	var grid_pos = GameTile.new(tile, true).grid_Vector2
-#	var oriented_pos = grid_pos
-#	match Map.city_orientation:
-#		4:
-#			oriented_pos = Vector2(Map.PH_MAP_WIDTH - grid_pos.x, Map.PH_MAP_WIDTH - grid_pos.y)
-#	var world_pos = Map.map_to_world(oriented_pos)
+	var grid_pos = GameTile.new(FIGURE_CS.get("tile_grid"), false).grid_Vector2
 	var world_pos = Map.map_to_world(Map.correct_orientation(grid_pos))
 	position = world_pos + Vector2(-1, 30)
 
@@ -53,29 +47,38 @@ func set_sprite(filename_sgx, tag_idx, sprite_offset):
 #		if anim != null:
 #			sprite_anim_data = _sprite_anim
 
-func advance_sprite_animation(anim_frame):
-	var frame_count = SPRITE2.frames.get_frame_count(SPRITE2.animation)
-	if SPRITE2.frame == frame_count - 1:
-		SPRITE2.frame = 0
-	else:
-		SPRITE2.frame += 1
-	SPRITE2.frame = anim_frame
-#	print(anim_frame)
+#func advance_sprite_animation(anim_frame):
+##	var frame_count = SPRITE2.frames.get_frame_count(SPRITE2.animation)
+##	if SPRITE2.frame == frame_count - 1:
+##		SPRITE2.frame = 0
+##	else:
+##		SPRITE2.frame += 1
+##	SPRITE2.frame = anim_frame
+##	print(anim_frame)
+#	SPRITE2.frame = FIGURE_CS.anim_frame
+func repaint():
+	var sprite_group = FIGURE_CS.animation_get_sprite_idx()
+	
+#	SPRITE2.frame = FIGURE_CS.get("anim_frame")
+	SPRITE2.frame = sprite_group[0]
+
+func _ready():
+	add_to_group("sprites")
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	update_position()
 	if !$CanvasLayer.visible:
 		return
-	if figure_data == null:
+	if FIGURE_CS == null:
 #		$DEBUG_LABEL.bbcode_text = ""
 		$CanvasLayer/DEBUG_LABEL2.bbcode_text = ""
 		return
 	var debug_text = ""
-	var type = figure_data.get("type") # + rand_seed(Game.tick)[0] % 50
-	debug_text += "[color=#ffff00]ID:[/color]       %d\n" % [figure_data.FIGURE_IDX]
+	var type = FIGURE_CS.get("type") # + rand_seed(Game.tick)[0] % 50
+	debug_text += "[color=#ffff00]ID:[/color]       %d\n" % [FIGURE_CS.FIGURE_IDX]
 	debug_text += "[color=#ffff00]type:[/color]     %s\n" % [Debug.enum_print_bbcode(Debug.CS_ENUMS.FigureTypes, type)]
-	debug_text += "[color=#ffff00]action:[/color]   %d\n" % [figure_data.get("action_state")]
+	debug_text += "[color=#ffff00]action:[/color]   %d\n" % [FIGURE_CS.get("action_state")]
 
 #	$DEBUG_LABEL.bbcode_text = debug_text
 	$CanvasLayer/DEBUG_LABEL2.bbcode_text = debug_text
@@ -83,9 +86,9 @@ func _process(delta):
 
 func _notification(what):
 	if what == NOTIFICATION_PREDELETE:
-		if figure_data == null:
+		if FIGURE_CS == null:
 			pass
-#			print("FigureSprite[%s] free(): figure_data was null!" % [_IDX])
+#			print("FigureSprite[%s] free(): FIGURE_CS was null!" % [_IDX])
 		else:
 #			print("FigureSprite[%s] free(): removing reference from linked Figure.cs object..." % [_IDX])
-			figure_data.FigureSprite = null
+			FIGURE_CS.FigureSprite = null

@@ -1,12 +1,20 @@
 extends Node
 
 # TODO: change this by gameset
-const PH_MAP_WIDTH = 228
-const PH_MAP_SIZE = PH_MAP_WIDTH * PH_MAP_WIDTH # 228 * 228 = 51984
+const CONSTS = {
+	"Pharaoh": {
+		"GRID_SIZE": 228,
+		"GRID_LENGTH": 51984, # 228 * 228
+		"TILE_W": 58,
+		"TILE_H": 30,
+	}
+}
 
-const TILE_WIDTH = 58
-const TILE_HEIGHT = 30
-const TILE_SIZE = Vector2(TILE_WIDTH, TILE_HEIGHT)
+func get_grid_size():
+	return CONSTS[Assets.GAME_SET].GRID_SIZE
+func get_grid_length():
+	return CONSTS[Assets.GAME_SET].GRID_LENGTH
+
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
@@ -17,28 +25,29 @@ onready var TILEMAP_TOP: TileMap = INGAME_ROOT.get_node("Map_Top") as TileMap
 onready var TILEMAP_ANIM: TileMap = INGAME_ROOT.get_node("Map_Anim") as TileMap
 
 var data = {}
+onready var GRID_CS = load("res://scripts/mono/GridInterface.cs")
 onready var grids = {
-	"images": [],
-	"edge": [],
-	"buildings": [],
-	"terrain": [],
-	"aqueduct": [],
-	"figures": [],
-	"bitfields": [],
-	"sprites": [],
-	"random": [],
-	"desirability": [],
+	"images": GRID_CS.new(),
+	"edge": GRID_CS.new(),
+	"buildings": GRID_CS.new(),
+	"terrain": GRID_CS.new(),
+	"aqueduct": GRID_CS.new(),
+	"figures": GRID_CS.new(),
+	"bitfields": GRID_CS.new(),
+	"sprites": GRID_CS.new(),
+	"random": GRID_CS.new(),
+	"desirability": GRID_CS.new(),
 	
-	"elevation": [],
-	"building_dmg": [],
-	"aqueduct_bak": [],
-	"sprite_bak": [],
+	"elevation": GRID_CS.new(),
+	"building_dmg": GRID_CS.new(),
+	"aqueduct_bak": GRID_CS.new(),
+	"sprite_bak": GRID_CS.new(),
 	
-	"fertility": [],
-	"vegetation_growth": [],
-	"unk_grid03": [],
-	"unk_grid04": [],
-	"moisture": []
+	"fertility": GRID_CS.new(),
+	"vegetation_growth": GRID_CS.new(),
+	"unk_grid03": GRID_CS.new(),
+	"unk_grid04": GRID_CS.new(),
+	"moisture": GRID_CS.new()
 }
 
 enum TerrainFlags {
@@ -67,7 +76,7 @@ enum TerrainFlags {
 	unk_4 =				4194304,
 	unk_5 =				8388608,
 	IRRIGATED =			16777216,
-	DUNE =				33554432,
+	DUNES =				33554432,
 	DEEP_WATER =		67108864,
 	ROAD_FLOODED =		134217728,
 	unk_6 =				268435456,
@@ -141,12 +150,13 @@ func tilesets_load_scenario_specifics(): # TODO: anims?
 	TILEMAP_FLAT.tile_set = tileset
 	return success
 
-func set_grid(grid_name, x, y, value): # TODO
-	if !(grid_name in grids):
-		return false
-	grids[grid_name][y][x] = value
-	return true
-
+#func set_grid(grid_name, x, y, value): # TODO
+#	if !(grid_name in grids):
+#		return false
+#	grids[grid_name][y][x] = value
+#	return true
+func init():
+	GridsMono.GRID_SIZE = get_grid_size()
 func redraw():
 	var _t = Stopwatch.start()
 	if !GridsMono.RedrawMap(TILEMAP_FLAT, grids, city_orientation): # around ~360 ms (120 ms afterwards)
@@ -165,33 +175,19 @@ var map_height = 0
 var map_grid_start = 0
 var map_border_size = 0
 
-## coord transformations / calcs have been moved to the MapTile helper class.
+## most coord transformations / calcs have been moved to the MapTile helper class.
 
-#func tile_into_game_area(tile: Vector2, grid_width: int = PH_MAP_WIDTH) -> Vector2:
-#
-#	var x_offset = map_grid_start % grid_width
-#	var y_offset = map_grid_start / grid_width
-#
-#	return Vector2(tile.x + x_offset, tile.y + y_offset)
 func correct_orientation(tile: Vector2) -> Vector2:
 	match Map.city_orientation:
-#		0:
-#			return tile
 		2:
-			return Vector2(tile.y, PH_MAP_WIDTH - tile.x)
+			return Vector2(tile.y, get_grid_size() - tile.x - 1)
 		4:
-			return Vector2(PH_MAP_WIDTH - tile.x, PH_MAP_WIDTH - tile.y)
+			return Vector2(get_grid_size() - tile.x - 1, get_grid_size() - tile.y - 1)
 		6:
-			return Vector2(PH_MAP_WIDTH - tile.y, tile.x)
+			return Vector2(get_grid_size() - tile.y - 1, tile.x)
 	return tile
 func map_to_world(tile: Vector2) -> Vector2:
-#	var grid_space =
-#	if game_area:
-#		return TILEMAP_FLAT.map_to_world(tile_into_game_area(tile))
-#	else:
-	var grid_space = TILEMAP_FLAT.map_to_world(tile)
-	
-	return grid_space
+	return TILEMAP_FLAT.map_to_world(tile)
 
 func _input(event):
 	var _city_orientation = city_orientation
@@ -201,3 +197,4 @@ func _input(event):
 		city_orientation = (city_orientation - 2 + 8) % 8
 	if city_orientation != _city_orientation:
 		redraw()
+		Game.game_repaint_sprites()

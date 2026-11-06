@@ -139,7 +139,7 @@ func pop_compressed() -> bool: # compress and write top bytestream to file on WR
 	return ScribeMono.PopCompressed()
 
 ## helper I/O for grids (encapsulates push/pop_compressed and put ops)
-func put_grid(format, grid_name: String, compressed: bool, grid_width: int = Map.PH_MAP_WIDTH, default = 0) -> bool:
+func put_grid(format, grid_name: String, compressed: bool, grid_width: int = Map.get_grid_size(), default = 0) -> bool:
 	var _t = Stopwatch.start()
 	if !ScribeMono.PutGrid(format, grid_name, compressed, grid_width):
 		return false

@@ -44,11 +44,13 @@ func create_sprite(i):
 	figures[i].FigureSprite = n
 
 # figure C# objects
+var FIGURE_CS = null
 func init_figure_stack(): # prepare array of figure objects
 	if figures != []:
 		Log.warning(self, "Attempting to re-init non-empty Figures stack. Clearing...")
 		figures = []
-	var FIGURE_CS = load("res://scripts/mono/" + Assets.GAME_SET + "/Figure.cs")
+	if FIGURE_CS == null:
+		FIGURE_CS = load("res://scripts/mono/" + Assets.GAME_SET + "/Figure.cs")
 	for i in MAX_FIGURES:
 		figures.push_back(FIGURE_CS.new(i))
 	assert(figures.size() == MAX_FIGURES)

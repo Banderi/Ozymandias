@@ -19,7 +19,7 @@ func is_valid_objref(node):
 
 # MENUS
 # I'm not doing a menu stack for now, just a straight up "open menu" or "popup menu" (i.e. the exact same, but without closing all other menus)
-var debug_last_menu = null
+var debug_last_menu = null # this is JUST FOR DEBUGGING.
 func go_to_menu(menu_name, data = null):
 	if debug_last_menu == menu_name:
 		return
@@ -43,6 +43,13 @@ func popup_menu(menu_name, data = null):
 		menu_node._on_menu_open(data)
 	debug_last_menu = menu_name
 	menu_node.show()
+func close_menu(menu_name):
+	var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
+	if menu_node == null:
+		Log.error(self, ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
+		return
+	menu_node.hide()
+	debug_last_menu = null
 func close_all_menus():
 	for m in MENUS_ROOT.get_children():
 		m.hide()
@@ -165,6 +172,8 @@ func load_game(path) -> bool: # TODO: stuff rendering over the loading screen!!
 			return false
 		
 		yield(loading_screen(509, "TEXT_11_0"), "completed")
+		GridsMono.MAP_WIDTH = Map.map_width
+		GridsMono.MAP_HEIGHT = Map.map_height
 		Map.tilesets_load_scenario_specifics()
 		Map.redraw()
 		Figures.spawn_sprites()
@@ -765,12 +774,19 @@ var t = 0
 func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup if performance drops the ticks' compute time over the impositions?
 	t += delta
 	if STATE == States.Ingame:
+		var needs_repaint = false
 		ticks_to_do += ticks_per_frame
 		if speed > 0:
 			for i in int(ticks_to_do):
+				needs_repaint = true
 				game_tick()
 				ticks_to_do -= 1.0
 				t = 0
+		if needs_repaint:
+			game_repaint_sprites()
+func game_repaint_sprites():
+	for sprite in get_tree().get_nodes_in_group("sprites"):
+		sprite.repaint()
 
 #############
 
@@ -836,9 +852,12 @@ func _input(event):
 		
 		# pause game
 		if Input.is_action_just_pressed("pause_game"):
+			popup_menu("Paused")
 			STATE = States.Paused
 	
 	elif STATE == States.Paused:
 		# unpause game
 		if Input.is_action_just_pressed("pause_game"):
+			close_menu("Paused")
 			STATE = States.Ingame
+			

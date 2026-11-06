@@ -1,6 +1,8 @@
 using Godot;
 using System;
+using System.Collections.Generic; // Dictionary
 using System.IO; // BinaryReader / BinaryWriter
+using System.Linq; // FieldInfo[].ToDictionary()
 using System.Reflection; // FieldInfo
 using System.Runtime.InteropServices; // Marshal
 
@@ -193,15 +195,20 @@ public partial class Figure : ReferenceEx
 	}
 
 	// raw data fields set/get (for accessing from GDScript)
+	static readonly Dictionary<string, FieldInfo> Fields = typeof(FigureData).GetFields().ToDictionary(f => f.Name);
 	public object get(String fieldName) {
-		FieldInfo field = data.GetType().GetField(fieldName);
-		if (field == null)
+		// FieldInfo field = Fields[fieldName];
+		// if (field == null)
+		// 	return null;
+		if (!Fields.TryGetValue(fieldName, out FieldInfo field))
 			return null;
 		return field.GetValue(data);
 	}
 	public bool set(String fieldName, object value) {
-		FieldInfo field = data.GetType().GetField(fieldName);
-		if (field == null)
+		// FieldInfo field = Fields[fieldName];
+		// if (field == null)
+		// 	return false;
+		if (!Fields.TryGetValue(fieldName, out FieldInfo field))
 			return false;
 		try {
 			field.SetValue(data, Convert.ChangeType(value, field.FieldType));
@@ -210,6 +217,62 @@ public partial class Figure : ReferenceEx
 			return false;
 		}
 		return true;
+	}
+
+	// slightly more performant set/get (unnecessary?)
+	// struct Meta { public int Offset; public String Type; }
+	private static readonly Type tt_int = typeof(int);
+	struct Meta { public int Offset; public Type Type; }
+	static readonly Dictionary<string, Meta> DataMetaTable = Build();
+	static Dictionary<string, Meta> Build() {
+		var d = new Dictionary<string, Meta>();
+		foreach (var f in typeof(FigureData).GetFields())
+			d[f.Name] = new Meta {
+				Offset = (int)Marshal.OffsetOf<FigureData>(f.Name),
+				// Type = f.FieldType.Name
+				Type = f.FieldType
+			};
+		return d;
+	}
+	public unsafe object get2(string name) {
+		if (!DataMetaTable.TryGetValue(name, out var m)) return null;
+		fixed (FigureData* p = &data) {
+			byte* b = (byte*)p + m.Offset;
+			// const Type tt = (const Type)m.Type;
+			// static readonly Type tt = m.Type;
+			// switch (m.Type)
+			switch (Type.GetTypeCode(m.Type)) {
+			// switch (*b)
+				// case nameof(Int32): return (long)*(int*)b;   // long/double are Variant-friendly
+				// case int i: return (long)*(int*)b;   // long/double are Variant-friendly
+				// case nameof(Byte): return (long)*b;
+				// case Type _ when m.Type == typeof(int): return (long)*(int*)b;   // long/double are Variant-friendly
+				// case Type _ when m.Type == typeof(byte): return (long)*b;   // long/double are Variant-friendly
+				case TypeCode.Int32: return (long)*(int*)b;
+				case TypeCode.Byte: return (long)*b;
+				case TypeCode.SByte: return (long)*b;
+				// case typeof(int): break;
+				// case tt_int: break;
+				// case TypeCode.Int32: break;
+				// ...
+			}
+		}
+		return null;
+	}
+	public unsafe bool set2(string name, object value) {
+		// if (!DataMetaTable.TryGetValue(name, out var m)) return false;
+		// fixed (FigureData* p = &data) {
+		// 	byte* b = (byte*)p + m.Offset;
+		// 	switch (m.Type) {
+		// 		case nameof(Int32): *(int*)b = Convert.ToInt32(value); return true;
+		// 		case nameof(Byte): *b = Convert.ToByte(value); return true;
+		// 		case byte b: *b = Convert.ToByte(value); return true;
+		// 		// case FT.I32: *(int*)b = Convert.ToInt32(value); return true;
+		// 		// case FT.F32: *(float*)b = Convert.ToSingle(value); return true;
+		// 		// ...
+		// 	}
+		// }
+		return false;
 	}
 
 	// =============================== Figure =============================== //
@@ -279,8 +342,7 @@ public partial class Figure : ReferenceEx
 		FigureSprite = null;
 	}
 
-	// linked buildings: these double as fetchers AND checkers -- if an id is provided, checks that
-	// matches (returns null if not); if no id is provided, returns the building (returns null if unset/invalid)
+	// linked buildings --- these are boilerplates that return the Building object via GameInterfaces.GetBuilding()
 	Building home() {
 		return GameInterfaces.GetBuilding(data.home_building_id);
 	}
@@ -300,31 +362,34 @@ public partial class Figure : ReferenceEx
 		// 		data.targeted_by_figure_id = 0;
 		// }
 	}
-	void update_animation() { // this should NOT CALL THE SPRITE FOR UPDATES, THAT's DUMB.
-
+	
+	// Figure animations are fundamentally a passive system -- there is no data (as far as I've seen...) storing
+	// information for the current sprite group, animation, or such.
+	// Moreover, it can not be applied forwardly from C#, because Godot is handling the rendering and Figure.repaint()
+	// is called by the tick engine logic. Thus, Godot must call animation_get_sprite_idx() to retrieve useful info
+	// whenever it is needed, and animation_get_sprite_idx() needs to compute them on the spot.
+	int[] animation_get_sprite_idx() { // this is the main OUT function that computes the current sprite details.
+		
+		FigureActionProps props = FigureActionProperties[(int)data.type];
+		// figure::image_set_animation(int collection, int group, int offset, int max_frames, int duration)
 		// image_set_animation(action_properties.base_image_collection, action_properties.base_image_group);
 
-
-		// data.anim_frame += 1;
-		
-		// return;
-
-		// int[] a = {1, 2};
-
-
+		// anim_base = image_id_from_group(collection, group);
+		// anim_offset = offset;
+		// anim_max_frames = max_frames;
+		// if (duration <= 0)
+		// 	duration = 1;
+		// anim_frame_duration = duration;
 
 
-
-
-		// try {
-
-		// 	FigureSprite.Call("set_sprite", "SprMain.sg3", 1, 0);
-
-		// 	// advance sprite offset
-		// 	FigureSprite.Call("advance_sprite_animation", data.anim_frame);
-		// } catch (Exception e) {
-		// 	PrintError($"FIGURE{FIGURE_IDX}.update_animation():" + e.ToString());
-		// }
+		return new int[] {data.anim_frame, 2};
+	}
+	void animation_advance() { //
+		// var a = (byte)12;
+		data.anim_frame = (byte)((int)++data.anim_frame % 12);
+		// data.anim_frame++;
+		// if (data.anim_frame >= 12)
+		// 	data.anim_frame = 0;
 	}
 	void update_linked_buildings() {
 // 		building *b = home();
@@ -566,7 +631,7 @@ public partial class Figure : ReferenceEx
 // 		}
 
 		
-		update_animation();
+		animation_advance();
 
 		// poof if LOST
 		if (data.direction == Enums.Directions.CAN_NOT_REACH)

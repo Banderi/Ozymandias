@@ -18,7 +18,7 @@
 [ext_resource path="res://scripts/menus/Menu_MainMenu.gd" type="Script" id=16]
 [ext_resource path="res://scripts/menus/Menu_FamilySelection.gd" type="Script" id=17]
 [ext_resource path="res://scripts/menus/Popup_NoMissionWonYet.gd" type="Script" id=18]
-[ext_resource path="res://scripts/menus/Popup_QuitGameConfirm.gd" type="Script" id=19]
+[ext_resource path="res://scripts/menus/Popup_Paused.gd" type="Script" id=19]
 [ext_resource path="res://scripts/menus/Menu_SplashScreen.gd" type="Script" id=20]
 [ext_resource path="res://scripts/menus/Menu_NewFamily.gd" type="Script" id=21]
 [ext_resource path="res://scenes/UI/Button4.tscn" type="PackedScene" id=22]
@@ -1558,7 +1558,6 @@ focus_mode = 1
 texture = ExtResource( 57 )
 expand = true
 stretch_mode = 6
-script = ExtResource( 20 )
 __meta__ = {
 "_edit_lock_": true
 }
@@ -1574,8 +1573,38 @@ align = 1
 script = ExtResource( 14 )
 localized_key = "TEXT_11_0"
 
+[node name="Paused" type="Control" parent="Menus"]
+visible = false
+anchor_right = 1.0
+anchor_bottom = 1.0
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="Menus/Paused" instance=ExtResource( 6 )]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -232.0
+margin_top = 80.0
+margin_right = 232.0
+margin_bottom = 128.0
+
+[node name="Label2" type="Label" parent="Menus/Paused/Panel"]
+anchor_right = 1.0
+margin_left = 42.0
+margin_top = 10.0
+margin_right = -58.0
+margin_bottom = 38.0
+custom_fonts/font = ExtResource( 10 )
+text = "Game paused ('P' key continues)"
+align = 1
+valign = 1
+script = ExtResource( 14 )
+localized_key = "TEXT_13_2"
+
 [node name="Debug" type="CanvasLayer" parent="."]
 layer = 2
+visible = false
 script = ExtResource( 46 )
 
 [node name="DEBUG_LABEL" type="RichTextLabel" parent="Debug"]
@@ -1759,29 +1788,35 @@ margin_right = 97.0
 margin_bottom = 24.0
 text = "PKWare tests"
 
-[node name="BtnLoadAutosave" type="Button" parent="Debug/DEBUG_BTNS"]
+[node name="BtnTest2" type="Button" parent="Debug/DEBUG_BTNS"]
 margin_left = 101.0
-margin_right = 195.0
+margin_right = 140.0
+margin_bottom = 24.0
+text = "Test"
+
+[node name="BtnLoadAutosave" type="Button" parent="Debug/DEBUG_BTNS"]
+margin_left = 144.0
+margin_right = 238.0
 margin_bottom = 24.0
 text = "autosave.sav"
 
 [node name="BtnTestTerrainImages" type="SpinBox" parent="Debug/DEBUG_BTNS"]
-margin_left = 199.0
-margin_right = 279.0
+margin_left = 242.0
+margin_right = 322.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 80, 0 )
 min_value = -1.0
 max_value = 1e+08
 
 [node name="BtnRedrawMap" type="Button" parent="Debug/DEBUG_BTNS"]
-margin_left = 283.0
-margin_right = 373.0
+margin_left = 326.0
+margin_right = 416.0
 margin_bottom = 24.0
 text = "Redraw map"
 
 [node name="BtnTestSprites" type="SpinBox" parent="Debug/DEBUG_BTNS"]
-margin_left = 377.0
-margin_right = 457.0
+margin_left = 420.0
+margin_right = 500.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 80, 0 )
 mouse_filter = 1
@@ -1789,8 +1824,8 @@ min_value = -1.0
 max_value = 1e+08
 
 [node name="BtnChangeFPS" type="SpinBox" parent="Debug/DEBUG_BTNS"]
-margin_left = 461.0
-margin_right = 541.0
+margin_left = 504.0
+margin_right = 584.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 80, 0 )
 max_value = 200.0
@@ -1798,8 +1833,8 @@ value = 60.0
 prefix = "FPS"
 
 [node name="Control" type="Control" parent="Debug/DEBUG_BTNS"]
-margin_left = 545.0
-margin_right = 650.0
+margin_left = 588.0
+margin_right = 693.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 105, 0 )
 mouse_filter = 2
@@ -1856,12 +1891,12 @@ color = Color( 0.733333, 0.733333, 0.733333, 1 )
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnYes" to="Menus/QuitGameConfirm" method="_on_BtnYes_pressed"]
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnNo" to="Menus/QuitGameConfirm" method="_on_BtnNo_pressed"]
 [connection signal="focus_entered" from="Menus/Splash" to="Menus/Splash" method="_on_Splash_focus_entered"]
-[connection signal="focus_entered" from="Menus/Loading" to="Menus/Loading" method="_on_Splash_focus_entered"]
 [connection signal="value_changed" from="Debug/DEBUG_LABEL/SpinBoxSpeed" to="Debug" method="_on_SpinBoxSpeed_value_changed"]
 [connection signal="value_changed" from="Debug/DEBUG_LABEL/HSliderSpeed" to="Debug" method="_on_HSliderSpeed_value_changed"]
 [connection signal="toggled" from="Debug/DEBUG_LABEL4/BtnTestScribe" to="Debug" method="_on_BtnTestScribe_toggled"]
 [connection signal="pressed" from="Debug/DEBUG_LABEL4/BtnTestScribe2" to="Debug" method="_on_BtnTestScribe2_pressed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnPKWareTest" to="Debug" method="_on_BtnPKWareTest_pressed"]
+[connection signal="pressed" from="Debug/DEBUG_BTNS/BtnTest2" to="Debug" method="_on_BtnTest2_pressed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnLoadAutosave" to="Debug" method="_on_BtnLoadAutosave_pressed"]
 [connection signal="value_changed" from="Debug/DEBUG_BTNS/BtnTestTerrainImages" to="Debug" method="_on_BtnTestTerrainImages_value_changed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnRedrawMap" to="Debug" method="_on_BtnRedrawMap_pressed"]

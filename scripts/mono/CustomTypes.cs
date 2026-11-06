@@ -1,6 +1,5 @@
 // 8-bit (single byte) Boolean, for cleaner Marshalling purposes
-public readonly struct bool8
-{
+public readonly struct bool8 {
 	private readonly byte _value;
 	private bool8(byte value) {
 		_value = value;
@@ -13,8 +12,7 @@ public readonly struct bool8
 		=> value._value != 0;
 }
 
-public readonly struct GameTile
-{
+public readonly struct GameTile {
 	public readonly int grid_x;
 	public readonly int grid_y;
 	public readonly int grid_cantor;
@@ -22,17 +20,17 @@ public readonly struct GameTile
 	public readonly int map_y;
 	public readonly int map_cantor;
 
-	private static int _cantor(int x, int y) {
+	public static int _cantor(int x, int y) {
 		return x + (Enums.GRID_LENGTH * y);
 	}
-	private static int _x(int cantor) {
+	public static int _x(int cantor) {
 		return cantor % Enums.GRID_LENGTH;
 	}
-	private static int _y(int cantor) {
+	public static int _y(int cantor) {
 		return cantor / Enums.GRID_LENGTH;
 	}
 
-	private GameTile(int x, int y, bool map_space) {
+	public GameTile(int x, int y, bool map_space) {
 		if (map_space) {
 			map_x = x;
 			map_y = y;
@@ -51,7 +49,7 @@ public readonly struct GameTile
 			map_y = _y(map_cantor);
 		}
 	}
-	private GameTile(int cantor, bool map_space) {
+	public GameTile(int cantor, bool map_space) {
 		if (map_space) {
 			map_cantor = cantor;
 			map_x = _x(map_cantor);
@@ -73,3 +71,5 @@ public readonly struct GameTile
 
 	// public static implicit operator ?
 }
+
+

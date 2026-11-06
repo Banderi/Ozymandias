@@ -34,27 +34,27 @@ public class Scribe_mono : Node
 	// ------------------------ SCRIBE ------------------------ //
 
 	// formats
-	public enum ScribeFormat {
-		i8 = 0,
-		i16 = 1,
-		i32 = 2,
-		u8 = 3,
-		u16 = 4,
-		u32 = 5,
-		ascii = 6,
-		utf8 = 7,
-		raw = 8
-	}
-	private int format_size(ScribeFormat format) {
+	// public enum Enums.ScribeFormat {
+	// 	i8 = 0,
+	// 	i16 = 1,
+	// 	i32 = 2,
+	// 	u8 = 3,
+	// 	u16 = 4,
+	// 	u32 = 5,
+	// 	ascii = 6,
+	// 	utf8 = 7,
+	// 	raw = 8
+	// }
+	private int format_size(Enums.ScribeFormat format) {
 		switch (format) {
-			case ScribeFormat.u8:
-			case ScribeFormat.i8:
+			case Enums.ScribeFormat.u8:
+			case Enums.ScribeFormat.i8:
 				return 1;
-			case ScribeFormat.u16:
-			case ScribeFormat.i16:
+			case Enums.ScribeFormat.u16:
+			case Enums.ScribeFormat.i16:
 				return 2;
-			case ScribeFormat.u32:
-			case ScribeFormat.i32:
+			case Enums.ScribeFormat.u32:
+			case Enums.ScribeFormat.i32:
 				return 4;
 			default: // other formats have UNSPECIFIED sizes
 				return -1;
@@ -222,27 +222,67 @@ public class Scribe_mono : Node
 		}
 		return true;
 	}
-	public bool PutGrid(ScribeFormat format, string grid_name, bool compressed, uint grid_width) {
+	public bool PutGrid(Enums.ScribeFormat format, string grid_name, bool compressed, uint grid_width) {
 		// prepare stack buffer
 		uint grid_size = grid_width * grid_width;
 		uint raw_size = (uint)format_size(format) * grid_size;
 		if (compressed && !PushCompressed(raw_size))
 			return false;
 
+		// call GridsMono.SetGridFromBytes() with a lot of pain
+		Godot.Collections.Dictionary ref_grids = (Godot.Collections.Dictionary)Globals.Map.Get("grids");
+
 		// grid bytestream conversion
 		if (__file_flags == 1) { // reading
 			byte[] raw_bytes = _bin_reader.ReadBytes((int)raw_size);
 
-			// call GridsMono.SetGridFromBytes() with a lot of pain
-			Godot.Collections.Dictionary ref_grids = (Godot.Collections.Dictionary)Globals.Map.Get("grids");
-			object ref_grid = ref_grids[grid_name];
-			bool r = (bool)Globals.GridsMono.Call("SetGridFromBytes", ref_grid, raw_bytes, grid_width, format);
+			int GRID_WIDTH = 228;
+			IGrid grid;
+			// GridInterface ref_grid = (GridInterface)ref_grids[grid_name];
+			switch (format){
+				case Enums.ScribeFormat.u8:
+					grid = new Grid<byte>(GRID_WIDTH, GRID_WIDTH);
+					break;
+				case Enums.ScribeFormat.i8:
+					grid = new Grid<sbyte>(GRID_WIDTH, GRID_WIDTH);
+					break;
+				case Enums.ScribeFormat.u16:
+					grid = new Grid<ushort>(GRID_WIDTH, GRID_WIDTH);
+					break;
+				case Enums.ScribeFormat.i16:
+					grid = new Grid<short>(GRID_WIDTH, GRID_WIDTH);
+					break;
+				case Enums.ScribeFormat.u32:
+					grid = new Grid<uint>(GRID_WIDTH, GRID_WIDTH);
+					break;
+				case Enums.ScribeFormat.i32:
+					grid = new Grid<int>(GRID_WIDTH, GRID_WIDTH);
+					break;
+				default:
+					return false;
+			}
+			// GridInterface ref_grid = (GridInterface)ref_grids[grid_name];
+			// ref_grid.grid = grid;
+			((GridInterface)ref_grids[grid_name]).grid = grid;
+			// Grid<format> ref_grid = (Grid)ref_grids[grid_name];
+			// ref_grids[grid_name] = grid;
+			bool r = grid.Fill(raw_bytes);
 			if (!r)
 				return bail("FAILED", "(GridsMono) could not fill grid");
+
+
+			// object ref_grid = ref_grids[grid_name];
+			// bool r = (bool)Globals.GridsMono.Call("SetGridFromBytes", ref_grid, raw_bytes, grid_width, format);
+			// if (!r)
+			// 	return bail("FAILED", "(GridsMono) could not fill grid");
+			
 			// if (!(bool)Globals.GridsMono.Call("SetGridFromBytes", ((Godot.Collections.Dictionary)Globals.Map.Get("grids"))[grid_name], raw_bytes, grid_width, format))
 			// 	return bail("FAILED", "(GridsMono) could not fill grid");
 		} else { // writing
 			// TODO
+			// byte[] bytes = ((GridInterface)ref_grids[grid_name]).grid.Dump();
+			// if (bytes == null)
+			// 	return bail("FAILED", "(GridsMono) could not fill grid");
 		}
 
 		// pop stack buffer
@@ -276,89 +316,89 @@ public class Scribe_mono : Node
 			return record_NODE.Get((String)key);
 		return bail("ERR_INVALID_DATA", $"the last synced chunk is invalid ({record})");
 	}
-	private object readFromStream(object stream, ScribeFormat format, int format_extra) {
+	private object readFromStream(object stream, Enums.ScribeFormat format, int format_extra) {
 		if (stream is BinaryReader stream_BINR)
 		{
 			switch (format) {
-				case ScribeFormat.u8:
+				case Enums.ScribeFormat.u8:
 					return stream_BINR.ReadByte();
-				case ScribeFormat.i8:
+				case Enums.ScribeFormat.i8:
 					return stream_BINR.ReadSByte();
-				case ScribeFormat.u16:
+				case Enums.ScribeFormat.u16:
 					return stream_BINR.ReadUInt16();
-				case ScribeFormat.i16:
+				case Enums.ScribeFormat.i16:
 					return stream_BINR.ReadInt16();
-				case ScribeFormat.u32:
+				case Enums.ScribeFormat.u32:
 					return stream_BINR.ReadUInt32();
-				case ScribeFormat.i32:
+				case Enums.ScribeFormat.i32:
 					return stream_BINR.ReadInt32();
 				
-				case ScribeFormat.ascii:
+				case Enums.ScribeFormat.ascii:
 					return System.Text.Encoding.ASCII.GetString(stream_BINR.ReadBytes(format_extra));
-				case ScribeFormat.utf8:
+				case Enums.ScribeFormat.utf8:
 					return System.Text.Encoding.UTF8.GetString(stream_BINR.ReadBytes(format_extra));
-				case ScribeFormat.raw:
+				case Enums.ScribeFormat.raw:
 					return stream_BINR.ReadBytes(format_extra);
 			}
 		}
 		else if (stream is Godot.File stream_FILE)
 		{
 			switch (format) { // Godot File ops, by default, are UNSIGNED
-				case ScribeFormat.u8:
+				case Enums.ScribeFormat.u8:
 					return stream_FILE.Get8();
-				case ScribeFormat.i8:
+				case Enums.ScribeFormat.i8:
 					return (stream_FILE.Get8() + 128) % 256 - 128;
-				case ScribeFormat.u16:
+				case Enums.ScribeFormat.u16:
 					return stream_FILE.Get16();
-				case ScribeFormat.i16:
+				case Enums.ScribeFormat.i16:
 					return (stream_FILE.Get16() + 256) % 512 - 256;
-				case ScribeFormat.u32:
+				case Enums.ScribeFormat.u32:
 					return stream_FILE.Get32();
-				case ScribeFormat.i32:
+				case Enums.ScribeFormat.i32:
 					return (stream_FILE.Get32() + 512) % 1024 - 512;
 				
-				case ScribeFormat.ascii:
+				case Enums.ScribeFormat.ascii:
 					return stream_FILE.GetBuffer(format_extra).GetStringFromASCII();
-				case ScribeFormat.utf8:
+				case Enums.ScribeFormat.utf8:
 					return stream_FILE.GetBuffer(format_extra).GetStringFromUTF8();
-				case ScribeFormat.raw:
+				case Enums.ScribeFormat.raw:
 					return stream_FILE.GetBuffer(format_extra);
 			}
 		}
 		else if (stream is Godot.StreamPeerBuffer stream_PEER)
 		{
 			switch (format) { // Godot File ops, by default, are UNSIGNED
-				case ScribeFormat.u8:
+				case Enums.ScribeFormat.u8:
 					return stream_PEER.Get8();
-				case ScribeFormat.i8:
+				case Enums.ScribeFormat.i8:
 					return stream_PEER.GetU8();
-				case ScribeFormat.u16:
+				case Enums.ScribeFormat.u16:
 					return stream_PEER.Get16();
-				case ScribeFormat.i16:
+				case Enums.ScribeFormat.i16:
 					return stream_PEER.GetU16();
-				case ScribeFormat.u32:
+				case Enums.ScribeFormat.u32:
 					return stream_PEER.Get32();
-				case ScribeFormat.i32:
+				case Enums.ScribeFormat.i32:
 					return stream_PEER.GetU32();
 				
-				case ScribeFormat.ascii: {
+				case Enums.ScribeFormat.ascii: {
 					return stream_PEER.GetString(format_extra);
 					// byte[] bytes = (byte[])(object)stream_PEER.GetPartialData(format_extra);
 					// GD.Convert(bytes, Variant.Type.RawArray);
 					// return System.Text.Encoding.ASCII.GetString((byte[])bytes);
-				} case ScribeFormat.utf8: {
+				} case Enums.ScribeFormat.utf8: {
 					return stream_PEER.GetUtf8String(format_extra);
 					// byte[] bytes = (byte[])(object)stream_PEER.GetPartialData(format_extra);
 					// GD.Convert(bytes, Variant.Type.RawArray);
 					// return System.Text.Encoding.UTF8.GetString((byte[])bytes);
-				} case ScribeFormat.raw:
+				} case Enums.ScribeFormat.raw:
 					return stream_PEER.GetPartialData(format_extra);
 			}
 		}
 		bail("ERR_INVALID_DATA", "byte stream is invalid");
 		return null;
 	}
-	private bool writeToStream(object stream, ScribeFormat format, object value, int format_extra) {
+	private bool writeToStream(object stream, Enums.ScribeFormat format, object value, int format_extra) {
 		if (stream is BinaryWriter stream_BINR)
 		{
 			// TODO
@@ -368,60 +408,60 @@ public class Scribe_mono : Node
 		{
 			switch (format) {
 				// TODO: signed & unsigned versions
-				case ScribeFormat.u8:
+				case Enums.ScribeFormat.u8:
 					stream_FILE.Store8((byte)value); return true;
-				case ScribeFormat.i8:
+				case Enums.ScribeFormat.i8:
 					stream_FILE.Store8(unchecked((byte)value)); return true;
-				case ScribeFormat.u16:
+				case Enums.ScribeFormat.u16:
 					stream_FILE.Store16((ushort)value); return true;
-				case ScribeFormat.i16:
+				case Enums.ScribeFormat.i16:
 					stream_FILE.Store16(unchecked((ushort)value)); return true;
-				case ScribeFormat.u32:
+				case Enums.ScribeFormat.u32:
 					stream_FILE.Store32((uint)value); return true;
-				case ScribeFormat.i32:
+				case Enums.ScribeFormat.i32:
 					stream_FILE.Store32(unchecked((uint)value)); return true;
 
-				case ScribeFormat.ascii:{
+				case Enums.ScribeFormat.ascii:{
 					byte[] bytes = ( (String)value ).ToAscii();
 					Array.Resize<byte>(ref bytes, format_extra);
 					stream_FILE.StoreBuffer(bytes); return true;
 				}
-				case ScribeFormat.utf8:{
+				case Enums.ScribeFormat.utf8:{
 					byte[] bytes = ( (String)value ).ToUTF8();
 					Array.Resize<byte>(ref bytes, format_extra);
 					stream_FILE.StoreBuffer(bytes); return true; // same as store_string()...?
 				}
-				case ScribeFormat.raw:
+				case Enums.ScribeFormat.raw:
 					stream_FILE.StoreBuffer((byte[])value); return true;
 			}
 		}
 		else if (stream is Godot.StreamPeerBuffer stream_PEER)
 		{
 			switch (format) {
-				case ScribeFormat.u8:
+				case Enums.ScribeFormat.u8:
 					stream_PEER.PutU8((byte)value); return true;
-				case ScribeFormat.i8:
+				case Enums.ScribeFormat.i8:
 					stream_PEER.Put8((sbyte)value); return true;
-				case ScribeFormat.u16:
+				case Enums.ScribeFormat.u16:
 					stream_PEER.PutU16((ushort)value); return true;
-				case ScribeFormat.i16:
+				case Enums.ScribeFormat.i16:
 					stream_PEER.Put16((short)value); return true;
-				case ScribeFormat.u32:
+				case Enums.ScribeFormat.u32:
 					stream_PEER.PutU32((uint)value); return true;
-				case ScribeFormat.i32:
+				case Enums.ScribeFormat.i32:
 					stream_PEER.Put32((int)value); return true;
 
-				case ScribeFormat.ascii:{
+				case Enums.ScribeFormat.ascii:{
 					byte[] bytes = ( (String)value ).ToAscii();
 					Array.Resize<byte>(ref bytes, format_extra);
 					stream_PEER.PutData(bytes); return true;
 				}
-				case ScribeFormat.utf8:{
+				case Enums.ScribeFormat.utf8:{
 					byte[] bytes = ( (String)value ).ToUTF8();
 					Array.Resize<byte>(ref bytes, format_extra);
 					stream_PEER.PutData(bytes); return true;
 				}
-				case ScribeFormat.raw:
+				case Enums.ScribeFormat.raw:
 					stream_PEER.PutData((byte[])value); return true;
 			}
 		}
@@ -446,9 +486,9 @@ public class Scribe_mono : Node
 		// 	// 	return bail("ERR_FILE_EOF", "file end reached");
 				
 		// 	if (_flags == 1)
-		// 		return assignToRef(_curr_record_ref, key, readFromStream(_handle, (ScribeFormat)format, -1));
+		// 		return assignToRef(_curr_record_ref, key, readFromStream(_handle, (Enums.ScribeFormat)format, -1));
 		// 	else
-		// 		return writeToStream(_handle, (ScribeFormat)format, grabFromRef(_curr_record_ref, key), -1);
+		// 		return writeToStream(_handle, (Enums.ScribeFormat)format, grabFromRef(_curr_record_ref, key), -1);
 		
 		// } else { // compressed data (_compressed_top)
 
@@ -456,16 +496,16 @@ public class Scribe_mono : Node
 		// 	// 	return bail("ERR_FILE_EOF", "compressed buffer end reached");
 			
 		// 	if (_flags == 1)
-		// 		return assignToRef(_curr_record_ref, key, readFromStream(_compressed_top, (ScribeFormat)format, -1));
+		// 		return assignToRef(_curr_record_ref, key, readFromStream(_compressed_top, (Enums.ScribeFormat)format, -1));
 		// 	else
-		// 		return writeToStream(_compressed_top, (ScribeFormat)format, grabFromRef(_curr_record_ref, key), -1);
+		// 		return writeToStream(_compressed_top, (Enums.ScribeFormat)format, grabFromRef(_curr_record_ref, key), -1);
 		// }
 	}
 	public bool put(int format, object key, int format_extra) { //, dynamic default_value)
 		if (__file_flags == 1)
-			return assignToRef(_curr_record_ref, key, readFromStream(_bin_reader, (ScribeFormat)format, format_extra));
+			return assignToRef(_curr_record_ref, key, readFromStream(_bin_reader, (Enums.ScribeFormat)format, format_extra));
 		else
-			return writeToStream(_bin_writer, (ScribeFormat)format, grabFromRef(_curr_record_ref, key), format_extra);
+			return writeToStream(_bin_writer, (Enums.ScribeFormat)format, grabFromRef(_curr_record_ref, key), format_extra);
 	}
 
 	// public class SaveData

@@ -20,11 +20,13 @@ var storage_yards_settings = []
 
 
 # building C# objects
+var BUILDING_CS = null
 func init_building_stack(): # prepare array of building objects
 	if buildings != []:
 		Log.warning(self, "Attempting to re-init non-empty Buildings stack. Clearing...")
 		buildings = []
-	var BUILDING_CS = load("res://scripts/mono/" + Assets.GAME_SET + "/Building.cs")
+	if BUILDING_CS == null:
+		BUILDING_CS = load("res://scripts/mono/" + Assets.GAME_SET + "/Building.cs")
 	for i in MAX_BUILDINGS:
 		buildings.push_back(BUILDING_CS.new(i))
 	assert(buildings.size() == MAX_BUILDINGS)

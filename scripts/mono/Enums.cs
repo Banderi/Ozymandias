@@ -2,9 +2,20 @@ using Godot;
 using System;
 using System.Security.AccessControl;
 
-public class Enums : Node
+public partial class Enums : Node // todo: move game-specifics to Pharaoh
 {
 	public const int GRID_LENGTH = 228;
+	public enum ScribeFormat {
+		i8,
+		i16,
+		i32,
+		u8,
+		u16,
+		u32,
+		ascii,
+		utf8,
+		raw
+	}
 
 	public enum FigureTypes : byte {
 		NONE = 0,
@@ -318,9 +329,83 @@ public class Enums : Node
 		ANIMAL = 5,
 	}
 	public enum Terrain : uint {
-		
+		TREE =				1,
+		ROCK =				2,
+		WATER =				4,
+		BUILDING =			8,
+		SHRUB =				16, // similar to TREE, but unused/broken in game
+		GARDENS =			32,
+		ROAD =				64,
+		GROUNDWATER =		128,
+		AQUEDUCT =			256,
+		// ELEVATION =			512,
+		// RAMP =				1024,
+		MEADOW =			2048,
+		RUBBLE =			4096,
+		WELL_RANGE =		8192,
+		WALL =				16384,
+		GATEHOUSE =			32768,
+		FLOODPLAIN =		65536,
+		// unk_1 =				131072, // allows road
+		REEDS =				262144,
+		// unk_2 =				524288,
+		ORE =				1048576,
+		// unk_3 =				2097152,
+		// unk_4 =				4194304,
+		// unk_5 =				8388608,
+		IRRIGATED =			16777216,
+		DUNES =				33554432,
+		DEEP_WATER =		67108864,
+		ROAD_FLOODED =		134217728,
+		// unk_6 =				268435456,
+		// unk_7 =				536870912,
+		// unk_8 =				1073741824, // allows road, can not be removed
+		// unk_9 =				2147483648 // allows road
 	}
-	
+	public enum EdgeFlags : byte {
+		MASK_COLUMN = 7,
+		COLUMN_0 = 0,
+		COLUMN_1 = 1,
+		COLUMN_2 = 2,
+		COLUMN_3 = 3,
+		COLUMN_4 = 4,
+		COLUMN_5 = 5,
+		//
+		MASK_ROW = 56,
+		ROW_0 = 0,
+		ROW_1 = 8,
+		ROW_2 = 16,
+		ROW_3 = 24,
+		ROW_4 = 32,
+		ROW_5 = 56,
+		//
+		DRAW_TILE = 64,
+		NATIVE_LAND = 128
+	}
+	public enum BitFlags : byte {
+		MASK_SIZE = 15,
+		SIZE_1 = 0,
+		SIZE_2 = 1,
+		SIZE_3 = 2,
+		SIZE_4 = 3,
+		SIZE_5 = 4,
+		SIZE_6 = 5,
+		SIZE_7 = 6,
+		SIZE_8 = 7,
+		SIZE_9 = 8,
+		//
+		CONSTRUCTION = 16,
+		ALTERNATE_TERRAIN = 32,
+		DELETED = 64,
+		// BIT_NO_PLAZA = 127,
+		PLAZA_OR_EARTHQUAKE = 128,
+		// BIT_NO_CONSTRUCTION_AND_DELETED = 175,
+		// BIT_NO_DELETED = 191,
+		// BIT_NO_CONSTRUCTION = 239,
+		// BIT_NO_SIZES = 240,
+	}
+
+
 	public enum BuildingTypes : byte {
 		NONE = 0,
 		// MENU_FARMS = 2,

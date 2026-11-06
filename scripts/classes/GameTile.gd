@@ -29,37 +29,10 @@ func _init_fill_commons(map_space: bool):
 		map_cantor = grid_cantor - Map.map_grid_start
 		map_x = _x(map_cantor)
 		map_y = _y(map_cantor)
-##		var x_offset = Map.map_grid_start % GRID_LENGTH
-##		var y_offset = Map.map_grid_start / GRID_LENGTH
-#		match Map.city_orientation:
-#			0:
-#				map_x = grid_x - _x(Map.map_grid_start)
-#				map_y = grid_y - _y(Map.map_grid_start)
-#			4:
-#				map_x = GRID_LENGTH - grid_x - _x(Map.map_grid_start)
-#				map_y = GRID_LENGTH - grid_y - _y(Map.map_grid_start)
-##		map_x = grid_x - _x(Map.map_grid_start)
-##		map_y = grid_y - _y(Map.map_grid_start)
-#		map_cantor = _cantor(map_x, map_y)
-##		assert(map_cantor == grid_cantor - Map.map_grid_start)
 	grid_Vector2 = Vector2(grid_x, grid_y)
 	map_Vector2 = Vector2(map_x, map_y)
 func _init_from_coord(x: int, y: int, map_space: bool):
 	if map_space:
-#		map_x = x
-#		map_y = y
-#		match Map.city_orientation:
-#			0:
-#				map_cantor = _cantor(map_x, map_y)
-#				grid_cantor = map_cantor + Map.map_grid_start
-#				grid_x = _x(grid_cantor)
-#				grid_y = _y(grid_cantor)
-#			4:
-#				grid_x = GRID_LENGTH - map_x - _x(Map.map_grid_start)
-#				grid_y = GRID_LENGTH - map_y - _y(Map.map_grid_start)
-#				grid_cantor = _cantor(grid_x, grid_y)
-#
-#				map_cantor = grid_cantor - Map.map_grid_start
 		map_x = x
 		map_y = y
 		map_cantor = _cantor(map_x, map_y)
@@ -90,7 +63,3 @@ func _init(_in, map_space: bool):
 	else:
 		Log.error(self, ERR_INVALID_PARAMETER, "Unrecognized _in type for MapTile construction.")
 		_init_from_coord(0, 0, false)
-
-#func _notification(what):
-#	if what == NOTIFICATION_PREDELETE:
-#		print(1)
