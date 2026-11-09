@@ -58,7 +58,8 @@ func close_all_menus():
 func loading_screen(backdrop_img_idx, loading_text = null, is_localized_key: bool = true):
 	go_to_menu("Loading")
 	if backdrop_img_idx != null:
-		LOADING_BACKDROP.texture = Assets.get_gameset_sg_texture(backdrop_img_idx)
+#		LOADING_BACKDROP.texture = Assets.get_gameset_sg_texture(backdrop_img_idx, false)
+		LOADING_BACKDROP.texture = Assets.get_SG_texture("Pharaoh_Unloaded", backdrop_img_idx, false) # TODO: make gameset-specific
 	if loading_text != null:
 		if !is_localized_key:
 			LOADING_TEXT.text = loading_text
@@ -764,7 +765,7 @@ func game_tick():
 		game_day()
 
 var speed = 10
-var speed_tps = 0.1
+var speed_tps = 60.0 * float(speed) / 100.0
 var ticks_per_frame = 0.1
 var game_refresh_rate = 60.0
 var ticks_to_do = 0
@@ -786,7 +787,8 @@ func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup
 			game_repaint_sprites()
 func game_repaint_sprites():
 	for sprite in get_tree().get_nodes_in_group("sprites"):
-		sprite.repaint()
+#		sprite.repaint()
+		sprite.on_tick()
 
 #############
 

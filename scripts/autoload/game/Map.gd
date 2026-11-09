@@ -1,6 +1,6 @@
 extends Node
 
-# TODO: change this by gameset
+# grid constants
 const CONSTS = {
 	"Pharaoh": {
 		"GRID_SIZE": 228,
@@ -9,12 +9,10 @@ const CONSTS = {
 		"TILE_H": 30,
 	}
 }
-
 func get_grid_size():
 	return CONSTS[Assets.GAME_SET].GRID_SIZE
 func get_grid_length():
 	return CONSTS[Assets.GAME_SET].GRID_LENGTH
-
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
@@ -146,7 +144,8 @@ func tilesets_load_scenario_specifics(): # TODO: anims?
 	
 	# MUST reach here even on errors, otherwise the tileset will disappear into the ether.
 	if tileset == null:
-		success = Log.error("tilesets_load_scenario_specifics", FAILED, "something went horribly wrong!")
+		Log.error("tilesets_load_scenario_specifics", FAILED, "something went horribly wrong!")
+		success = false
 	TILEMAP_FLAT.tile_set = tileset
 	return success
 
@@ -155,13 +154,16 @@ func tilesets_load_scenario_specifics(): # TODO: anims?
 #		return false
 #	grids[grid_name][y][x] = value
 #	return true
-func init():
-	GridsMono.GRID_SIZE = get_grid_size()
 func redraw():
+	# the BIGGEST time sink here is changing cells while Y-sorting is enabled.
+	# TODO: make y-sorting a shader
 	var _t = Stopwatch.start()
+#	TILEMAP_FLAT.cell_y_sort = false
 	if !GridsMono.RedrawMap(TILEMAP_FLAT, grids, city_orientation): # around ~360 ms (120 ms afterwards)
 		return Log.error(self, FAILED, "(GridsMono) could not set TileMap")
+	yield(get_tree(), "idle_frame")
 	Stopwatch.stop(self, _t, "GridsMono.RedrawMap")
+#	TILEMAP_FLAT.cell_y_sort = true
 
 var city_orientation = 0
 var city_view_camera_x = 0

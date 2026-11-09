@@ -11,23 +11,30 @@ func _on_BtnPKWareTest_pressed():
 	Game.do_PKWare_tests()
 func _on_BtnTest2_pressed():
 	var _t = Stopwatch.start()
-	var lemhlkr = 3674
-	for i in range(0, 1000):
-		
+	print(_t)
+#	var lemhlkr = 3674
+	for x in 228:
+		for y in 228:
+			Map.TILEMAP_FLAT.set_cell(x, y, 14453 + rand_range(1,400))
+	for i in range(0, 51000):
+
 #		var a = Figures.figures[0].data.anim_frame
 #		var a = Figures.figures[0].FIGURE_IDX
 #		var a = Figures.figures[0].get2("anim_frame")
 #		var a = Figures.figures[0].get2("destination_tile_grid")
-		var a = Figures.figures[0].animation_get_sprite_idx()
-#		var a = Figures.figures[0].get2("destination_tile_grid")
-		if a == null:
-			return
-#		var a = 100
-		var b = lemhlkr
-		if a[1] < b:
-			pass
-		
-	Stopwatch.stop(self, _t, "", Stopwatch.Milliseconds) # ~1150 ms ---> ~1100 ms
+#		var a = Figures.figures[0].animation_get_sprite_idx()
+##		var a = Figures.figures[0].get2("destination_tile_grid")
+#		if a == null:
+#			return
+##		var a = 100
+#		var b = lemhlkr
+#		if a[1] < b:
+#			pass
+#		Map.TILEMAP_FLAT.set_cell(114, 114, 14453 + rand_range(1,400))
+#		Map.TILEMAP_FLAT.set_cell(114, 114, -1)
+		pass
+	yield(get_tree(), "idle_frame")
+	Stopwatch.stop(self, _t, "", Stopwatch.Milliseconds)
 func _on_BtnLoadAutosave_pressed():
 	Debug.load_testing_save()
 
@@ -51,7 +58,7 @@ func _on_BtnTestSprites_value_changed(value): # BUG: this double-sets when press
 		$TextureRect.texture = null
 		return
 #	get_tree().set_input_as_handled()
-#	$TextureRect.texture = Assets.get_sg_texture("Pharaoh_Terrain.sg3", value)
+#	$TextureRect.texture = Assets.get_SG_texture("Pharaoh_Terrain.sg3", value)
 #	print(value)
 #	$TextureRect.texture = Assets.get_gameset_sg_texture(value)
 	$TextureRect.texture = Assets.get_tagged_sg_texture("SprMain.sg3", value, 0, false)

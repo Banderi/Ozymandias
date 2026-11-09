@@ -24,8 +24,12 @@ var GAME_SET = null
 func set_gameset(game): # TODO - for the future
 	GAME_SET = game
 	GAME_FILES = {} # clear cached paths
+	if !(GAME_SET in SG_CACHE):
+		SG_CACHE[GAME_SET] = {}
+#	if !(GAME_SET in SG_TEXTURES_LOOKUP):
+#		SG_TEXTURES_LOOKUP[GAME_SET] = {}
 	
-	Map.init()
+	GridsMono.GRID_SIZE = Map.get_grid_size()
 	Figures.init_figure_stack()
 	Buildings.init_building_stack()
 
@@ -52,8 +56,8 @@ func ASYNC_get_game_file_path(file_name: String): # this is ASYNCHRONOUS and WIL
 		if path == null:
 			yield(ASYNC_set_game_install_paths(false, "Can not find %s!" % [file_name]), "completed")
 			
-		yield(Engine.get_main_loop(), "idle_frame")
-	yield(Engine.get_main_loop(), "idle_frame")
+		yield(get_tree(), "idle_frame")
+	yield(get_tree(), "idle_frame")
 func ASYNC_set_game_install_paths(force_user_select: bool, title_text: String, dialog_text: String = "Please select the folder containing %s game data.\n" % [GAME_SET]):
 	if Settings.INSTALL_PATH == null || force_user_select:
 		yield(get_tree(), "idle_frame") # required for tree nodes (e.g. FileDialog) to set up before usage.
@@ -202,588 +206,213 @@ func load_png(path: String, flags: int):
 	texture.create_from_image(image, flags)
 	return texture
 
-# SG "Sierra Graphics" archives parsing and raw record ops
-# original SG format dissection resources:
-# https://github.com/bvschaik/julius/blob/master/src/core/image.c
-# https://github.com/lclarkmichalek/libsg/blob/master/c/sgfile.c
-# https://github.com/bvschaik/citybuilding-tools/wiki/SG-file-format
-enum ImageTypes {
-	Plain_WithTransparency = 0,
-	Plain_Opaque = 1,
-	Plain_16x16 = 10,
-	Plain_24x24 = 12,
-	Plain_32x32 = 13, # only used in system.bmp
-	Plain_Font = 20,
-	Isometric = 30, }
-var SG = {}
-func _sg_get_img_record(filename_sgx: String, img_idx: int):
-	# naked SG pak name
-	var pak_name = IO.strip_extension(filename_sgx)
-	if filename_sgx == pak_name:
-		return Log.error("parse_sgx", ERR_INVALID_PARAMETER, "full filename with extension is required but was provided the naked pak_name")
 
-	# check if already parsed
-	if !(pak_name in SG):
-		if !parse_full_sgx(pak_name + ".sg3"):
-			return null
-	
-	# get img record (if present)
-	if img_idx >= SG[pak_name].img.size():
-		return Log.error("_sg_get_img_record", ERR_DOES_NOT_EXIST, "pak '%s' does not contain any image at index %d" % [filename_sgx, img_idx])
-	return SG[pak_name].img[img_idx] # first one is a dummy BUT it is present, so the array MATCHES the naive alignment!
-func _sg_get_bmp_record(filename_sgx: String, bmp_idx: int):
-	# naked SG pak name
-	var pak_name = IO.strip_extension(filename_sgx)
-	if filename_sgx == pak_name:
-		return Log.error("parse_sgx", ERR_INVALID_PARAMETER, "full filename with extension is required but was provided the naked pak_name")
-
-	# check if already parsed
-	if !(pak_name in SG):
-		if !parse_full_sgx(pak_name + ".sg3"):
-			return null
-	
-	# get bmp record (if present)
-	if bmp_idx >= SG[pak_name].bmp.size():
-		return Log.error("_sg_get_img_record", ERR_DOES_NOT_EXIST, "pak '%s' does not contain any bitmap at index %d" % [filename_sgx, bmp_idx])
-	return SG[pak_name].bmp[bmp_idx]
-func _sg_get_tag_record(filename_sgx: String, tag_idx: int):
-	# naked SG pak name
-	var pak_name = IO.strip_extension(filename_sgx)
-	if filename_sgx == pak_name:
-		return Log.error("parse_sgx", ERR_INVALID_PARAMETER, "full filename with extension is required but was provided the naked pak_name")
-
-	# check if already parsed
-	if !(pak_name in SG):
-		if !parse_full_sgx(pak_name + ".sg3"):
-			return null
-	
-	# get tag record (if present)
-	if tag_idx >= SG[pak_name].tag.size() || SG[pak_name].tag[tag_idx] == null:
-		return Log.error("_sg_get_img_record", ERR_DOES_NOT_EXIST, "pak '%s' does not contain any valid tag (group) at index %d" % [filename_sgx, tag_idx])
-	return SG[pak_name].tag[tag_idx]
-func _sg_img_get_external_555(img: Dictionary):
-	return IO.strip_extension(img.__bmp_name) + ".555"
-func _image_from_raw_sg_data(raw_data: PoolByteArray, img: Dictionary, alpha_data) -> Image:
-	var extracted_image: Image = null
-	match img.type:
-		ImageTypes.Plain_WithTransparency,\
-		ImageTypes.Plain_Opaque,\
-		ImageTypes.Plain_16x16,\
-		ImageTypes.Plain_24x24,\
-		ImageTypes.Plain_32x32,\
-		ImageTypes.Plain_Font:
-			if !img.has_compressed_alpha:
-				extracted_image = SGImageMono.ReadPlain(raw_data, img.width, img.height) as Image
-			else: # 256, 257, 276 etc.
-				extracted_image = SGImageMono.ReadWithCompressedAlpha(raw_data, img.width, img.height) as Image
-		ImageTypes.Isometric: # TODO: set isometric tile width/height by gameset 
-			extracted_image = SGImageMono.ReadIsometric(raw_data, img.uncompressed_length, img.width, img.height, img.isometric_tile_size, 30, 58) as Image
-		_: # unknown image type?
-			return Log.error(self, ERR_INVALID_PARAMETER, "unknown image type '%d'" % [img.type])
-	if alpha_data != null:
-		SGImageMono.SetAlphaMask(extracted_image, img.width, alpha_data)
-	return extracted_image
-func parse_full_sgx(filename_sgx: String, force_reparse: bool = false) -> bool: # .sgx head
-#	return parse_sgx_2(filename_sgx, force_reparse)
-#	Log.generic("parse_sgx", "filename_sgx:%s, force_reparse:%s" % [filename_sgx, force_reparse])
-	var _t = Stopwatch.start()
-
-	# naked SG pak name
-	var pak_name = IO.strip_extension(filename_sgx)
-	if filename_sgx == pak_name:
-		Log.error("parse_sgx", ERR_INVALID_PARAMETER, "full filename with extension is required but was provided the naked pak_name")
-		return false
-
-	# check if already parsed
-	if pak_name in SG && !force_reparse:
-		return true
-
-	# actual path
-	var path = get_game_file_path(filename_sgx)
+var SG_CACHE = {}
+func get_sgx_path(pak_name: String):
+	var filename_sgx = pak_name + SG_EXTENSION[GAME_SET] # e.g. ".sg3" for Pharaoh
+	return get_game_file_path(filename_sgx)
+func extract_sgx(pak_name: String):
+	var path = get_sgx_path(pak_name) # full path to .sgx file
 	if path == null:
 		return false
-
-	# open .sgx file
-	var file = IO.open(path, File.READ, true) as FileEx
-	if file == null:
+	if !SG.open(path): # open & parse pak
 		return false
-
-	# initialize pak data
-	SG[pak_name] = {
-		"header": {},
-		"bmp": [],
-		"img": [],
-		"tag": [],
-#		"tags": {},
-#		"tag_names": {}
-	}
-	var p_data = SG[pak_name]
-
-	# header
-	p_data.header = {
-		"filesize_sgx": file.get_u32(),
-		"version": file.get_u32(),
-		"unk00": file.get_u32(), # ???
-		"img_records_max": file.get_i32(),
-		"img_records": file.get_i32(),
-		"bmp_records": file.get_i32(),
-		"bmp_records_nix_system": file.get_i32(),
-		"filesize_total": file.get_u32(),
-		"filesize_555": file.get_u32(),
-		"filesize_external": file.get_u32(),
-		"unk10": file.get_32(),
-		"unk11": file.get_32(),
-		"unk12": file.get_32(),
-		"unk13": file.get_32(),
-		"unk14": file.get_32(),
-		"unk15": file.get_32(),
-		"unk16": file.get_32(),
-		"unk17": file.get_32(),
-		"unk18": file.get_32(),
-		"unk19": file.get_32(),
-		"__tag_records": 0, # set later!
-		"__external_imgs": 0, # set later!
-#		"__uncompressed_data": 0, # set later!
-#		"__compressed_data": 0, # set later!
-#		"__total_data": 0, # set later!
-		"__external_data": 0, # set later!
-		"__alpha_data": 0, # set later!
-	}
-
-	# file offsets
-	var MAX_TAGS = 300
-	var MAX_IMG_RECORDS = SG[pak_name].header.img_records_max
-	var MAX_BMP_RECORDS = 200 # .sg3
-	if SG[pak_name].header.version == 211:
-		MAX_BMP_RECORDS = 100 # .sg2
-	
-	var BMP_RECORD_SIZE = 200
-	var alpha_mask_extra = false
-	var IMG_RECORD_SIZE = 64
-	if SG[pak_name].header.version >= 214:
-		alpha_mask_extra = true
-		IMG_RECORD_SIZE = 72
-	var TAG_NAME_SIZE = 48
-	
-	var OFFSET_TAGS = 80
-	var OFFSET_BMP_RECORDS = OFFSET_TAGS + (MAX_TAGS * 2)
-	var OFFSET_IMG_RECORDS = OFFSET_BMP_RECORDS + (MAX_BMP_RECORDS * BMP_RECORD_SIZE)
-#	var OFFSET_TAG_NAMES = OFFSET_IMG_RECORDS + (MAX_IMG_RECORDS * IMG_RECORD_SIZE)
-	var OFFSET_TAG_NAMES = OFFSET_IMG_RECORDS + (p_data.header.img_records_max * IMG_RECORD_SIZE)
-	
-	# tags (aka "groups")
-#	file.push_cursor_base(OFFSET_TAGS)
-#	for i in p_data.header.bmp_records:
-	for i in MAX_TAGS:
-#		p_data.groups.push_back(file.get_u16())
-		var tag_image_idx = file.get_u16()
-		if tag_image_idx != 0:
-			p_data.tag.push_back({
-				"img": tag_image_idx
-			})
-			p_data.header.__tag_records += 1
-#			p_data.tags[i] = tag_image_idx
-		else:
-			p_data.tag.push_back(null)
-
-	# bmp records
-#	file.push_cursor_base(OFFSET_BMP_RECORDS)
-#	file.seek(OFFSET_BMP_RECORDS)
-	for i in p_data.header.bmp_records:
-		p_data.bmp.push_back({
-			"name": file.get_buffer(65).get_string_from_ascii(),
-			"comment": file.get_buffer(51).get_string_from_ascii(),
-			"width": file.get_u32(),
-			"height": file.get_u32(),
-			"num_images": file.get_u32(),
-			"__num_images_i": 0,
-			"index_start": file.get_u32(),
-			"index_end": file.get_u32(),
-			"unk00": file.get_u32(),  # unknown, img record index
-			"unk01": file.get_u32(),
-			"unk02": file.get_u32(),
-			"unk03": file.get_u32(),  #			8
-			"unk04": file.get_u32(),  #			172
-			"smallest_img_width": file.get_u32(),
-			"smallest_img_height": file.get_u32(),
-
-			"unk07": file.get_u32(),  # 39214	897425
-			"unk08": file.get_u32(),  # 50124	1575400
-			"unk09": file.get_u32(),  # 10910	677975
-
-			"unk10": file.get_u32(),  #				10
-			"unk11": file.get_u32(),
-			"unk12": file.get_u32(),
-			"unk13": file.get_u32(),
-			"unk14": file.get_u32(),
-			"unk15a": file.get_u16(), # 1			1
-			"unk15b": file.get_u16()  #				2
-		})
-
-	# image data
-#	file.push_cursor_base(BMP_RECORD_SIZE * MAX_BMP_RECORDS + IMG_RECORD_SIZE)  # first one is empty/dummy
-	file.seek(OFFSET_IMG_RECORDS + IMG_RECORD_SIZE)
-	p_data.img.push_back(null)
-	for i in range(1, p_data.header.img_records + 1): # first one is NULL so the i is off-by-one
-		p_data.img.push_back({
-			"__sgx_idx": i,
-			"data_offset": file.get_u32(),
-			"data_length": file.get_u32(),
-			"uncompressed_length": file.get_u32(),
-			"unk00": file.get_32(),
-			"offset_to_mirror_sprite": file.get_i32(), # .sg3 only
-			"width": max(file.get_i16(), 0),
-			"height": max(file.get_i16(), 0),
-			"atlas_x": file.get_16(),
-			"atlas_y": file.get_16(),
-			"name_idx": file.get_16(),
-			"animation.num_sprites": file.get_u16(),
-			"animation.unk04": file.get_16(),
-			"animation.sprite_x_offset": file.get_i16(),
-			"animation.sprite_y_offset": file.get_i16(),
-			"animation.unk05": file.get_16(),
-			"animation.unk06": file.get_16(),
-			"animation.unk07": file.get_16(),
-			"animation.unk08": file.get_16(),
-			"animation.unk09": file.get_16(),
-			"animation.can_reverse": file.get_i8(),
-			"animation.unk10": file.get_8(),
-			"type": file.get_u8(),
-			"has_compressed_alpha": file.get_i8(), # aka is_fully_compressed
-			"is_external": file.get_i8(),
-			"has_isometric_top": file.get_i8(), # aka has_compressed_part 
-			"unk11": file.get_8(),
-			"isometric_tile_size": file.get_8(), # not fully consistent?
-			"bmp_record": file.get_u8(),
-			"unk13": file.get_8(),
-			"animation.speed_id": file.get_u8(),
-			"unk14": file.get_8(),
-			"unk15": file.get_8(),
-			"unk16": file.get_8(),
-			"unk17": file.get_8(),
-			"isometric_multi_tile": file.get_8(),
-			"alpha_offset": 0,
-			"alpha_length": 0
-		})
-		var img = p_data.img[-1]
-		img["__bmp_name"] = p_data.bmp[img.bmp_record].name
-		if alpha_mask_extra:
-			img.alpha_offset = file.get_i32()
-			img.alpha_length = file.get_i32()
-		if img.is_external:
-			p_data.header.__external_imgs += 1
-			p_data.header.__external_data += img.data_length
-#		p_data.header.__total_data += img.data_length
-#		p_data.header.__uncompressed_data += img.uncompressed_length
-#		p_data.header.__compressed_data += img.data_length - img.uncompressed_length
-		p_data.header.__alpha_data += img.alpha_length
-		p_data.bmp[img.bmp_record].__num_images_i += 1
-		img.idx_in_bmp = p_data.bmp[img.bmp_record].__num_images_i
-
-	# tag names at the end
-#	file.push_cursor_base((p_data.header.img_records_max - 1) * IMG_RECORD_SIZE)
-#	for i in MAX_TAGS: # first field here is also empty/dummy
-	for i in p_data.tag.size(): # first field here is also empty/dummy
-#		p_data.tag_names.push_back(file.get_buffer(48).get_string_from_ascii())
-#		p_data.group_names.push_back(file.get_buffer(48).get_string_from_ascii())
-		var tag = p_data.tag[i]
-		if tag != null:
-			file.seek(OFFSET_TAG_NAMES + TAG_NAME_SIZE * i)
-			var tag_name = file.get_buffer(TAG_NAME_SIZE).get_string_from_ascii()
-			tag["name"] = tag_name
-#	assert(file.end_reached(true))
-	var _t_1 = Stopwatch.query(_t, Stopwatch.Milliseconds)
-
-#	Log.generic("parse_sgx", "DONE (%d ms) -- %d images, %d bmps, %d tags" % [
-#		Stopwatch.query(_t, Stopwatch.Milliseconds),
-#		p_data.header.img_records,
-#		p_data.header.bmp_records_nix_system,
-#		p_data.header.__tag_records
-#	])
-	file.close()
-	if force_reparse:
-		return p_data.header.img_records
-	else:
-		return true
-func extract_full_sgx(filename_555: String, skip_system_bmp: bool, force_reextract: bool) -> bool: # .555 pak / actual image data
-	
-#	Log.generic("extract_sgx", "filename_555:%s, skip_system_bmp:%s, force_reextract:%s" % [filename_555, skip_system_bmp, force_reextract])
-	var _t = Stopwatch.start()
-	
-	# naked SG pak name
-	var pak_name = IO.strip_extension(filename_555)
-	if filename_555 == pak_name:
-		Log.error("extract_sgx", ERR_INVALID_PARAMETER, "full filename with extension is required but was provided the naked pak_name")
+	if !SG.extract_all((true if SG_PAKS[GAME_SET][pak_name][2] >= 201 else false)):
 		return false
+	SG_CACHE[GAME_SET][pak_name] = SG.get_data() # store in memory (this should NEVER return null or fail)
+	IO.write(str(get_game_cache_path(), "/Data/" , pak_name, ".CACHED"), SG_CACHE[GAME_SET][pak_name]) # try to save to disk, ignoring errors
+	return true
+func get_SG_data(pak_name: String): # return (ref) cached SG data
+	
+	#  OPTION 1: check the data in memory
+	if pak_name in SG_CACHE[GAME_SET]:
+		return SG_CACHE[GAME_SET][pak_name]
+	
+	#  OPTION 2: check cache saved to disk
+	var path_cached = str(get_game_cache_path(), "/Data/" , pak_name, ".CACHED")
+	var r = IO.read(path_cached, false)
+	if r != null:
+		SG_CACHE[GAME_SET][pak_name] = r
+		return SG_CACHE[GAME_SET][pak_name]
+	
+	#  OPTION 3: extract from game files
+	if !extract_sgx(pak_name):
+		return null
+	return SG_CACHE[GAME_SET][pak_name]
 
-	# check if already parsed
-	if !(pak_name in SG):
-		if !parse_full_sgx(pak_name + ".sg3"):
-			return false
-	
-	# actual path
-	var path = get_game_file_path(filename_555)
-	if path == null:
-		return false
-	
-	# open .555 file
-	var file = IO.open(path, File.READ, true) as FileEx
-	if file == null:
-		return false
-	
-	var p_data = SG[pak_name]
-	var has_system_bmp = p_data.header.bmp_records > 0 && p_data.bmp[0].name == "system.bmp"
-	
-	# image data
-	var images_skipped = 0
-	var images_extracted = 0
-	var images_failed = 0
-	var images_external = 0
-	var i = -1
-	for img in p_data.img:
-		i += 1
-		if img == null || (has_system_bmp && img.bmp_record == 0 && skip_system_bmp): # skip system.bmp
-			images_skipped += 1
-			continue
-		
-		if img.is_external: # TODO
-			images_external += 1
-			continue
-		
-		if img.data_length == 0:
-			images_failed += 1
-			continue
-		
-		# check if image is already in cache
-		var path_cached = str(get_game_cache_path(), "/Data/" , pak_name, "/", i, ".texture")
-		if !force_reextract && IO.file_exists(path_cached):
-			images_skipped += 1
-			continue
-		
-		# mirrored sprite
-		if img.offset_to_mirror_sprite != 0:
-			pass # TODO
-		
-		# convert raw pixel data
-		var raw_data_size = img.data_length
-		file.seek(img.data_offset)
-		var raw_data = file.get_buffer(raw_data_size)
-		var alpha_data = file.get_buffer(img.alpha_length) if img.alpha_length != 0 else null
-		var extracted_image = _image_from_raw_sg_data(raw_data, img, alpha_data)
-		
-		# save extracted texture to disk
-		if extracted_image != null:
-			var texture = ImageTexture.new()
-			texture.create_from_image(extracted_image, 0)
-			if !IO.write(path_cached, texture, true):
-				return false
-			images_extracted += 1
-		else:
-			images_failed += 1
-	
-	Log.generic("extract_sgx", "DONE (%d ms) -- %d extracted, %d skipped, %d failed" % [
-		Stopwatch.query(_t, Stopwatch.Milliseconds),
-		images_extracted,
-		images_skipped,
-		images_failed
-	])
-	file.close()
-	if force_reextract:
-		return images_extracted
-	else:
-		return true
+func _sg_get_img_record(pak_name: String, img_idx: int):
+	var sginfo = get_SG_data(pak_name)
+	if sginfo == null:
+		return null
+	if img_idx >= sginfo.img.size():
+		return Log.error("_sg_get_img_record", ERR_DOES_NOT_EXIST, "pak '%s' does not contain any image at index %d" % [pak_name, img_idx])
+	return sginfo.img[img_idx] # first one is a dummy BUT it is present, so the array MATCHES the naive alignment!
+func _sg_get_bmp_record(pak_name: String, bmp_idx: int):
+	var sginfo = get_SG_data(pak_name)
+	if sginfo == null:
+		return null
+	if bmp_idx >= sginfo.bmp.size():
+		return Log.error("_sg_get_img_record", ERR_DOES_NOT_EXIST, "pak '%s' does not contain any bitmap at index %d" % [pak_name, bmp_idx])
+	return sginfo.bmp[bmp_idx]
+func _sg_get_tag_record(pak_name: String, tag_idx: int):
+	var sginfo = get_SG_data(pak_name)
+	if sginfo == null:
+		return null
+	if tag_idx >= sginfo.tag.size() || sginfo.tag[tag_idx] == null:
+		return Log.error("_sg_get_img_record", ERR_DOES_NOT_EXIST, "pak '%s' does not contain any valid tag (group) at index %d" % [pak_name, tag_idx])
+	return sginfo.tag[tag_idx]
 
-func extract_single_sg_texture(filename_sgx: String, img_idx: int) -> Texture: # TODO
-	var _t = Stopwatch.start()
-	
-	# get img record
-	var img = _sg_get_img_record(filename_sgx, img_idx)
-	if img == null:
-		return null
-	
-	# mirrored sprite
-	var is_mirrored = (img.offset_to_mirror_sprite != 0)
-	if is_mirrored:
-		img = _sg_get_img_record(filename_sgx, img_idx + img.offset_to_mirror_sprite)
-		if img == null:
-			return null
-	
-	if img.data_length == 0:
-		return Log.error("extract_single_sg_texture", ERR_INVALID_DATA, "image record %d of pak %s is invalid/empty (data_length=0)" % [img_idx, filename_sgx])
-	
-	# determine external .555 pak source
-	var filename_555 = null
-	if img.is_external:
-		filename_555 = _sg_img_get_external_555(img)
-	else:
-		filename_555 = IO.strip_extension(filename_sgx) + ".555"
-	
-	# bitmap texture data from .555
-	var path = get_game_file_path(filename_555) # actual path
-	if path == null:
-		return null
-	var file = IO.open(path, File.READ, true) as FileEx # open .555 file
-	if file == null:
-		return null
-	
-	# convert raw pixel data
-	if img.is_external:
-		file.seek(img.data_offset - 1)
-	else:
-		file.seek(img.data_offset)
-	var raw_data = file.get_buffer(img.data_length)
-	var alpha_data = file.get_buffer(img.alpha_length) if img.alpha_length != 0 else null
-	file.close()
-	
-	# convert into usable ImageTexture
-	var extracted_image = _image_from_raw_sg_data(raw_data, img, alpha_data)
-	var texture = null
-	if extracted_image != null:
-		texture = ImageTexture.new()
-		if is_mirrored:
-			extracted_image.flip_x()
-		texture.create_from_image(extracted_image, 0)
-	if texture == null:
-		return null
-	
-	# success!
-	Log.generic("extract_single_sg_texture", "Extracted img %d from '%s' (%d ms)" % [
-		img_idx,
-		filename_sgx,
-		Stopwatch.query(_t, Stopwatch.Milliseconds)
-	])
-	return texture
-func get_sg_texture(filename_sgx: String, img_idx: int, seek_cache_only: bool) -> Texture: # this uses the pak's own record indices -- it COUNTS SYSTEM.BMP AS WELL AS THE DUMMY RECORD.
+func get_SG_texture(pak_name: String, img_idx: int, seek_cache_only: bool) -> Texture: # this uses the pak's own record indices -- it COUNTS SYSTEM.BMP AS WELL AS THE DUMMY RECORD.
 	
 	#  OPTION 1: read cached raw texture streams -- around ~380 ms
-	var pak_name = IO.strip_extension(filename_sgx)
-	if filename_sgx == pak_name:
-		return Log.error("get_sg_texture", ERR_INVALID_PARAMETER, "full filename with extension is required but was provided the naked pak_name")
 	var path_cached = str(get_game_cache_path(), "/Data/", pak_name, "/", img_idx, ".texture")
 	var texture = IO.read(path_cached, false, true)
 	if texture != null || seek_cache_only:
 		return texture
 	
 	#  OPTION 2: extract from SG paks -- ?? ms
-	texture = extract_single_sg_texture(filename_sgx, img_idx)
+	var sginfo = get_SG_data(pak_name)
+#	texture = extract_single_sg_texture(pak_name, img_idx)
+	texture = sginfo.textures.get(img_idx, null)
 	if texture != null:
 		IO.write(path_cached, texture, true) # save to cache
 		return texture
 	
 	# return results
 	if texture == null:
-		Log.error("get_sg_texture", ERR_FILE_NOT_FOUND, "could not load game texture %d of pak %s" % [img_idx, pak_name])
+		Log.error("get_SG_texture", ERR_FILE_NOT_FOUND, "could not load game texture %d of pak %s" % [img_idx, pak_name])
 	return texture
-func get_tagged_sg_texture_idx(filename_sgx: String, tag_idx: int, spr_offset: int):
-	var tag = _sg_get_tag_record(filename_sgx, tag_idx)
+func get_tagged_sg_texture_idx(pak_name: String, tag_idx: int, spr_offset: int):
+	var tag = _sg_get_tag_record(pak_name, tag_idx)
 	if tag == null:
 		return null
 	return tag.img + spr_offset
-func get_tagged_sg_texture(filename_sgx: String, tag_idx: int, spr_offset: int, seek_cache_only: bool) -> Texture:
-	var img_idx = get_tagged_sg_texture_idx(filename_sgx, tag_idx, spr_offset)
+func get_tagged_sg_texture(pak_name: String, tag_idx: int, spr_offset: int, seek_cache_only: bool) -> Texture:
+	var img_idx = get_tagged_sg_texture_idx(pak_name, tag_idx, spr_offset)
 	if img_idx == null:
 		return null
-	return get_sg_texture(filename_sgx, img_idx, seek_cache_only)
+	return get_SG_texture(pak_name, img_idx, seek_cache_only)
 
 # gameset-specific SG paks, image id lookups and texture fetch
+const SG_EXTENSION = {
+	"Pharaoh": ".sg3" }
 const SG_PAKS = { # These are the ranges of game paks and how they're laid out in the global image lookup.
-				  #                       start id        final id      start       end
-	"Pharaoh": [  #                       (global)        (global)      (pak)      (pak)
-		["Pharaoh_Unloaded.sg3", 			    1,            682,         1,       682],
-		["SprMain.sg3", 					  683,          11007,         1,     10325],
+				  #                   start id        final id      start       end
+	"Pharaoh": {  #                   (global)        (global)      (pak)      (pak)
+		"Pharaoh_Unloaded": 	[		    1,            682,         1,       682],
+		"SprMain": 				[		  683,          11007,         1,     10325],
 		
-		["Assyrian.sg3",					11008,          11906,         1,       899],
-		["Enemy_1.sg3",						11008,          11736,         1,       729],
-		["Canaanite.sg3",					11008,          11866,         1,       859],
-		["Hittite.sg3",						11008,          11874,         1,       867],
-		["Hyksos.sg3",						11008,          11906,         1,       899],
-		["Kushite.sg3",						11008,          11866,         1,       859],
-		["Libian.sg3",						11008,          11866,         1,       859],
-		["Mitani.sg3",						11008,          11906,         1,       899],
-		["Nubian.sg3",						11008,          11834,         1,       827],
-		["Persian.sg3",						11008,          11874,         1,       867],
-		["Phoenician.sg3",					11008,          11842,         1,       835],
-		["Roman.sg3",						11008,          11882,         1,       875],
-		["SeaPeople.sg3",					11008,          11841,         1,       834],
+		"Assyrian":				[		11008,          11906,         1,       899],
+		"Enemy_1":				[		11008,          11736,         1,       729],
+		"Canaanite":			[		11008,          11866,         1,       859],
+		"Hittite":				[		11008,          11874,         1,       867],
+		"Hyksos":				[		11008,          11906,         1,       899],
+		"Kushite":				[		11008,          11866,         1,       859],
+		"Libian":				[		11008,          11866,         1,       859],
+		"Mitani":				[		11008,          11906,         1,       899],
+		"Nubian":				[		11008,          11834,         1,       827],
+		"Persian":				[		11008,          11874,         1,       867],
+		"Phoenician":			[		11008,          11842,         1,       835],
+		"Roman":				[		11008,          11882,         1,       875],
+		"SeaPeople":			[		11008,          11841,         1,       834],
 		
-		["Pharaoh_General.sg3",				11907,          14452,       201,      2746],
-		["Pharaoh_Terrain.sg3",				14453,          15767,       201,      1515],
+		"Pharaoh_General":		[		11907,          14452,       201,      2746],
+		"Pharaoh_Terrain":		[		14453,          15767,       201,      1515],
 		
-		["sphinx1a.sg3",					15768,          15769,       201,       202],
-		["sphinx1b.sg3",					15770,          15771,       201,       202],
-		["sphinx1c.sg3",					15772,          15773,       201,       202],
-		["sphinx1d.sg3",					15774,          15775,       201,       202],
+		"sphinx1a":				[		15768,          15769,       201,       202],
+		"sphinx1b":				[		15770,          15771,       201,       202],
+		"sphinx1c":				[		15772,          15773,       201,       202],
+		"sphinx1d":				[		15774,          15775,       201,       202],
 		
-		["obelisk5x5a.sg3",					15768,          15768,       201,       201],
-		["obelisk3x3a.sg3",					15770,          15770,       201,       201],
-		["obelisk_extra.sg3",				15776,          15791,       201,       216],
+		"obelisk5x5a":			[		15768,          15768,       201,       201],
+		"obelisk3x3a":			[		15770,          15770,       201,       201],
+		"obelisk_extra":		[		15776,          15791,       201,       216],
 		
-		["Temple_nile.sg3",					15792,          15829,       201,       238],
-		["Temple_ra.sg3",					15792,          15829,       201,       238],
-		["Temple_ptah.sg3",					15792,          15829,       201,       238],
-		["Temple_seth.sg3",					15792,          15829,       201,       238],
-		["Temple_bast.sg3",					15792,          15829,       201,       238],
+		"Temple_nile":			[		15792,          15829,       201,       238],
+		"Temple_ra":			[		15792,          15829,       201,       238],
+		"Temple_ptah":			[		15792,          15829,       201,       238],
+		"Temple_seth":			[		15792,          15829,       201,       238],
+		"Temple_bast":			[		15792,          15829,       201,       238],
 		
-		["Empire.sg3",						15830,          15830,       201,       201],
+		"Empire":				[		15830,          15830,       201,       201],
 		
-		["SprAmbient.sg3",					15831,          18764,         1,      2934],
-		["Pharaoh_Fonts.sg3",				18765,          20104,       201,      1540],
-		["Egyptian.sg3",					20105,          20883,         1,       779],
-		["SprMain2.sg3",					20884,          23235,         1,      2352],
-		["Expansion.sg3",					23236,          23935,       201,       900],
+		"SprAmbient":			[		15831,          18764,         1,      2934],
+		"Pharaoh_Fonts":		[		18765,          20104,       201,      1540],
+		"Egyptian":				[		20105,          20883,         1,       779],
+		"SprMain2":				[		20884,          23235,         1,      2352],
+		"Expansion":			[		23236,          23935,       201,       900],
 		
-		["Pyramid.sg3",						23936,          24163,       201,       428],
-		["Mastaba.sg3",						23936,          24935,       201,       900],
-		["PyramidDummy.sg3",				23936,          24163,       201,       428],
+		"Pyramid":				[		23936,          24163,       201,       428],
+		"Mastaba":				[		23936,          24935,       201,       900],
+		"PyramidDummy":			[		23936,          24163,       201,       428],
 		# ?? (dummy yellow squares until end)
 		# canonical end = 25139
 		
 		# ---------------- non-canon order override!! ---------------- #
 		
-#		["Pyramid.sg3",						30000,          30227,       201,       428],
+#		"Pyramid":				[		30000,          30227,       201,       428],
 
-	] }
-func extract_sg_paks(force_reextract: bool = false): # parse sgx records AND extract images to cache, if missing
+	} }
+#var SG_TEXTURES_LOOKUP = {}
+#func extract_sg_pak(pak_name, force_reextract: bool = false):
+#	var _t = Stopwatch.start()
+##	var pak_name = pak_range_info[0]
+#	var pak_range_info = SG_PAKS[pak_name]
+#	var start_img_id = pak_range_info[0]
+#	var end_img_id = pak_range_info[1]
+#	var skip_initial = pak_range_info[2]
+#	var total_img_records = pak_range_info[3]
+#
+#	var r = parse_full_sgx(pak_name, true)
+#	if r != total_img_records:
+#		return false
+#	if r + start_img_id - skip_initial != end_img_id:
+#		var shouldvebeen = r + start_img_id - skip_initial
+#		return false
+##	var pak_name = IO.strip_extension(pak_name)
+#
+#	var textures = extract_full_sgx(pak_name + ".555", (true if skip_initial >= 201 else false), force_reextract)
+#	if textures == null:
+#		return false
+#	else:
+#		SG_TEXTURES_LOOKUP[GAME_SET].merge(textures)
+#	Stopwatch.stop("extract_sg_pak", _t, "extracted SG pak '%s'" % [pak_name])
+func extract_sg_paks(): # parse sgx records AND extract images to cache, if missing
 	var _t = Stopwatch.start()
-	for i in SG_PAKS[GAME_SET].size():
-		var pak_range_info = SG_PAKS[GAME_SET][i]
-		
-		var filename_sgx = pak_range_info[0]
-		var start_img_id = pak_range_info[1]
-		var end_img_id = pak_range_info[2]
-		var skip_initial = pak_range_info[3]
-		var total_img_records = pak_range_info[4]
-		
-		var r = parse_full_sgx(filename_sgx, true)
-		if r != total_img_records:
+	for pak_name in SG_PAKS[GAME_SET].size():
+		if !extract_sgx(pak_name):
 			return false
-		if r + start_img_id - skip_initial != end_img_id:
-			var shouldvebeen = r + start_img_id - skip_initial
-			return false
-		var pak_name = IO.strip_extension(filename_sgx)
-		if !extract_full_sgx(pak_name + ".555", (true if skip_initial >= 201 else false), force_reextract):
-			return false
-	Stopwatch.stop("load_sg_paks", _t, "SG paks loaded for game '%s'" % [GAME_SET])
+	Stopwatch.stop("extract_sg_paks", _t, "SG paks loaded for game '%s'" % [GAME_SET])
 	return true
-func get_gameset_sg_texture(img_id: int): # this takes into account ONLY THE CANON ORDER, and thus ONLY THE FIRST OVERLAPPING PAK FOUND
-	if GAME_SET in SG_PAKS:
-		for i in SG_PAKS[GAME_SET].size():
-			var pak_range_info = SG_PAKS[GAME_SET][i]
-			var filename_sgx = pak_range_info[0]
-			var start_img_id = pak_range_info[1]
-			var end_img_id = pak_range_info[2]
-			var skip_initial = pak_range_info[3]
-			if img_id >= start_img_id && img_id <= end_img_id:
-				return get_sg_texture(filename_sgx, img_id - start_img_id + skip_initial, false)
-		Log.error(self, ERR_DOES_NOT_EXIST, "image id '%s' could not be resolved" % [img_id])
-	else:
-		Log.error(self, ERR_METHOD_NOT_FOUND, "game set '%s' is not implemented" % [GAME_SET])
-	return null
+#func get_gameset_sg_texture(img_id: int, seek_cache_only: bool): # this takes into account ONLY THE CANON ORDER, and thus ONLY THE FIRST OVERLAPPING PAK FOUND
+#
+##	if GAME_SET in SG_TEXTURES_LOOKUP && img_id in SG_TEXTURES_LOOKUP[GAME_SET]:
+##		return SG_TEXTURES_LOOKUP[GAME_SET][img_id]
+#	if GAME_SET in SG_CACHE && img_id in SG_CACHE[GAME_SET].textures:
+#		return SG_CACHE[GAME_SET].textures[img_id]
+#
+#	elif !seek_cache_only && GAME_SET in SG_PAKS:
+#		for i in SG_PAKS[GAME_SET].size():
+#			var pak_range_info = SG_PAKS[GAME_SET][i]
+#			var pak_name = pak_range_info[0]
+#			var start_img_id = pak_range_info[1]
+#			var end_img_id = pak_range_info[2]
+#			var skip_initial = pak_range_info[3]
+#			if img_id >= start_img_id && img_id <= end_img_id:
+#				return get_SG_texture(pak_name, img_id - start_img_id + skip_initial, false)
+#		Log.error(self, ERR_DOES_NOT_EXIST, "image id '%s' could not be resolved" % [img_id])
+#	else:
+#		Log.error(self, ERR_METHOD_NOT_FOUND, "game set '%s' is not implemented" % [GAME_SET])
+#	return null
 
 # animated sprites: TODO
-func get_animated_sprite_texture(filename_sgx: String, img_idx: int, seek_cache_only: bool):
-	var img = _sg_get_img_record(filename_sgx, img_idx)
-	var bmp = _sg_get_bmp_record(filename_sgx, 1)
+
+func get_animated_sprite_texture(pak_name: String, tag_idx: int, seek_cache_only: bool):
+	var img_idx = get_tagged_sg_texture_idx(pak_name, 5, 0)
+	if img_idx == null:
+		return null
+	var img = _sg_get_img_record(pak_name, img_idx)
+#	var bmp = _sg_get_bmp_record(pak_name, tag_idx)
 	pass
 
 # tiles and tileset ops
@@ -805,62 +434,72 @@ var SHARED_TILESET = null
 var FULL_TILESET = null
 func tileset_add_tile_from_texture(tileset: TileSet, texture: Texture, id: int): # constructs tile from texture and add to tileset
 #	if id == 850 + 14252:														 # for some reason, this shows [Null] in editor
-#		texture = get_sg_texture("Pharaoh_Terrain.sg3", 850)					 # upon applying certain textures. e.g.:
+#		texture = get_SG_texture("Pharaoh_Terrain.sg3", 850)					 # upon applying certain textures. e.g.:
 	var tile_size = (texture.get_size().x + 2) / TILE_WIDTH_PIXELS				 # - Pharaoh_Terrain @ 850 (SPR_B_DOCK_E)
 	tileset.create_tile(id)
 	tileset.tile_set_texture(id, texture)
 	tileset.tile_set_texture_offset(id, Vector2(0, (15 * (tile_size + 1)) - texture.get_size().y))
-func add_pak_sprites_into_tileset(tileset: TileSet, filename_sgx: String, canon_sequence: bool) -> bool: # DO NOT USE this on a tileset IN USE in a TileMap! DETACH it first!!
+func add_pak_sprites_into_tileset(tileset: TileSet, pak_name: String, canon_sequence: bool) -> bool: # DO NOT USE this on a tileset IN USE in a TileMap! DETACH it first!!
 	var _t = Stopwatch.start()
 	if tileset == null:
 		Log.error("add_pak_sprites_into_tileset", ERR_INVALID_PARAMETER, "tileset parameter was passed null")
 		return false
 	
 	# find pak info in gameset records
-	var pak_range_info = null
-	if canon_sequence:
-		for i in SG_PAKS[GAME_SET].size():
-			pak_range_info = SG_PAKS[GAME_SET][i]
-			if pak_range_info[1] >= 30000:
-				break
-			if filename_sgx != pak_range_info[0]:
-				pak_range_info = null
-			else:
-				break
-		if pak_range_info == null:
-			Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [filename_sgx])
-			return false
-	else:
-		for i in range(SG_PAKS[GAME_SET].size()-1, -1, -1):
-			pak_range_info = SG_PAKS[GAME_SET][i]
-			if pak_range_info[1] < 30000:
-				break
-			if filename_sgx != pak_range_info[0]:
-				pak_range_info = null
-			else:
-				break
-		if pak_range_info == null:
-			Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [filename_sgx])
-			return false
+	var pak_range_info = SG_PAKS[GAME_SET].get(pak_name, null)
+#	var pak_range_info = null
+#	if canon_sequence:
+#		for pak_name in SG_PAKS[GAME_SET]:
+#			pak_range_info = SG_PAKS[GAME_SET][pak_name]
+#			if pak_range_info[1] >= 30000:
+#				break
+#			if pak_name != pak_range_info[0]:
+#				pak_range_info = null
+#			else:
+#				break
+#		if pak_range_info == null:
+#			Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [pak_name])
+#			return false
+#	else:
+#		var paks_in_order = SG_PAKS[GAME_SET].keys()
+#		for i in range(paks_in_order.size()-1, -1, -1):
+#			var pak_name = paks_in_order[i]
+#			pak_range_info = SG_PAKS[GAME_SET][pak_name]
+#			if pak_range_info[1] < 30000:
+#				break
+#			if pak_name != pak_range_info[0]:
+#				pak_range_info = null
+#			else:
+#				break
+#		if pak_range_info == null:
+#			Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [pak_name])
+#			return false
+	if pak_range_info == null:
+		Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [pak_name])
+		return false
 	
-	var global_start_img_id = pak_range_info[1]
-	var global_end_img_id = pak_range_info[2]
-	var skip_initial = pak_range_info[3]
+	var global_start_img_id = pak_range_info[0]
+	var global_end_img_id = pak_range_info[1]
+	var skip_initial = pak_range_info[2]
 		
 	
 	# get .sgx header data
-	var pak_name = IO.strip_extension(filename_sgx) # naked SG pak name
-	if !(pak_name in SG) || !("header" in SG[pak_name]): # check if data was already parsed
-		if !parse_full_sgx(filename_sgx):
-			return false
-	var pak_header = SG[pak_name].header
+#	var pak_name = IO.strip_extension(pak_name) # naked SG pak name
+#	if !(pak_name in SG_CACHE) || !("header" in SG_CACHE[GAME_SET][pak_name]): # check if data was already parsed
+#		if !parse_full_sgx(pak_name):
+#			return false
+#	var pak_header = sginfo.header
+	
+	var sginfo = get_SG_data(pak_name)
+	if sginfo == null:
+		return false
 	
 	# load images within the boundaries of the global ids of this pak
 	var replaced = 0
 	var skipped = 0
 	var last_img_id = null
-	for i in range(skip_initial, pak_header.img_records + 1): # img_records does NOT include the dummy image at #0
-		var texture = get_sg_texture(filename_sgx, i, true)
+	for i in range(skip_initial, sginfo.header.img_records + 1): # img_records does NOT include the dummy image at #0
+		var texture = get_SG_texture(pak_name, i, true)
 		if texture == null:
 			skipped += 1
 			continue
@@ -873,10 +512,10 @@ func add_pak_sprites_into_tileset(tileset: TileSet, filename_sgx: String, canon_
 		tileset_add_tile_from_texture(tileset, texture, last_img_id)
 	
 	if last_img_id != global_end_img_id:
-		Log.error("add_pak_sprites_into_tileset", ERR_BUG, "pak '%s' image ids do not add up as expected (%d != %d)" % [filename_sgx, last_img_id, global_end_img_id])
+		Log.error("add_pak_sprites_into_tileset", ERR_BUG, "pak '%s' image ids do not add up as expected (%d != %d)" % [pak_name, last_img_id, global_end_img_id])
 		return false
 	Log.generic("add_pak_sprites_into_tileset", "'%s' (%d ms) -- tiles %d --> %d, %d replaced, %d skipped" % [
-		filename_sgx,
+		pak_name,
 		Stopwatch.query(_t, Stopwatch.Milliseconds),
 		global_start_img_id,
 		last_img_id,
@@ -943,6 +582,10 @@ func load_animations(ignore_cache: bool = false) -> bool: # TODO
 #	if !load_sgx("SprMain.sg3"): return false
 #	if !load_sgx("SprMain2.sg3"): return false
 #	get_animated_sprite_texture()
+	if get_SG_data("SprMain") == null:
+		return false
+	if get_SG_data("SprMain2") == null:
+		return false
 	return true
 func load_monuments(ignore_cache: bool = false) -> bool: # this loads the UNLOADED / OVERLAPPING paks into NON-CANON ORDER.
 	var _t = Stopwatch.start()
@@ -976,8 +619,8 @@ func test_print_sgx():
 	var files = IO.dir_contents(str(Settings.INSTALL_PATH, "/Data")).files
 	for f in files:
 		if IO.get_extension(f) == "sg3":
-			parse_full_sgx(f)
-			var h = SG[IO.strip_extension(f)].header
+			extract_sgx(IO.strip_extension(f))
+			var h = SG_CACHE[GAME_SET][IO.strip_extension(f)].header
 			print("%-20s %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d" % [
 				f,
 				h.filesize_sgx,

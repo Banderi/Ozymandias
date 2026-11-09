@@ -197,17 +197,11 @@ public partial class Figure : ReferenceEx
 	// raw data fields set/get (for accessing from GDScript)
 	static readonly Dictionary<string, FieldInfo> Fields = typeof(FigureData).GetFields().ToDictionary(f => f.Name);
 	public object get(String fieldName) {
-		// FieldInfo field = Fields[fieldName];
-		// if (field == null)
-		// 	return null;
 		if (!Fields.TryGetValue(fieldName, out FieldInfo field))
 			return null;
 		return field.GetValue(data);
 	}
 	public bool set(String fieldName, object value) {
-		// FieldInfo field = Fields[fieldName];
-		// if (field == null)
-		// 	return false;
 		if (!Fields.TryGetValue(fieldName, out FieldInfo field))
 			return false;
 		try {
@@ -220,7 +214,6 @@ public partial class Figure : ReferenceEx
 	}
 
 	// slightly more performant set/get (unnecessary?)
-	// struct Meta { public int Offset; public String Type; }
 	private static readonly Type tt_int = typeof(int);
 	struct Meta { public int Offset; public Type Type; }
 	static readonly Dictionary<string, Meta> DataMetaTable = Build();
@@ -338,8 +331,10 @@ public partial class Figure : ReferenceEx
 		// map_figure_remove();
 
 		data.state = Enums.FigureStates.NONE;
-		FigureSprite.QueueFree();
-		FigureSprite = null;
+		if (FigureSprite != null) {
+			FigureSprite.QueueFree();
+			FigureSprite = null;
+		}
 	}
 
 	// linked buildings --- these are boilerplates that return the Building object via GameInterfaces.GetBuilding()
@@ -368,7 +363,8 @@ public partial class Figure : ReferenceEx
 	// Moreover, it can not be applied forwardly from C#, because Godot is handling the rendering and Figure.repaint()
 	// is called by the tick engine logic. Thus, Godot must call animation_get_sprite_idx() to retrieve useful info
 	// whenever it is needed, and animation_get_sprite_idx() needs to compute them on the spot.
-	int[] animation_get_sprite_idx() { // this is the main OUT function that computes the current sprite details.
+	bool ianimation_anim_changed = true;
+	int[] animation_sprite_poll() { // this is the main OUT function that computes the current sprite details.
 		
 		FigureActionProps props = FigureActionProperties[(int)data.type];
 		// figure::image_set_animation(int collection, int group, int offset, int max_frames, int duration)
@@ -382,15 +378,17 @@ public partial class Figure : ReferenceEx
 		// anim_frame_duration = duration;
 
 
-		return new int[] {data.anim_frame, 2};
+		return new int[] {data.anim_frame, (int)props.image_group.pak, props.image_group.tag_idx};
 	}
-	void animation_advance() { //
+	void update_sprite() { //
 		// var a = (byte)12;
 		data.anim_frame = (byte)((int)++data.anim_frame % 12);
+		ianimation_anim_changed = true;
 		// data.anim_frame++;
 		// if (data.anim_frame >= 12)
 		// 	data.anim_frame = 0;
 	}
+
 	void update_linked_buildings() {
 // 		building *b = home();
 // 		building *b_imm = immigrant_home();
@@ -631,7 +629,7 @@ public partial class Figure : ReferenceEx
 // 		}
 
 		
-		animation_advance();
+		update_sprite();
 
 		// poof if LOST
 		if (data.direction == Enums.Directions.CAN_NOT_REACH)
