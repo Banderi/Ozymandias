@@ -11,8 +11,11 @@ const CONSTS = {
 }
 func get_grid_size():
 	return CONSTS[Assets.GAME_SET].GRID_SIZE
-func get_grid_length():
+func get_grid_cantor_length():
 	return CONSTS[Assets.GAME_SET].GRID_LENGTH
+func get_grid_center():
+	var s = floor(get_grid_size() * 0.5)
+	return Vector2(s, s)
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
@@ -137,10 +140,10 @@ func tilesets_load_scenario_specifics(): # TODO: anims?
 	
 	# parse various paks (TODO, for now it's just a few selected paks)
 	var success = true
-	if !Assets.add_pak_sprites_into_tileset(tileset, "Temple_bast.sg3", true): success = false
-	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk5x5a.sg3", true): success = false
-	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk3x3a.sg3", true): success = false
-	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk_extra.sg3", true): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "Temple_bast", true): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk5x5a", true): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk3x3a", true): success = false
+	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk_extra", true): success = false
 	
 	# MUST reach here even on errors, otherwise the tileset will disappear into the ether.
 	if tileset == null:
@@ -180,7 +183,7 @@ var map_border_size = 0
 ## most coord transformations / calcs have been moved to the MapTile helper class.
 
 func correct_orientation(tile: Vector2) -> Vector2:
-	match Map.city_orientation:
+	match city_orientation:
 		2:
 			return Vector2(tile.y, get_grid_size() - tile.x - 1)
 		4:
@@ -188,15 +191,31 @@ func correct_orientation(tile: Vector2) -> Vector2:
 		6:
 			return Vector2(get_grid_size() - tile.y - 1, tile.x)
 	return tile
+func normalize_direction(dir: int):
+	return (8 + dir - city_orientation) % 8
 func map_to_world(tile: Vector2) -> Vector2:
 	return TILEMAP_FLAT.map_to_world(tile)
 
+func map_world_center():
+	return map_to_world(get_grid_center())
+func rotate_left():
+	var prev_camera_pos = Game.INGAME_ROOT.camera_position_target
+	var map_center = map_world_center()
+	var camera_delta = prev_camera_pos - map_center
+	city_orientation = (city_orientation + 2) % 8
+	redraw()
+	Figures.repaint_sprites(true)
+	Game.INGAME_ROOT.camera_move_to(map_center + Vector2(2.0 * camera_delta.y, -0.5 * camera_delta.x))
+func rotate_right():
+	var prev_camera_pos = Game.INGAME_ROOT.camera_position_target
+	var map_center = map_world_center()
+	var camera_delta = prev_camera_pos - map_center
+	city_orientation = (city_orientation - 2 + 8) % 8
+	redraw()
+	Figures.repaint_sprites(true)
+	Game.INGAME_ROOT.camera_move_to(map_center + Vector2(-2.0 * camera_delta.y, 0.5 * camera_delta.x))
 func _input(event):
-	var _city_orientation = city_orientation
 	if Input.is_action_just_pressed("map_rotate_left"):
-		city_orientation = (city_orientation + 2) % 8
+		rotate_left()
 	if Input.is_action_just_pressed("map_rotate_right"):
-		city_orientation = (city_orientation - 2 + 8) % 8
-	if city_orientation != _city_orientation:
-		redraw()
-		Game.game_repaint_sprites()
+		rotate_right()

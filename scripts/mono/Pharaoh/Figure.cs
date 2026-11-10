@@ -363,10 +363,10 @@ public partial class Figure : ReferenceEx
 	// Moreover, it can not be applied forwardly from C#, because Godot is handling the rendering and Figure.repaint()
 	// is called by the tick engine logic. Thus, Godot must call animation_get_sprite_idx() to retrieve useful info
 	// whenever it is needed, and animation_get_sprite_idx() needs to compute them on the spot.
-	bool ianimation_anim_changed = true;
-	int[] animation_sprite_poll() { // this is the main OUT function that computes the current sprite details.
+	bool needs_repaint = false;
+	int[] sprite_poll() { // this is the main OUT function that computes the current sprite details.
 		
-		FigureActionProps props = FigureActionProperties[(int)data.type];
+		// FigureActionProps props = FigureActionProperties[(int)data.type];
 		// figure::image_set_animation(int collection, int group, int offset, int max_frames, int duration)
 		// image_set_animation(action_properties.base_image_collection, action_properties.base_image_group);
 
@@ -378,12 +378,13 @@ public partial class Figure : ReferenceEx
 		// anim_frame_duration = duration;
 
 
-		return new int[] {data.anim_frame, (int)props.image_group.pak, props.image_group.tag_idx};
+		// return new int[] {data.anim_frame, (int)props.image_group.pak, props.image_group.tag_idx};
+		return new int[] {(int)data.type, (int)ImagePak.SPR_MAIN, (int)data.direction, 0, data.anim_frame, data.progress_on_tile, data.tile_grid};
 	}
 	void update_sprite() { //
 		// var a = (byte)12;
 		data.anim_frame = (byte)((int)++data.anim_frame % 12);
-		ianimation_anim_changed = true;
+		needs_repaint = true;
 		// data.anim_frame++;
 		// if (data.anim_frame >= 12)
 		// 	data.anim_frame = 0;
@@ -504,6 +505,9 @@ public partial class Figure : ReferenceEx
 
 
 	public void tick() { // return true if the figure has despawned
+		if (!in_use())
+			return;
+
 		// if DEAD, delete figure -- this is UNSAFE, and must exit the tick loop immediately
 		if (data.state == Enums.FigureStates.DEAD) {
 			figure_delete_UNSAFE();

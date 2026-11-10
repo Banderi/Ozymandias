@@ -8,6 +8,11 @@ enum CursorStates {
 }
 var cursor_state = CursorStates.Nothing
 
+# external camera set (Map, scenario, etc.)
+func camera_move_to(coords):
+	camera_position_target = coords
+	CAMERA.position = coords
+
 # camera inputs
 onready var CAMERA = $Camera2D
 onready var camera_position_target = CAMERA.position

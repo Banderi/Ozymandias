@@ -178,6 +178,7 @@ func load_game(path) -> bool: # TODO: stuff rendering over the loading screen!!
 		Map.tilesets_load_scenario_specifics()
 		Map.redraw()
 		Figures.spawn_sprites()
+		Figures.repaint_sprites(true)
 		
 		####
 		
@@ -752,9 +753,8 @@ func game_day():
 		game_month()
 func game_tick():
 	
-	for f in Figures.figures:
-		if f.in_use():
-			f.tick()
+#	return
+	Figures.tick()
 
 	###
 	
@@ -764,7 +764,7 @@ func game_tick():
 		tick = 0
 		game_day()
 
-var speed = 10
+var speed = 50
 var speed_tps = 60.0 * float(speed) / 100.0
 var ticks_per_frame = 0.1
 var game_refresh_rate = 60.0
@@ -783,12 +783,7 @@ func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup
 				game_tick()
 				ticks_to_do -= 1.0
 				t = 0
-		if needs_repaint:
-			game_repaint_sprites()
-func game_repaint_sprites():
-	for sprite in get_tree().get_nodes_in_group("sprites"):
-#		sprite.repaint()
-		sprite.on_tick()
+		return needs_repaint
 
 #############
 
@@ -838,7 +833,9 @@ func _process(delta):
 	last_fps = Engine.get_frames_per_second()
 	game_refresh_rate = 1.0 / delta
 	ticks_per_frame = speed_tps / game_refresh_rate
-	game_loop(delta)
+	if game_loop(delta):
+		Figures.repaint_sprites()
+		
 
 func _input(event):
 	if STATE == States.Ingame:
@@ -848,7 +845,7 @@ func _input(event):
 		if Input.is_action_pressed("speed_inc"):
 			speed += 10
 		speed = clamp(speed, 0, 5000)
-		speed_tps = 60.0 * float(speed) / 100.0
+		speed_tps = 18 * float(speed) / 100.0
 		DEBUG_ROOT.get_node("DEBUG_LABEL/SpinBoxSpeed").value = speed
 		DEBUG_ROOT.get_node("DEBUG_LABEL/HSliderSpeed").value = speed
 		

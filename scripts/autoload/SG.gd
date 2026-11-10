@@ -9,10 +9,6 @@ var _PAK_NAME = null
 var _PAK_PATH = null
 var _SGX_PATH = null
 func open(path: String) -> bool:
-#	if IO.get_extension(path).left() != "sg":
-#		Log.error("SG.open", ERR_INVALID_PARAMETER, "full filename with extension is required but was provided the naked pak_name")
-#		return false
-
 	# close first any open file
 	if _SGX_PATH != null:
 		close()
@@ -53,9 +49,6 @@ func _parse_headers() -> bool:
 	var _t = Stopwatch.start()
 
 	# open .sgx file
-#	var file = IO.open(_SGX_PATH, File.READ, true) as FileEx
-#	if file == null:
-#		return false
 	if !_file_open(_SGX_PATH):
 		return false
 
@@ -65,8 +58,6 @@ func _parse_headers() -> bool:
 		"bmp": [],
 		"img": [],
 		"tag": [],
-#		"tags": {},
-#		"tag_names": {}
 		"textures": {}
 	}
 
@@ -94,9 +85,6 @@ func _parse_headers() -> bool:
 		"unk19": _FILE_HANDLE.get_32(),
 		"__tag_records": 0, # set later!
 		"__external_imgs": 0, # set later!
-#		"__uncompressed_data": 0, # set later!
-#		"__compressed_data": 0, # set later!
-#		"__total_data": 0, # set later!
 		"__external_data": 0, # set later!
 		"__alpha_data": 0, # set later!
 	}
@@ -120,28 +108,19 @@ func _parse_headers() -> bool:
 	var OFFSET_BMP_RECORDS = OFFSET_TAGS + (MAX_TAGS * 2)
 	var OFFSET_IMG_RECORDS = OFFSET_BMP_RECORDS + (MAX_BMP_RECORDS * BMP_RECORD_SIZE)
 	var OFFSET_TAG_NAMES = OFFSET_IMG_RECORDS + (MAX_IMG_RECORDS * IMG_RECORD_SIZE)
-#	var OFFSET_TAG_NAMES = OFFSET_IMG_RECORDS + (_DATA.header.img_records_max * IMG_RECORD_SIZE)
 	
 	# tags (aka "groups")
-#	_FILE_HANDLE.push_cursor_base(OFFSET_TAGS)
-#	for i in _DATA.header.bmp_records:
-#	var total_tags = 1
 	for i in MAX_TAGS:
-#		_DATA.groups.push_back(_FILE_HANDLE.get_u16())
 		var tag_image_idx = _FILE_HANDLE.get_u16()
 		if tag_image_idx != 0:
 			_DATA.tag.push_back({
 				"img": tag_image_idx
 			})
 			_DATA.header.__tag_records += 1
-#			_DATA.tags[i] = tag_image_idx
 		else:
 			_DATA.tag.push_back(null)
 
 	# bmp records
-#	_FILE_HANDLE.push_cursor_base(OFFSET_BMP_RECORDS)
-#	_FILE_HANDLE.seek(OFFSET_BMP_RECORDS)
-#	for i in _DATA.header.bmp_records:
 	for i in MAX_BMP_RECORDS: # NO DUMMY FIELD HERE
 		_DATA.bmp.push_back({
 			"name": _FILE_HANDLE.get_buffer(65).get_string_from_ascii(),
@@ -174,9 +153,8 @@ func _parse_headers() -> bool:
 		})
 
 	# image data
-#	_FILE_HANDLE.push_cursor_base(BMP_RECORD_SIZE * MAX_BMP_RECORDS + IMG_RECORD_SIZE)  # first one is empty/dummy
-#	_FILE_HANDLE.seek(OFFSET_IMG_RECORDS + IMG_RECORD_SIZE)
 	_DATA.img.push_back(null)
+	_FILE_HANDLE.seek(OFFSET_IMG_RECORDS + IMG_RECORD_SIZE)
 	for i in range(1, _DATA.header.img_records + 1): # first one is NULL so the i is off-by-one
 		_DATA.img.push_back({
 			"__sgx_idx": i,
@@ -190,17 +168,17 @@ func _parse_headers() -> bool:
 			"atlas_x": _FILE_HANDLE.get_16(),
 			"atlas_y": _FILE_HANDLE.get_16(),
 			"name_idx": _FILE_HANDLE.get_16(),
-			"animation.num_sprites": _FILE_HANDLE.get_u16(),
-			"animation.unk04": _FILE_HANDLE.get_16(),
-			"animation.sprite_x_offset": _FILE_HANDLE.get_i16(),
-			"animation.sprite_y_offset": _FILE_HANDLE.get_i16(),
-			"animation.unk05": _FILE_HANDLE.get_16(),
-			"animation.unk06": _FILE_HANDLE.get_16(),
-			"animation.unk07": _FILE_HANDLE.get_16(),
-			"animation.unk08": _FILE_HANDLE.get_16(),
-			"animation.unk09": _FILE_HANDLE.get_16(),
-			"animation.can_reverse": _FILE_HANDLE.get_i8(),
-			"animation.unk10": _FILE_HANDLE.get_8(),
+			"anim_num_sprites": _FILE_HANDLE.get_u16(),
+			"unk04": _FILE_HANDLE.get_16(),
+			"anim_sprite_x_offset": _FILE_HANDLE.get_i16(),
+			"anim_sprite_y_offset": _FILE_HANDLE.get_i16(),
+			"unk05": _FILE_HANDLE.get_16(),
+			"unk06": _FILE_HANDLE.get_16(),
+			"unk07": _FILE_HANDLE.get_16(),
+			"unk08": _FILE_HANDLE.get_16(),
+			"unk09": _FILE_HANDLE.get_16(),
+			"anim_can_reverse": _FILE_HANDLE.get_i8(),
+			"unk10": _FILE_HANDLE.get_8(),
 			"type": _FILE_HANDLE.get_u8(),
 			"has_compressed_alpha": _FILE_HANDLE.get_i8(), # aka is_fully_compressed
 			"is_external": _FILE_HANDLE.get_i8(),
@@ -209,7 +187,7 @@ func _parse_headers() -> bool:
 			"isometric_tile_size": _FILE_HANDLE.get_8(), # not fully consistent?
 			"bmp_record": _FILE_HANDLE.get_u8(),
 			"unk13": _FILE_HANDLE.get_8(),
-			"animation.speed_id": _FILE_HANDLE.get_u8(),
+			"anim_speed_id": _FILE_HANDLE.get_u8(),
 			"unk14": _FILE_HANDLE.get_8(),
 			"unk15": _FILE_HANDLE.get_8(),
 			"unk16": _FILE_HANDLE.get_8(),
@@ -226,28 +204,18 @@ func _parse_headers() -> bool:
 		if img.is_external:
 			_DATA.header.__external_imgs += 1
 			_DATA.header.__external_data += img.data_length
-#		_DATA.header.__total_data += img.data_length
-#		_DATA.header.__uncompressed_data += img.uncompressed_length
-#		_DATA.header.__compressed_data += img.data_length - img.uncompressed_length
 		_DATA.header.__alpha_data += img.alpha_length
 		_DATA.bmp[img.bmp_record].__num_images_i += 1
 		img.idx_in_bmp = _DATA.bmp[img.bmp_record].__num_images_i
 
 	# tag names at the end
-#	_FILE_HANDLE.push_cursor_base((_DATA.header.img_records_max - 1) * IMG_RECORD_SIZE)
-#	for i in MAX_TAGS: # first field here is also empty/dummy
-#	for i in _DATA.tag.size(): # first field here is also empty/dummy
 	for i in _DATA.header.__tag_records + 1: # first field here is also empty/dummy
-#		_DATA.tag_names.push_back(_FILE_HANDLE.get_buffer(48).get_string_from_ascii())
-#		_DATA.group_names.push_back(_FILE_HANDLE.get_buffer(48).get_string_from_ascii())
 		var tag = _DATA.tag[i]
 		if tag != null:
 			_FILE_HANDLE.seek(OFFSET_TAG_NAMES + TAG_NAME_SIZE * i)
 			var tag_name = _FILE_HANDLE.get_buffer(TAG_NAME_SIZE).get_string_from_ascii()
 			tag["name"] = tag_name
 			_DATA.img[tag.img]["__tag_name"] = tag_name
-#			if i <= MAX_BMP_RECORDS:
-#				_DATA.img[tag.img]["__tag_bmp_name"] = _DATA.bmp[i - 1].name
 #	assert(_FILE_HANDLE.end_reached(true))
 	var _t_1 = Stopwatch.query(_t, Stopwatch.Milliseconds)
 	_file_close()
@@ -299,24 +267,17 @@ func _extract_img(i: int) -> Texture:
 		if !_file_open(_PAK_PATH + _PAK_NAME + ".555"):
 			return null
 	else: # marked as external (separate .555 file, named after the BMP group)
-#		images_external += 1
 		if !_file_open(_PAK_PATH + IO.strip_extension(img.__bmp_name) + ".555"):
 			return null
-	
-	# check if image is already in cache
-#		var path_cached = str(get_game_cache_path(), "/Data/" , pak_name, "/", i, ".texture")
-#		if !force_reextract && IO.file_exists(path_cached):
-#			images_skipped += 1
-#			continue
-
-	# check if img data is valid
-	if img.data_length == 0:
-		return null
 	
 	# mirrored sprite
 	var is_mirrored = img.offset_to_mirror_sprite != 0
 	if is_mirrored:
 		img = _DATA.img[i + img.offset_to_mirror_sprite]
+
+	# check if img data is valid
+	if !is_mirrored && img.data_length == 0:
+		return Log.error("SG._extract_img", FAILED, "img %d does not contain valid data (data_length=0)" % [i])
 	
 	# convert raw pixel data
 	var raw_data_size = img.data_length
@@ -324,19 +285,17 @@ func _extract_img(i: int) -> Texture:
 	var raw_data = _FILE_HANDLE.get_buffer(raw_data_size)
 	var alpha_data = _FILE_HANDLE.get_buffer(img.alpha_length) if img.alpha_length != 0 else null
 	var extracted_image = _image_from_raw_sg_data(raw_data, img, alpha_data)
+	if extracted_image == null:
+		return Log.error("SG._extract_img._image_from_raw_sg_data()", FAILED, "could not extract image %d from raw data" % [i])
 	
-#		# save extracted texture to disk
-	if extracted_image != null:
-		var texture = ImageTexture.new()
-		if is_mirrored:
-			extracted_image.flip_x()
-		texture.create_from_image(extracted_image, 0)
-#			if !IO.write(path_cached, texture, true):
-#				return null
-#		images_extracted += 1
-#		extracted_textures[i] = texture
-		return texture
-	return null
+	# convert image to texture
+	var texture = ImageTexture.new()
+	if is_mirrored:
+		extracted_image.flip_x()
+	texture.create_from_image(extracted_image, 0)
+	if texture == null:
+		return Log.error("SG._extract_img.create_from_image()", FAILED, "could not convert image %d's data into a texture" % [i])
+	return texture
 func extract_single(img_idx: int) -> Texture:
 	var _t = Stopwatch.start()
 
@@ -354,12 +313,10 @@ func extract_single(img_idx: int) -> Texture:
 	_DATA.textures[img_idx] = texture
 	return texture
 func extract_all(skip_system_bmp: bool): # .555 pak / actual image data
-#	Log.generic("extract_sgx", "filename_555:%s, skip_system_bmp:%s, force_reextract:%s" % [filename_555, skip_system_bmp, force_reextract])
 	var _t = Stopwatch.start()
 	
 	var extracted_textures = {}
-	
-#	var _DATA = _DATA
+
 	var has_system_bmp = _DATA.header.bmp_records > 0 && _DATA.bmp[0].name == "system.bmp"
 	
 	# image data
@@ -381,6 +338,8 @@ func extract_all(skip_system_bmp: bool): # .555 pak / actual image data
 			images_external += 1
 		
 		# attempt extracting
+		if i == 7827:
+			pass
 		var texture = _extract_img(i)
 		if texture == null:
 			images_failed += 1

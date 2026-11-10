@@ -28,7 +28,6 @@ var ferry_queues = []
 var ferry_transiting = []
 
 # figure sprites
-onready var figure_sprite_TSCN = load("res://scenes/FigureSprite.tscn")
 func spawn_sprites():
 	var _t = Stopwatch.start()
 	for i in figures.size():
@@ -37,8 +36,10 @@ func spawn_sprites():
 			create_sprite(i)
 	Stopwatch.stop(self, _t, "Figures.spawn_sprites")
 func create_sprite(i):
-#	var sprite = FigureSpriteWalker.new(i, figures[i])
-	Map.TILEMAP_FLAT.add_child(FigureSpriteWalker.new(i, figures[i])) # TODO....
+	Map.TILEMAP_FLAT.add_child(FigureSprite.new(i, figures[i]))
+#	var sprite = FigureSprite.new(i, figures[i])
+#	Map.TILEMAP_FLAT.add_child(sprite) # TODO....
+#	sprite.on_tick()
 	
 #	var n = figure_sprite_TSCN.instance()
 #	n.set_figure(i)
@@ -60,13 +61,10 @@ func init_figure_stack(): # prepare array of figure objects
 	assert(figures.size() == MAX_FIGURES)
 func spawn(): # TODO
 	pass
-#func clear_all():
-#	pass
 
 # scribe
 var _in_use = 0
 func enscribe_figures():
-#	init_figure_stack()
 	Scribe.push_compressed(MAX_FIGURES * 388)
 	var _t = Stopwatch.start()
 	_in_use = 0
@@ -85,5 +83,18 @@ func enscribe_figures():
 	])
 	Scribe.pop_compressed()
 
-#func _enter_tree():
-#	init_figure_objs()
+func tick():
+	for f in figures:
+		f.tick()
+		continue
+#		if f.IN_USE:
+		if f.in_use(): # call or direct var is pretty much the same speed
+#		if f.get("state") != 0: # wayyy too slow
+			f.tick()
+			pass
+func repaint_sprites(force_repaint: bool = false):
+	var _t = Stopwatch.start()
+	for sprite in get_tree().get_nodes_in_group("sprites"):
+		sprite.repaint(force_repaint)
+	if force_repaint:
+		Stopwatch.stop(self, _t, "repaint_sprites", Stopwatch.Milliseconds)

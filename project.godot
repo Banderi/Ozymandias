@@ -24,10 +24,10 @@ _global_script_classes=[ {
 "language": "GDScript",
 "path": "res://scripts/classes/CustomMainLoop.gd"
 }, {
-"base": "Sprite",
-"class": "FigureSpriteWalker",
+"base": "AnimatedSprite",
+"class": "FigureSprite",
 "language": "GDScript",
-"path": "res://scripts/classes/FigureSpriteWalker.gd"
+"path": "res://scripts/classes/FigureSprite.gd"
 }, {
 "base": "File",
 "class": "FileEx",
@@ -83,7 +83,7 @@ _global_script_class_icons={
 "ButtonEx": "",
 "ConfirmationDialogEx": "",
 "CustomMainLoop": "",
-"FigureSpriteWalker": "",
+"FigureSprite": "",
 "FileEx": "",
 "GameTile": "",
 "GlobalScope": "",
@@ -119,6 +119,7 @@ SGImageMono="*res://scripts/mono/SGImage_mono.cs"
 ScribeMono="*res://scripts/mono/Scribe_mono.cs"
 Scribe="*res://scripts/autoload/Scribe.gd"
 Enums="*res://scripts/mono/Enums.cs"
+GameSet="*res://scripts/autoload/GameSet.gd"
 SG="*res://scripts/autoload/SG.gd"
 Assets="*res://scripts/autoload/Assets.gd"
 Sounds="*res://scripts/autoload/Sounds.gd"

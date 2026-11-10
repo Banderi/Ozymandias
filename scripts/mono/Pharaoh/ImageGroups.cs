@@ -365,6 +365,9 @@ public class ImageGroups {
     // ////////////////// SPRMAIN
 
     public static readonly E FIGURE_HUNTER_ARROW = _(SPR_MAIN,  0);
+    public static readonly E FIGURE_HUNTER_ARROW_SHADOW = _(SPR_MAIN,  1);
+    public static readonly E FIGURE_EMIGRANT = _(SPR_MAIN,  2);
+    public static readonly E FIGURE_EMIGRANT_DED = _(SPR_MAIN,  2);
     public static readonly E FIGURE_ENGINEER = _(SPR_MAIN,  4); //110
     public static readonly E FIGURE_PREFECT = _(SPR_MAIN,  6); //117
     public static readonly E FIGURE_PREFECT_WITH_BUCKET = _(SPR_MAIN,  8); //121

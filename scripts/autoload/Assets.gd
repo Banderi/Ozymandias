@@ -24,10 +24,7 @@ var GAME_SET = null
 func set_gameset(game): # TODO - for the future
 	GAME_SET = game
 	GAME_FILES = {} # clear cached paths
-	if !(GAME_SET in SG_CACHE):
-		SG_CACHE[GAME_SET] = {}
-#	if !(GAME_SET in SG_TEXTURES_LOOKUP):
-#		SG_TEXTURES_LOOKUP[GAME_SET] = {}
+	GameSet.init_caches()
 	
 	GridsMono.GRID_SIZE = Map.get_grid_size()
 	Figures.init_figure_stack()
@@ -206,39 +203,52 @@ func load_png(path: String, flags: int):
 	texture.create_from_image(image, flags)
 	return texture
 
-
-var SG_CACHE = {}
+# Sierra Graphics paks (.sgx/.555)
 func get_sgx_path(pak_name: String):
-	var filename_sgx = pak_name + SG_EXTENSION[GAME_SET] # e.g. ".sg3" for Pharaoh
+	var filename_sgx = pak_name + GameSet.get_SG_EXTENSION() # e.g. ".sg3" for Pharaoh
 	return get_game_file_path(filename_sgx)
 func extract_sgx(pak_name: String):
+	var pak_info = GameSet.get_SG_PAK(pak_name)
+	if pak_info == null:
+		return false
 	var path = get_sgx_path(pak_name) # full path to .sgx file
 	if path == null:
 		return false
 	if !SG.open(path): # open & parse pak
 		return false
-	if !SG.extract_all((true if SG_PAKS[GAME_SET][pak_name][2] >= 201 else false)):
+	if !SG.extract_all((true if pak_info[2] >= 201 else false)):
 		return false
-	SG_CACHE[GAME_SET][pak_name] = SG.get_data() # store in memory (this should NEVER return null or fail)
-	IO.write(str(get_game_cache_path(), "/Data/" , pak_name, ".CACHED"), SG_CACHE[GAME_SET][pak_name]) # try to save to disk, ignoring errors
+	var sginfo = SG.get_data() # get full SG data dump from the reader
+	if !GameSet.set_SG_CACHE(pak_name, sginfo): # store in memory
+		return false
+	IO.write(str(get_game_cache_path(), "/Data/" , pak_name, ".CACHED"), sginfo) # try to save to disk, ignoring errors
+	
+	# dump all extracted textures to disk cache
+	for i in sginfo.textures:
+		var texture = sginfo.textures[i]
+		if texture != null:
+			var path_cached = str(get_game_cache_path(), "/Data/", pak_name, "/", i, ".texture")
+			IO.write(path_cached, texture, true) # save to cache
 	return true
 func get_SG_data(pak_name: String): # return (ref) cached SG data
 	
 	#  OPTION 1: check the data in memory
-	if pak_name in SG_CACHE[GAME_SET]:
-		return SG_CACHE[GAME_SET][pak_name]
+	var sginfo = GameSet.get_SG_CACHE(pak_name)
+	if sginfo != null:
+		return sginfo
 	
 	#  OPTION 2: check cache saved to disk
 	var path_cached = str(get_game_cache_path(), "/Data/" , pak_name, ".CACHED")
 	var r = IO.read(path_cached, false)
 	if r != null:
-		SG_CACHE[GAME_SET][pak_name] = r
-		return SG_CACHE[GAME_SET][pak_name]
+		sginfo = r
+		GameSet.set_SG_CACHE(pak_name, sginfo)
+		return sginfo
 	
 	#  OPTION 3: extract from game files
 	if !extract_sgx(pak_name):
 		return null
-	return SG_CACHE[GAME_SET][pak_name]
+	return GameSet.get_SG_CACHE(pak_name) # this MUST succeed if the above succeeds!
 
 func _sg_get_img_record(pak_name: String, img_idx: int):
 	var sginfo = get_SG_data(pak_name)
@@ -272,7 +282,8 @@ func get_SG_texture(pak_name: String, img_idx: int, seek_cache_only: bool) -> Te
 	
 	#  OPTION 2: extract from SG paks -- ?? ms
 	var sginfo = get_SG_data(pak_name)
-#	texture = extract_single_sg_texture(pak_name, img_idx)
+	if sginfo == null:
+		return null
 	texture = sginfo.textures.get(img_idx, null)
 	if texture != null:
 		IO.write(path_cached, texture, true) # save to cache
@@ -282,154 +293,116 @@ func get_SG_texture(pak_name: String, img_idx: int, seek_cache_only: bool) -> Te
 	if texture == null:
 		Log.error("get_SG_texture", ERR_FILE_NOT_FOUND, "could not load game texture %d of pak %s" % [img_idx, pak_name])
 	return texture
-func get_tagged_sg_texture_idx(pak_name: String, tag_idx: int, spr_offset: int):
+func get_tagged_SG_img_idx(pak_name: String, tag_idx: int, spr_offset: int):
 	var tag = _sg_get_tag_record(pak_name, tag_idx)
 	if tag == null:
 		return null
 	return tag.img + spr_offset
-func get_tagged_sg_texture(pak_name: String, tag_idx: int, spr_offset: int, seek_cache_only: bool) -> Texture:
-	var img_idx = get_tagged_sg_texture_idx(pak_name, tag_idx, spr_offset)
+func get_tagged_SG_texture(pak_name: String, tag_idx: int, spr_offset: int, seek_cache_only: bool) -> Texture:
+	var img_idx = get_tagged_SG_img_idx(pak_name, tag_idx, spr_offset)
 	if img_idx == null:
 		return null
 	return get_SG_texture(pak_name, img_idx, seek_cache_only)
 
 # gameset-specific SG paks, image id lookups and texture fetch
-const SG_EXTENSION = {
-	"Pharaoh": ".sg3" }
-const SG_PAKS = { # These are the ranges of game paks and how they're laid out in the global image lookup.
-				  #                   start id        final id      start       end
-	"Pharaoh": {  #                   (global)        (global)      (pak)      (pak)
-		"Pharaoh_Unloaded": 	[		    1,            682,         1,       682],
-		"SprMain": 				[		  683,          11007,         1,     10325],
-		
-		"Assyrian":				[		11008,          11906,         1,       899],
-		"Enemy_1":				[		11008,          11736,         1,       729],
-		"Canaanite":			[		11008,          11866,         1,       859],
-		"Hittite":				[		11008,          11874,         1,       867],
-		"Hyksos":				[		11008,          11906,         1,       899],
-		"Kushite":				[		11008,          11866,         1,       859],
-		"Libian":				[		11008,          11866,         1,       859],
-		"Mitani":				[		11008,          11906,         1,       899],
-		"Nubian":				[		11008,          11834,         1,       827],
-		"Persian":				[		11008,          11874,         1,       867],
-		"Phoenician":			[		11008,          11842,         1,       835],
-		"Roman":				[		11008,          11882,         1,       875],
-		"SeaPeople":			[		11008,          11841,         1,       834],
-		
-		"Pharaoh_General":		[		11907,          14452,       201,      2746],
-		"Pharaoh_Terrain":		[		14453,          15767,       201,      1515],
-		
-		"sphinx1a":				[		15768,          15769,       201,       202],
-		"sphinx1b":				[		15770,          15771,       201,       202],
-		"sphinx1c":				[		15772,          15773,       201,       202],
-		"sphinx1d":				[		15774,          15775,       201,       202],
-		
-		"obelisk5x5a":			[		15768,          15768,       201,       201],
-		"obelisk3x3a":			[		15770,          15770,       201,       201],
-		"obelisk_extra":		[		15776,          15791,       201,       216],
-		
-		"Temple_nile":			[		15792,          15829,       201,       238],
-		"Temple_ra":			[		15792,          15829,       201,       238],
-		"Temple_ptah":			[		15792,          15829,       201,       238],
-		"Temple_seth":			[		15792,          15829,       201,       238],
-		"Temple_bast":			[		15792,          15829,       201,       238],
-		
-		"Empire":				[		15830,          15830,       201,       201],
-		
-		"SprAmbient":			[		15831,          18764,         1,      2934],
-		"Pharaoh_Fonts":		[		18765,          20104,       201,      1540],
-		"Egyptian":				[		20105,          20883,         1,       779],
-		"SprMain2":				[		20884,          23235,         1,      2352],
-		"Expansion":			[		23236,          23935,       201,       900],
-		
-		"Pyramid":				[		23936,          24163,       201,       428],
-		"Mastaba":				[		23936,          24935,       201,       900],
-		"PyramidDummy":			[		23936,          24163,       201,       428],
-		# ?? (dummy yellow squares until end)
-		# canonical end = 25139
-		
-		# ---------------- non-canon order override!! ---------------- #
-		
-#		"Pyramid":				[		30000,          30227,       201,       428],
 
-	} }
-#var SG_TEXTURES_LOOKUP = {}
-#func extract_sg_pak(pak_name, force_reextract: bool = false):
-#	var _t = Stopwatch.start()
-##	var pak_name = pak_range_info[0]
-#	var pak_range_info = SG_PAKS[pak_name]
-#	var start_img_id = pak_range_info[0]
-#	var end_img_id = pak_range_info[1]
-#	var skip_initial = pak_range_info[2]
-#	var total_img_records = pak_range_info[3]
-#
-#	var r = parse_full_sgx(pak_name, true)
-#	if r != total_img_records:
-#		return false
-#	if r + start_img_id - skip_initial != end_img_id:
-#		var shouldvebeen = r + start_img_id - skip_initial
-#		return false
-##	var pak_name = IO.strip_extension(pak_name)
-#
-#	var textures = extract_full_sgx(pak_name + ".555", (true if skip_initial >= 201 else false), force_reextract)
-#	if textures == null:
-#		return false
-#	else:
-#		SG_TEXTURES_LOOKUP[GAME_SET].merge(textures)
-#	Stopwatch.stop("extract_sg_pak", _t, "extracted SG pak '%s'" % [pak_name])
-func extract_sg_paks(): # parse sgx records AND extract images to cache, if missing
-	var _t = Stopwatch.start()
-	for pak_name in SG_PAKS[GAME_SET].size():
-		if !extract_sgx(pak_name):
-			return false
-	Stopwatch.stop("extract_sg_paks", _t, "SG paks loaded for game '%s'" % [GAME_SET])
-	return true
-#func get_gameset_sg_texture(img_id: int, seek_cache_only: bool): # this takes into account ONLY THE CANON ORDER, and thus ONLY THE FIRST OVERLAPPING PAK FOUND
-#
-##	if GAME_SET in SG_TEXTURES_LOOKUP && img_id in SG_TEXTURES_LOOKUP[GAME_SET]:
-##		return SG_TEXTURES_LOOKUP[GAME_SET][img_id]
-#	if GAME_SET in SG_CACHE && img_id in SG_CACHE[GAME_SET].textures:
-#		return SG_CACHE[GAME_SET].textures[img_id]
-#
-#	elif !seek_cache_only && GAME_SET in SG_PAKS:
-#		for i in SG_PAKS[GAME_SET].size():
-#			var pak_range_info = SG_PAKS[GAME_SET][i]
-#			var pak_name = pak_range_info[0]
-#			var start_img_id = pak_range_info[1]
-#			var end_img_id = pak_range_info[2]
-#			var skip_initial = pak_range_info[3]
-#			if img_id >= start_img_id && img_id <= end_img_id:
-#				return get_SG_texture(pak_name, img_id - start_img_id + skip_initial, false)
-#		Log.error(self, ERR_DOES_NOT_EXIST, "image id '%s' could not be resolved" % [img_id])
-#	else:
-#		Log.error(self, ERR_METHOD_NOT_FOUND, "game set '%s' is not implemented" % [GAME_SET])
-#	return null
+func get_gameset_SG_img_idx(global_img_id: int): # this takes into account ONLY THE CANON ORDER, and thus ONLY THE FIRST OVERLAPPING PAK FOUND
+	var paks_table = GameSet.get_SG_PAK(null)
+	if paks_table != null:
+		for pak_name in paks_table:
+			var pak_range_info = paks_table[pak_name]
+			var start_img_id = pak_range_info[0]
+			var end_img_id = pak_range_info[1]
+			var skip_initial = pak_range_info[2]
+			if global_img_id >= start_img_id && global_img_id <= end_img_id:
+				return [pak_name, global_img_id - start_img_id + skip_initial]
+		Log.error(self, ERR_DOES_NOT_EXIST, "image id '%s' could not be resolved" % [global_img_id])
+	return null
+func get_gameset_SG_texture(global_img_id: int, seek_cache_only: bool) -> Texture:
+	var r = get_gameset_SG_img_idx(global_img_id)
+	if r == null:
+		return null
+	return get_SG_texture(r[0], r[1], seek_cache_only)
 
 # animated sprites: TODO
+onready var NULL_SPRITE_ANIM = preload("res://assets/sprite_anim_null.tres")
+func build_animated_sprite(pak_name: String, sg_tags: Array): # WARNING-- this can ONLY build from a single pak (for now!) 
+	var offsets = {}
+	var sprite = SpriteFrames.new()
+	for tag in sg_tags:
+	
+		var pak_table = GameSet.get_SG_ANIMS(pak_name)
+		if pak_table == null:
+			return null
+		if tag >= pak_table.size():
+			return Log.error("load_animated_sprite", ERR_DOES_NOT_EXIST, " no known info for animation at tag=%d inside '%s'" % [tag, pak_name])
+		var anim_info = pak_table[tag]
+		var directions = anim_info[0]
+		var frames = anim_info[1]
+		
+		for dir in directions:
+			var anim_name = str(sg_tags.find(tag), "_", dir)
+			var anim_offsets = []
+			sprite.add_animation(anim_name)
+			
+			for f in frames:
+				var img_idx = get_tagged_SG_img_idx(pak_name, tag, dir + f * directions)
+				var texture = get_SG_texture(pak_name, img_idx, false)
+				if texture == null:
+					break
+				sprite.add_frame(anim_name, texture)
+				
+				# sprite offsets
+				# https://github.com/Banderi/Ozymandias_Julius/blob/master/src/graphics/boilerplate.cpp#L699
+				var img = _sg_get_img_record(pak_name, img_idx)
+				var sprite_offset = Vector2(img.anim_sprite_x_offset, img.anim_sprite_y_offset)
+				if img.offset_to_mirror_sprite != 0:
+					img = _sg_get_img_record(pak_name, img_idx + img.offset_to_mirror_sprite)
+					sprite_offset.x = img.width - img.anim_sprite_x_offset
+				anim_offsets.push_back(sprite_offset)
+				
+			offsets[anim_name] = (anim_offsets)
+	
+	sprite.set_meta("offsets", offsets) # if this had not been possible, I don't know what I would have done!!
+	return sprite
+func get_animated_sprite(pak_name: String, sprite_name: String, seek_cache_only: bool) -> SpriteFrames:
+	
+	#  OPTION 1: read cache from memory
+	var sprite = GameSet.get_SPRITES_CACHE(sprite_name)
+	if sprite != null:
+		return sprite
 
-func get_animated_sprite_texture(pak_name: String, tag_idx: int, seek_cache_only: bool):
-	var img_idx = get_tagged_sg_texture_idx(pak_name, 5, 0)
-	if img_idx == null:
+	#  OPTION 2: read cache from disk
+	var path_cached = str(get_game_cache_path(), "/Data/", pak_name, "/", sprite_name, ".sprite")
+	sprite = IO.read(path_cached, false, true)
+	if sprite != null || seek_cache_only:
+		GameSet.set_SPRITES_CACHE(sprite_name, sprite)
+		return sprite
+
+	#  OPTION 3: construct from extracted SG data
+	var spr_cc = sprite_name.split("_")
+	if spr_cc.size() != 2:
 		return null
-	var img = _sg_get_img_record(pak_name, img_idx)
-#	var bmp = _sg_get_bmp_record(pak_name, tag_idx)
-	pass
+	var category = spr_cc[0]
+	var anim_cc_idx = int(spr_cc[1])
+	var sg_tags = GameSet.get_ANIM_LOOKUP(category, anim_cc_idx)
+	if sg_tags == null:
+		return NULL_SPRITE_ANIM
+	sprite = build_animated_sprite(pak_name, sg_tags)
+	if sprite != null:
+#		IO.write(path_cached, sprite, true) # save to cache # <---------------------------
+		GameSet.set_SPRITES_CACHE(sprite_name, sprite)
+		return sprite
+	
+	return NULL_SPRITE_ANIM
+#	return null
 
 # tiles and tileset ops
-const TILESETS = {
-	"Pharaoh": {
-		# these are the STATIC paks that are common to all combinations of enemy, theater, monument era etc.
-		# --- so it's "shared" as in shared to all of the above, NOT as in those that use SHARED ID SPACES. 
-		"shared": ["Pharaoh_General", "Pharaoh_Terrain", "Expansion"],
-		"unloaded": [
-			"Pyramid"
-		]
-	}
-}
 const TILE_WIDTH_PIXELS = 60
 const TILE_HEIGHT_PIXELS = 30
 const HALF_TILE_WIDTH_PIXELS = 30
 const HALF_TILE_HEIGHT_PIXELS = 15
+const TILE_PROGRESS_TICK = Vector2(0, 0)
 var SHARED_TILESET = null
 var FULL_TILESET = null
 func tileset_add_tile_from_texture(tileset: TileSet, texture: Texture, id: int): # constructs tile from texture and add to tileset
@@ -446,34 +419,7 @@ func add_pak_sprites_into_tileset(tileset: TileSet, pak_name: String, canon_sequ
 		return false
 	
 	# find pak info in gameset records
-	var pak_range_info = SG_PAKS[GAME_SET].get(pak_name, null)
-#	var pak_range_info = null
-#	if canon_sequence:
-#		for pak_name in SG_PAKS[GAME_SET]:
-#			pak_range_info = SG_PAKS[GAME_SET][pak_name]
-#			if pak_range_info[1] >= 30000:
-#				break
-#			if pak_name != pak_range_info[0]:
-#				pak_range_info = null
-#			else:
-#				break
-#		if pak_range_info == null:
-#			Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [pak_name])
-#			return false
-#	else:
-#		var paks_in_order = SG_PAKS[GAME_SET].keys()
-#		for i in range(paks_in_order.size()-1, -1, -1):
-#			var pak_name = paks_in_order[i]
-#			pak_range_info = SG_PAKS[GAME_SET][pak_name]
-#			if pak_range_info[1] < 30000:
-#				break
-#			if pak_name != pak_range_info[0]:
-#				pak_range_info = null
-#			else:
-#				break
-#		if pak_range_info == null:
-#			Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [pak_name])
-#			return false
+	var pak_range_info = GameSet.get_SG_PAK(pak_name)
 	if pak_range_info == null:
 		Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [pak_name])
 		return false
@@ -484,12 +430,6 @@ func add_pak_sprites_into_tileset(tileset: TileSet, pak_name: String, canon_sequ
 		
 	
 	# get .sgx header data
-#	var pak_name = IO.strip_extension(pak_name) # naked SG pak name
-#	if !(pak_name in SG_CACHE) || !("header" in SG_CACHE[GAME_SET][pak_name]): # check if data was already parsed
-#		if !parse_full_sgx(pak_name):
-#			return false
-#	var pak_header = sginfo.header
-	
 	var sginfo = get_SG_data(pak_name)
 	if sginfo == null:
 		return false
@@ -556,7 +496,7 @@ func load_locales() -> bool: # TODO: MM, check user settings, add different loca
 	return true
 func load_sounds(ignore_cache: bool = false) -> bool: # TODO
 	return true
-func load_backdrops(ignore_cache: bool = false) -> bool: # this loads the SHARED terrain tilesets
+func load_backdrops(ignore_cache: bool = false) -> bool: # this loads the SHARED terrain GameSet.TILESETS
 	# load tileset from cache -- around 420~460 ms
 	var _t = Stopwatch.start()
 	var path_cached_tileset = get_game_cache_path() + "/" + GAME_SET + "_shared.tileset"
@@ -568,7 +508,10 @@ func load_backdrops(ignore_cache: bool = false) -> bool: # this loads the SHARED
 	else:
 		# construct tileset from extracted sprites -- around 1500~1800 ms
 		SHARED_TILESET = TileSet.new()
-		for pak_name in TILESETS[GAME_SET]:
+		var tileset_paks = GameSet.get_TILESETS("shared")
+		if tileset_paks == null:
+			return false
+		for pak_name in tileset_paks:
 			if !add_pak_sprites_into_tileset(SHARED_TILESET, pak_name + ".sg3", true):
 				return false
 		Stopwatch.stop("load_common_tilesets", _t, "tileset textures generated and loaded")
@@ -579,13 +522,26 @@ func load_backdrops(ignore_cache: bool = false) -> bool: # this loads the SHARED
 		Stopwatch.stop("load_common_tilesets", _t, "tileset save to disk")
 	return true
 func load_animations(ignore_cache: bool = false) -> bool: # TODO
-#	if !load_sgx("SprMain.sg3"): return false
-#	if !load_sgx("SprMain2.sg3"): return false
-#	get_animated_sprite_texture()
-	if get_SG_data("SprMain") == null:
-		return false
-	if get_SG_data("SprMain2") == null:
-		return false
+#	if get_SG_data("SprMain") == null:
+#		return false
+#	if get_SG_data("SprMain2") == null:
+#		return false
+	
+#	var figure_anims = GameSet.get_ANIM_LOOKUP("Figures")
+#	if figure_anims == null:
+#		return false
+#
+#	for i in figure_anims.size():
+#		var anim_name = str(i, "_", Debug.CS_ENUMS.FigureTypes.get(i, null))
+#		print(anim_name)
+#		if get_animated_sprite("SprMain", anim_name, figure_anims[i], false) == null:
+#			return false
+	
+#	if get_animated_sprite("SprMain", "Figures_69", false) == null:
+#		return false
+	
+#	if get_animated_sprite("SprMain", "ostrich", [156, 157, 158, 159, 160], false) == null:
+#		return false
 	return true
 func load_monuments(ignore_cache: bool = false) -> bool: # this loads the UNLOADED / OVERLAPPING paks into NON-CANON ORDER.
 	var _t = Stopwatch.start()
@@ -597,7 +553,10 @@ func load_monuments(ignore_cache: bool = false) -> bool: # this loads the UNLOAD
 		Stopwatch.stop("load_unloaded_tilesets", _t, "tileset textures loaded from cache")
 	else:
 		FULL_TILESET = SHARED_TILESET
-		for pak_name in TILESETS[GAME_SET].unloaded:
+		var tileset_paks = GameSet.get_TILESETS("unloaded")
+		if tileset_paks == null:
+			return false
+		for pak_name in tileset_paks:
 			if !add_pak_sprites_into_tileset(FULL_TILESET, pak_name + ".sg3", false):
 				return false
 		Stopwatch.stop("load_unloaded_tilesets", _t, "tileset textures generated and loaded")
@@ -619,8 +578,7 @@ func test_print_sgx():
 	var files = IO.dir_contents(str(Settings.INSTALL_PATH, "/Data")).files
 	for f in files:
 		if IO.get_extension(f) == "sg3":
-			extract_sgx(IO.strip_extension(f))
-			var h = SG_CACHE[GAME_SET][IO.strip_extension(f)].header
+			var h = get_SG_data(IO.strip_extension(f)).header
 			print("%-20s %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d" % [
 				f,
 				h.filesize_sgx,

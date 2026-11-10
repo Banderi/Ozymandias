@@ -11,7 +11,7 @@ func _on_BtnPKWareTest_pressed():
 	Game.do_PKWare_tests()
 func _on_BtnTest2_pressed():
 	var _t = Stopwatch.start()
-	print(_t)
+#	print(_t)
 #	var lemhlkr = 3674
 	for x in 228:
 		for y in 228:
@@ -55,13 +55,26 @@ func _on_BtnRedrawMap_pressed():
 func _on_BtnTestSprites_value_changed(value): # BUG: this double-sets when pressing ENTER on a new number, oh WELL. not worth the trouble fixing it.
 #	if value == $DEBUG_BTNS/BtnTestSprites.value:
 	if value == -1:
-		$TextureRect.texture = null
+#		$TextureRect.texture = null
+		$TextureRect/AnimatedSprite.frames = null
 		return
 #	get_tree().set_input_as_handled()
 #	$TextureRect.texture = Assets.get_SG_texture("Pharaoh_Terrain.sg3", value)
 #	print(value)
 #	$TextureRect.texture = Assets.get_gameset_sg_texture(value)
-	$TextureRect.texture = Assets.get_tagged_sg_texture("SprMain.sg3", value, 0, false)
+#	$TextureRect.texture = Assets.get_tagged_sg_texture("SprMain.sg3", value, 0, false)
+
+	var sprite = Assets.get_animated_sprite("SprMain", str("Figures_", value), false)
+#	IO.write("res://assets/animtest.tres", anim)
+#	print(ResourceSaver.save("res://assets/animtest2.tres", anim))
+	$TextureRect/AnimatedSprite.frames = sprite
+	if sprite == null:
+		return
+	else:
+		if sprite.has_animation("0_0"):
+			$TextureRect/AnimatedSprite.animation = "0_0"
+		else:
+			$TextureRect/AnimatedSprite.animation = "default"
 #func _on_BtnTestSprites_gui_input(event):
 #	if event is InputEventKey:
 #		if event.pressed && (event as InputEventKey).scancode == KEY_ENTER:
@@ -331,11 +344,12 @@ func print_tile_debug():
 	debug_text = "[color=#ffff00]Figures:   %4d/%d                           \n[/color]" % [Figures._in_use, Figures.MAX_FIGURES]
 #	var figure_id_on_tile = Map.grids.figures[tile.grid_y][tile.grid_x]
 	var figure_id_on_tile = Map.grids.figures.Get(tile.grid_x, tile.grid_y)
-	if figure_id_on_tile != 0:
+	while figure_id_on_tile != 0:
 		debug_text += "  [color=#ffff00]ID:[/color]           %d\n" % [figure_id_on_tile]
 		var figure = Figures.figures[figure_id_on_tile]
 		var type = figure.get("type") # + rand_seed(Game.tick)[0] % 50
-		debug_text += "  [color=#ffff00]Type:[/color]         %s\n" % [Debug.enum_print_bbcode(Debug.CS_ENUMS.FigureTypes, type)]
+		debug_text += "    [color=#ffff00]Type:[/color]         %s\n" % [Debug.enum_print_bbcode(Debug.CS_ENUMS.FigureTypes, type)]
+		figure_id_on_tile = figure.get("next_figure")
 	
 	# buildings
 	debug_text += "[color=#00ffcc]Buildings: %4d/%d\n[/color]" % [Buildings._in_use, Buildings.MAX_BUILDINGS]
@@ -345,7 +359,7 @@ func print_tile_debug():
 		debug_text += "  [color=#00ffcc]ID:[/color]           %d\n" % [building_id_on_tile]
 		var building = Buildings.buildings[building_id_on_tile]
 		var type = building.get("type")
-		debug_text += "  [color=#00ffcc]Type:[/color]         %s\n" % [Debug.enum_print_bbcode(Debug.CS_ENUMS.BuildingTypes, type)]
+		debug_text += "    [color=#00ffcc]Type:[/color]         %s\n" % [Debug.enum_print_bbcode(Debug.CS_ENUMS.BuildingTypes, type)]
 	
 	if $DEBUG_LABEL5.bbcode_text != debug_text:
 		$DEBUG_LABEL5.bbcode_text = debug_text

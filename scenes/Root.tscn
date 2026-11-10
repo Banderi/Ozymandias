@@ -1,4 +1,4 @@
-[gd_scene load_steps=76 format=2]
+[gd_scene load_steps=75 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -54,7 +54,6 @@
 [ext_resource path="res://assets/Pharaoh/WalkerTest.tres" type="SpriteFrames" id=52]
 [ext_resource path="res://assets/Pharaoh/TILE_SHAPE.png" type="Texture" id=53]
 [ext_resource path="res://assets/fonts/basis33_thick_outline.tres" type="DynamicFont" id=54]
-[ext_resource path="res://scenes/FigureSprite.tscn" type="PackedScene" id=55]
 [ext_resource path="res://scripts/classes/RichTextLabelEx.gd" type="Script" id=56]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Load1_00001.png" type="Texture" id=57]
 [ext_resource path="res://assets/fonts/texture_fonts/small_white.tres" type="BitmapFont" id=58]
@@ -204,9 +203,6 @@ playing = true
 __meta__ = {
 "_edit_lock_": true
 }
-
-[node name="FigureSprite" parent="InGame/Map_Top" instance=ExtResource( 55 )]
-position = Vector2( 178, 171 )
 
 [node name="Map_Anim" type="TileMap" parent="InGame"]
 visible = false
@@ -1603,7 +1599,6 @@ localized_key = "TEXT_13_2"
 
 [node name="Debug" type="CanvasLayer" parent="."]
 layer = 2
-visible = false
 script = ExtResource( 46 )
 
 [node name="DEBUG_LABEL" type="RichTextLabel" parent="Debug"]
@@ -1800,31 +1795,33 @@ margin_bottom = 24.0
 text = "autosave.sav"
 
 [node name="BtnTestTerrainImages" type="SpinBox" parent="Debug/DEBUG_BTNS"]
+visible = false
 margin_left = 242.0
 margin_right = 322.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 80, 0 )
+hint_tooltip = "Terrain Test"
 min_value = -1.0
 max_value = 1e+08
 
 [node name="BtnRedrawMap" type="Button" parent="Debug/DEBUG_BTNS"]
-margin_left = 326.0
-margin_right = 416.0
+margin_left = 242.0
+margin_right = 332.0
 margin_bottom = 24.0
 text = "Redraw map"
 
 [node name="BtnTestSprites" type="SpinBox" parent="Debug/DEBUG_BTNS"]
-margin_left = 420.0
-margin_right = 500.0
+margin_left = 336.0
+margin_right = 416.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 80, 0 )
+hint_tooltip = "Sprite Tester"
 mouse_filter = 1
-min_value = -1.0
 max_value = 1e+08
 
 [node name="BtnChangeFPS" type="SpinBox" parent="Debug/DEBUG_BTNS"]
-margin_left = 504.0
-margin_right = 584.0
+margin_left = 420.0
+margin_right = 500.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 80, 0 )
 max_value = 200.0
@@ -1832,8 +1829,8 @@ value = 60.0
 prefix = "FPS"
 
 [node name="Control" type="Control" parent="Debug/DEBUG_BTNS"]
-margin_left = 588.0
-margin_right = 693.0
+margin_left = 504.0
+margin_right = 609.0
 margin_bottom = 24.0
 rect_min_size = Vector2( 105, 0 )
 mouse_filter = 2
@@ -1862,6 +1859,9 @@ show_behind_parent = true
 margin_right = 40.0
 margin_bottom = 40.0
 color = Color( 0.733333, 0.733333, 0.733333, 1 )
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="Debug/TextureRect"]
+playing = true
 
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnPlay" to="Menus/Main" method="_on_BtnPlay_pressed"]
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnWebsite" to="Menus/Main" method="_on_BtnWebsite_pressed"]
