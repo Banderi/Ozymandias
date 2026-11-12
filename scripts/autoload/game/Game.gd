@@ -249,7 +249,6 @@ func enscribe_SAV():
 	Scribe.put(ScribeFormat.i8, "mission_progress_pointer")
 	enscribe_schema(false)
 	
-#	Scribe.sync_record([Map.grids], TYPE_DICTIONARY)
 	Scribe.put_grid(ScribeFormat.u32, "images", true)
 	Scribe.put_grid(ScribeFormat.i8, "edge", true)
 	Scribe.put_grid(ScribeFormat.i16, "buildings", true)
@@ -267,17 +266,11 @@ func enscribe_SAV():
 	
 	Figures.enscribe_figures()
 	
-	Scribe.push_compressed(Figures.MAX_ROUTES * 2) # <---------------------------------- TODO
-#	for i in Figures.MAX_ROUTES:
-#		Scribe.sync_record([Figures.routes, i], TYPE_DICTIONARY)
-#		pass
-	Scribe.pop_compressed()
-	Scribe.push_compressed(500000) # route paths cached data <-------------------- TODO
-	Scribe.pop_compressed()
+	Routing.enscribe_routes() # <---------------------------------- TODO
+	Routing.enscribe_cached_stuff() # <---------------------------------- TODO
 	
 	# formations
-	Scribe.push_compressed(Figures.MAX_FORMATIONS * 144) # <---------------------------- TODO
-	Scribe.pop_compressed()
+	Military.enscribe_formations() # <---------------------------- TODO
 	Scribe.sync_record([Figures], TYPE_OBJECT)
 	Scribe.put(ScribeFormat.i32, "last_used_formation")
 	Scribe.put(ScribeFormat.i32, "last_formation_id")
@@ -285,8 +278,7 @@ func enscribe_SAV():
 	
 	# city data
 	Scribe.sync_record([City], TYPE_OBJECT)
-	Scribe.push_compressed(37808) # <----------------------------- TODO
-	Scribe.pop_compressed()
+	City.enscribe() # <----------------------------- TODO
 	
 	# unknown / unused faction falgs
 	Scribe.sync_record([Scenario], TYPE_OBJECT)
@@ -304,9 +296,7 @@ func enscribe_SAV():
 	
 	# buildings
 	Scribe.sync_record([Buildings], TYPE_OBJECT)
-#	Scribe.push_compressed(Buildings.MAX_BUILDINGS * 264) # <----------------------------- TODO
-	Buildings.enscribe_buildings()
-#	Scribe.pop_compressed()
+	Buildings.enscribe_buildings() # <----------------------------- TODO
 	
 	# camera orientation
 	Scribe.sync_record([Map], TYPE_OBJECT)
@@ -328,8 +318,8 @@ func enscribe_SAV():
 	
 	# random
 	Scribe.sync_record([Random], TYPE_OBJECT)
-	Scribe.put(ScribeFormat.i32, "random_iv_1")
-	Scribe.put(ScribeFormat.i32, "random_iv_2")
+	Scribe.put(ScribeFormat.i32, "IV1")
+	Scribe.put(ScribeFormat.i32, "IV2")
 	
 	Scribe.sync_record([Map], TYPE_OBJECT)
 	Scribe.put(ScribeFormat.i32, "city_view_camera_x")
@@ -346,8 +336,7 @@ func enscribe_SAV():
 	Scribe.put(ScribeFormat.i32, "empire_map_x")
 	Scribe.put(ScribeFormat.i32, "empire_map_y")
 	Scribe.put(ScribeFormat.i32, "empire_selected_object")
-	Scribe.push_compressed(Empire.MAX_EMPIRE_CITIES * 106) # <----------------------------- TODO
-	Scribe.pop_compressed()
+	Empire.enscribe_cities() # <----------------------------- TODO
 	
 	# industry buildings
 	Scribe.sync_record([City, "industry_buildings_total"], TYPE_ARRAY)
@@ -641,27 +630,14 @@ func enscribe_SAV():
 	Scribe.put(ScribeFormat.i32, "unk06")
 	
 	# ferries
-	for i in Figures.MAX_FERRIES:
-		Scribe.sync_record([Figures, "ferry_queues", i], TYPE_ARRAY)
-		for j in Figures.MAX_FIGURES_WAITING_PER_FERRY:
-			Scribe.put(ScribeFormat.i32, j)
-	for i in Figures.MAX_FERRIES:
-		Scribe.sync_record([Figures, "ferry_transiting", i], TYPE_ARRAY)
-		for j in Figures.MAX_FIGURES_PER_FERRY:
-			Scribe.put(ScribeFormat.i32, j)
+	Figures.enscribe_ferry_queues(debug_schema.file_version)
 	
 	# ============== ????
 	Scribe.sync_record([self], TYPE_OBJECT)
 	Scribe.put(ScribeFormat.raw, "unused_figure_sequences", 4 * 4)
 	Scribe.put(ScribeFormat.raw, "unused_10_x_820", 10 * 820)
 	
-	Scribe.sync_record([Empire], TYPE_OBJECT)
-	Scribe.push_compressed(40 * 32) # unused multiple-empires leftover stuff from C3
-	Scribe.pop_compressed()
-	Scribe.push_compressed(Empire.MAX_MAP_OBJECTS * 98) # empire_map_objects <-------------------------------- TODO
-	Scribe.pop_compressed()
-	Scribe.push_compressed(Empire.MAX_EMPIRE_ROUTES * 324) # empire_map_routes <-------------------------------- TODO
-	Scribe.pop_compressed()
+	Empire.enscribe_objects(debug_schema.file_version) # <-------------------------------- TODO
 	
 	Scribe.put_grid(ScribeFormat.u8, "vegetation_growth", false)
 	
@@ -678,7 +654,7 @@ func enscribe_SAV():
 	Scribe.put(ScribeFormat.raw, "bizarre_ordered_fields_1", 22 * 24)
 	
 	# floodplain data
-	Scribe.push_compressed(36) # floodplain_settings <-------------------------------- TODO
+	Scribe.push_compressed(36 if debug_schema.file_version >= 147 else 32) # floodplain_settings <-------------------------------- TODO
 	Scribe.pop_compressed()
 	
 	Scribe.put_grid(ScribeFormat.i32, "unk_grid03", true) # routing cache...?
@@ -752,6 +728,8 @@ func game_day():
 		day = 0
 		game_month()
 func game_tick():
+	
+	Random.scramble()
 	
 #	return
 	Figures.tick()
@@ -838,7 +816,7 @@ func _process(delta):
 		
 
 func _input(event):
-	if STATE == States.Ingame:
+	if STATE == States.Ingame || STATE == States.Paused:
 		# game speed
 		if Input.is_action_pressed("speed_dec"):
 			speed -= 10
@@ -851,12 +829,10 @@ func _input(event):
 		
 		# pause game
 		if Input.is_action_just_pressed("pause_game"):
-			popup_menu("Paused")
-			STATE = States.Paused
-	
-	elif STATE == States.Paused:
-		# unpause game
-		if Input.is_action_just_pressed("pause_game"):
-			close_menu("Paused")
-			STATE = States.Ingame
+			if STATE == States.Ingame:
+				popup_menu("Paused")
+				STATE = States.Paused
+			elif STATE == States.Paused:
+				close_menu("Paused")
+				STATE = States.Ingame # unpause game
 			

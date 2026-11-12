@@ -99,23 +99,91 @@ public class Building : ReferenceEx
 		// 	iob->bind(BIND_SIGNATURE_INT16, &b->data.house.inventory[i + 4]);
 		// }
 
-		[FieldOffset(170)] public int statue_variant;
+		// monuments
+		// [FieldOffset(82)] public byte ???;
+		// [FieldOffset(82)] public byte ???;
+		[FieldOffset(84)] public byte pyramid_related;
+		[FieldOffset(85)] public byte obelisk_related;
+		// [FieldOffset(86)] public byte ???;
+		// [FieldOffset(87)] public byte ???;
+		[FieldOffset(88)] public int monument_something;
+		[FieldOffset(92)] public int monument_figure_something;
+		// [FieldOffset(96)] public int ???;
+		[FieldOffset(100)] public int monument_something2;
+
 
 		// .............
 
-		[FieldOffset(184)] public int tax_income_or_storage;
-		[FieldOffset(188)] public byte house_days_without_food;
-		[FieldOffset(189)] public byte plague; // 6
-
-		[FieldOffset(190)] public sbyte desirability;
-		[FieldOffset(191)] public byte is_deleted;
-		[FieldOffset(192)] public byte is_adjacent_to_water;
-
+		[FieldOffset(166)] public byte workers_counter_something;
+		// [FieldOffset(167)] public byte ??;
+		// [FieldOffset(168)] public byte ??;
+		// [FieldOffset(169)] public byte ??;
+		[FieldOffset(170)] public int statue_variant;
+		// [FieldOffset(171)] public byte ??;
+		// [FieldOffset(172)] public byte ??;
+		// [FieldOffset(173)] public byte ??;
+		// [FieldOffset(174)] public byte ??;
+		// [FieldOffset(175)] public byte ??;
+		// [FieldOffset(176)] public byte ??;
+		// [FieldOffset(177)] public byte ??;
+		// [FieldOffset(178)] public byte ??;
+		// [FieldOffset(179)] public byte ??;
+		[FieldOffset(180)] public short unk_figure_id;
+		// [FieldOffset(182)] public byte ??;
+		// [FieldOffset(183)] public byte ??;
+		// [FieldOffset(184)] public byte ??;
+		// [FieldOffset(185)] public byte ??;
+		// [FieldOffset(186)] public byte ??;
+		// [FieldOffset(187)] public byte ??;
+		// [FieldOffset(188)] public byte ??;
+		// [FieldOffset(189)] public byte ??;
+		// [FieldOffset(190)] public byte ??;
+		[FieldOffset(191)] public byte unk_restored_part;
+		// [FieldOffset(192)] public byte ??;
 		[FieldOffset(193)] public byte storage_id;
-		[FieldOffset(194)] public sbyte house_happiness; // sentiment.house_happiness -- 90 for house, 50 for wells
-		[FieldOffset(195)] public byte show_on_problem_overlay; // 4
-
-		[FieldOffset(196)] public fixed byte _unk_final_bytes[68];
+		[FieldOffset(194)] public byte unk_house;
+		// [FieldOffset(194)] public byte ??;
+		[FieldOffset(196)] public int linked_ferry_id;
+		// [FieldOffset(197)] public byte ??;
+		// [FieldOffset(198)] public byte ??;
+		[FieldOffset(202)] public byte ferry_queue_id;
+		[FieldOffset(203)] public byte shipyard_repair_queue_id;
+		// [FieldOffset(204)] public byte ??;
+		// [FieldOffset(205)] public byte ??;
+		// [FieldOffset(206)] public byte ??;
+		// [FieldOffset(207)] public byte ??;
+		[FieldOffset(208)] public int venue_corner_offset;
+		// [FieldOffset(212)] public int ??;
+		[FieldOffset(216)] public int venue_something;
+		// [FieldOffset(220)] public int ??;
+		// [FieldOffset(224)] public int ??;
+		// [FieldOffset(228)] public int ??;
+		// [FieldOffset(232)] public int ??;
+		[FieldOffset(236)] public int tax_income_or_storage;
+		// [FieldOffset(240)] public byte ??;
+		// [FieldOffset(241)] public byte ??;
+		[FieldOffset(242)] public byte house_days_without_food;
+		[FieldOffset(243)] public byte plague;
+		[FieldOffset(244)] public sbyte desirability;
+		[FieldOffset(245)] public byte is_deleted;
+		[FieldOffset(246)] public byte is_adjacent_to_water;
+		// [FieldOffset(247)] public byte ??;
+		[FieldOffset(248)] public sbyte house_happiness; // sentiment.house_happiness -- 90 for house, 50 for wells
+		[FieldOffset(249)] public byte show_on_problem_overlay; // 4
+		// [FieldOffset(250)] public byte ??;
+		// [FieldOffset(251)] public byte ??;
+		// [FieldOffset(252)] public byte ??;
+		// [FieldOffset(253)] public byte ??;
+		// [FieldOffset(254)] public byte ??;
+		// [FieldOffset(255)] public byte ??;
+		// [FieldOffset(256)] public byte ??;
+		// [FieldOffset(257)] public byte ??;
+		// [FieldOffset(258)] public byte ??;
+		// [FieldOffset(259)] public byte ??;
+		// [FieldOffset(260)] public byte ??;
+		// [FieldOffset(261)] public byte ??;
+		// [FieldOffset(262)] public byte ??;
+		[FieldOffset(263)] public byte unk_final_byte;
 	}
 	public BuildingData data = new BuildingData(); // Feature 'target-typed object creation' is not available in C# 7.3. Please use language version 9.0 or greater.
 

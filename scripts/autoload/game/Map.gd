@@ -191,6 +191,15 @@ func correct_orientation(tile: Vector2) -> Vector2:
 		6:
 			return Vector2(get_grid_size() - tile.y - 1, tile.x)
 	return tile
+func undo_orientation(tile: Vector2) -> Vector2:
+	match city_orientation:
+		6:
+			return Vector2(tile.y, get_grid_size() - tile.x - 1)
+		4:
+			return Vector2(get_grid_size() - tile.x - 1, get_grid_size() - tile.y - 1)
+		2:
+			return Vector2(get_grid_size() - tile.y - 1, tile.x)
+	return tile
 func normalize_direction(dir: int):
 	return (8 + dir - city_orientation) % 8
 func map_to_world(tile: Vector2) -> Vector2:

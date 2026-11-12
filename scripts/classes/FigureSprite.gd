@@ -85,7 +85,7 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#
 					progr_offset = Vector2(-2, -1)
 				7:
 					progr_offset = Vector2(0, -2)
-			offset = Vector2(0, -4) + progr_offset * TILE_PROGRESS
+			offset = Vector2(0, -4) + progr_offset * tile_progress
 			
 			# sprite offset
 			if "offsets" in frames.get_meta_list():
@@ -93,7 +93,7 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#
 				var anim_offsets = sprite_offsets.get(anim_s, null)
 				if anim_offsets != null:
 					offset -= anim_offsets[frame]
-#			TILE_PROGRESS = tile_progress
+			TILE_PROGRESS = tile_progress
 #			TILE_PROGRESS = (TILE_PROGRESS + 1) % 15
 #			TILE_PROGRESS = 0
 	

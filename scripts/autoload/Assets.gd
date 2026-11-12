@@ -239,7 +239,7 @@ func get_SG_data(pak_name: String): # return (ref) cached SG data
 	
 	#  OPTION 2: check cache saved to disk
 	var path_cached = str(get_game_cache_path(), "/Data/" , pak_name, ".CACHED")
-	var r = IO.read(path_cached, false)
+	var r = IO.read(path_cached, false, true)
 	if r != null:
 		sginfo = r
 		GameSet.set_SG_CACHE(pak_name, sginfo)
@@ -390,7 +390,7 @@ func get_animated_sprite(pak_name: String, sprite_name: String, seek_cache_only:
 		return NULL_SPRITE_ANIM
 	sprite = build_animated_sprite(pak_name, sg_tags)
 	if sprite != null:
-#		IO.write(path_cached, sprite, true) # save to cache # <---------------------------
+		IO.write(path_cached, sprite, true) # save to cache # <---------------------------
 		GameSet.set_SPRITES_CACHE(sprite_name, sprite)
 		return sprite
 	

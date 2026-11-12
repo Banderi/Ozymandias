@@ -247,7 +247,7 @@ func print_tile_debug():
 	raw_tileset_space.y = clamp(raw_tileset_space.y, 0, Map.get_grid_size() - 1)
 	CURSOR.position = Map.TILEMAP_FLAT.map_to_world(raw_tileset_space) # TODO: move do InGame / separate Cursor logic
 	
-	var tile = GameTile.new(Map.correct_orientation(raw_tileset_space), false)
+	var tile = GameTile.new(Map.undo_orientation(raw_tileset_space), false)
 	
 	var debug_text = ""
 	if Rect2(0, 0, Map.get_grid_size(), Map.get_grid_size()).has_point(tile.grid_Vector2):
@@ -342,7 +342,6 @@ func print_tile_debug():
 
 	# figures
 	debug_text = "[color=#ffff00]Figures:   %4d/%d                           \n[/color]" % [Figures._in_use, Figures.MAX_FIGURES]
-#	var figure_id_on_tile = Map.grids.figures[tile.grid_y][tile.grid_x]
 	var figure_id_on_tile = Map.grids.figures.Get(tile.grid_x, tile.grid_y)
 	while figure_id_on_tile != 0:
 		debug_text += "  [color=#ffff00]ID:[/color]           %d\n" % [figure_id_on_tile]
@@ -353,13 +352,27 @@ func print_tile_debug():
 	
 	# buildings
 	debug_text += "[color=#00ffcc]Buildings: %4d/%d\n[/color]" % [Buildings._in_use, Buildings.MAX_BUILDINGS]
-#	var building_id_on_tile = Map.grids.buildings[tile.grid_y][tile.grid_x]
 	var building_id_on_tile = Map.grids.buildings.Get(tile.grid_x, tile.grid_y)
 	if building_id_on_tile != 0:
 		debug_text += "  [color=#00ffcc]ID:[/color]           %d\n" % [building_id_on_tile]
 		var building = Buildings.buildings[building_id_on_tile]
 		var type = building.get("type")
 		debug_text += "    [color=#00ffcc]Type:[/color]         %s\n" % [Debug.enum_print_bbcode(Debug.CS_ENUMS.BuildingTypes, type)]
+		match type:
+			136: # ferry
+				debug_text += "    [color=#00ffcc]Linked ID:[/color]    %d\n" % [building.get("linked_ferry_id")]
+				var ferry_queue_id = building.get("ferry_queue_id")
+				debug_text += "    [color=#00ffcc]Queue ID:[/color]     %d\n" % [ferry_queue_id]
+				var ferry_queue = Figures.ferry_queues[ferry_queue_id]
+				debug_text += "      [color=#00ffcc]in_use:[/color]       %d\n" % [ferry_queue.in_use]
+				debug_text += "      [color=#00ffcc]served:[/color]       %d\n" % [ferry_queue.people_served]
+				debug_text += "      [color=#00ffcc]next_free:[/color]    %d\n" % [ferry_queue.next_free_index]
+				debug_text += "      [color=#00ffcc]rollover:[/color]     %d\n" % [ferry_queue.rollover_counter]
+				debug_text += "      [color=#00ffcc]unk00:[/color]        %d\n" % [ferry_queue.unk00]
+				debug_text += "      [color=#00ffcc]building:[/color]     %d\n" % [ferry_queue.building_id]
+#				for f in ferry_queue_id:
+#					if f != 0:
+#						debug_text += "      [color=#00ffcc]ID:[/color]           %d\n" % [f]
 	
 	if $DEBUG_LABEL5.bbcode_text != debug_text:
 		$DEBUG_LABEL5.bbcode_text = debug_text
@@ -452,6 +465,12 @@ func _process(delta):
 	debug_text += col1 + "day:[/color]          %d\n" % [Game.day]
 	debug_text += col1 + "month:[/color]        %d\n" % [Game.month]
 	debug_text += col1 + "year:[/color]         %d\n\n" % [Game.year]
+	
+	debug_text += col1 + "Population:[/color]   %d\n" % [City.population]
+	debug_text += col1 + "Pop (max):[/color]    %d\n\n" % [City.pop_total_capacity]
+	
+	debug_text += col1 + "random.IV1:[/color]   %d\n" % [Random.IV1]
+	debug_text += col1 + "random.IV2:[/color]   %d\n\n" % [Random.IV2]
 	#
 	
 	if DEBUG_LABEL.bbcode_text != debug_text:

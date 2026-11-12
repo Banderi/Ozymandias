@@ -7,7 +7,7 @@ const MAX_FORMATIONS = 50
 const MAX_TRADERS = 100
 const MAX_FERRIES = 50
 const MAX_FIGURES_PER_FERRY = 11
-const MAX_FIGURES_WAITING_PER_FERRY = 56
+const MAX_FIGURES_WAITING_PER_FERRY = 56 # 55 before version 149
 
 var figures = []
 var figure_names_1 = []
@@ -82,6 +82,25 @@ func enscribe_figures():
 		Stopwatch.query(_t)
 	])
 	Scribe.pop_compressed()
+func enscribe_ferry_queues(file_version):
+	for i in Figures.MAX_FERRIES:
+		Scribe.sync_record([Figures, "ferry_queues", i], TYPE_DICTIONARY)
+		Scribe.put(ScribeFormat.i32, "in_use")
+		Scribe.put(ScribeFormat.i32, "people_served")
+		Scribe.put(ScribeFormat.i32, "next_free_index")
+		Scribe.put(ScribeFormat.i32, "rollover_counter")
+		Scribe.put(ScribeFormat.i32, "unk00")
+		Scribe.sync_record([Figures, "ferry_queues", i, "figures_history"], TYPE_ARRAY)
+		for j in 50:
+			Scribe.put(ScribeFormat.i32, j)
+		Scribe.sync_record([Figures, "ferry_queues", i], TYPE_DICTIONARY)
+		Scribe.put(ScribeFormat.i32, "building_id")
+#		for j in Figures.MAX_FIGURES_WAITING_PER_FERRY if file_version >= 149 else 55:
+#			Scribe.put(ScribeFormat.i32, j)
+	for i in Figures.MAX_FERRIES:
+		Scribe.sync_record([Figures, "ferry_transiting", i], TYPE_ARRAY)
+		for j in Figures.MAX_FIGURES_PER_FERRY:
+			Scribe.put(ScribeFormat.i32, j)
 
 func tick():
 	for f in figures:
