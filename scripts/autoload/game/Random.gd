@@ -25,3 +25,12 @@ func next_IV1(mask = 0xffffffff):
 func next_IV2(mask = 0xffffffff):
 	scramble()
 	return IV2 & mask
+
+# 32-bit LCG -- equivalent to Microsoft VC++6.0 CRT's rand() used in Pharaoh
+# Godot's internal rand() stuff uses Melissa O'Neill's PCG, which is different.
+var _holdrand: int = 1
+func srand(_seed: int):
+	_holdrand = _seed
+func rand():
+	_holdrand = _holdrand * 21403 + 2531011
+	return (_holdrand >> 16 & 0x7fff)

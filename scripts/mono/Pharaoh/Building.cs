@@ -19,7 +19,7 @@ public class Building : ReferenceEx
 		[FieldOffset(11)] public byte _unk_02;
 		[FieldOffset(12)] public int tile_grid;
 		[FieldOffset(16)] public Enums.BuildingTypes type;
-		[FieldOffset(18)] public short house_level; // subtype.house_level
+		[FieldOffset(18)] public short building_shift; // subtype.house_level
 		[FieldOffset(20)] public ushort road_network_id;
 		[FieldOffset(22)] public ushort creation_sequence_index;
 		[FieldOffset(24)] public short houses_covered;
@@ -99,17 +99,28 @@ public class Building : ReferenceEx
 		// 	iob->bind(BIND_SIGNATURE_INT16, &b->data.house.inventory[i + 4]);
 		// }
 
-		// monuments
+		// pyramid
 		// [FieldOffset(82)] public byte ???;
-		// [FieldOffset(82)] public byte ???;
-		[FieldOffset(84)] public byte pyramid_related;
+		// [FieldOffset(83)] public byte ???;
+		[FieldOffset(84)] public byte pyramid_related1;
 		[FieldOffset(85)] public byte obelisk_related;
-		// [FieldOffset(86)] public byte ???;
-		// [FieldOffset(87)] public byte ???;
-		[FieldOffset(88)] public int monument_something;
+		[FieldOffset(86)] public byte pyramid_section_work_remaining;
+		[FieldOffset(87)] public byte pyramid_section_height;
+		[FieldOffset(88)] public int monument_anim_header_index;
 		[FieldOffset(92)] public int monument_figure_something;
-		// [FieldOffset(96)] public int ???;
-		[FieldOffset(100)] public int monument_something2;
+		[FieldOffset(96)] public int monument_anim_tag;
+		[FieldOffset(100)] public int monument_something3;
+		[FieldOffset(104)] public int monument_anim_selector;
+		[FieldOffset(108)] public int monument_main_building_id;
+		[FieldOffset(112)] public int monument_x;
+		[FieldOffset(116)] public int monument_y;
+		[FieldOffset(120)] public int monument_x2;
+		[FieldOffset(124)] public int monument_y2;
+		// ??
+		[FieldOffset(144)] public int monument_orientation;
+		// ??
+		[FieldOffset(152)] public int monument_stage_work_left;
+
 
 
 		// .............

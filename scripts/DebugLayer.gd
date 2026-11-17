@@ -373,7 +373,26 @@ func print_tile_debug():
 #				for f in ferry_queue_id:
 #					if f != 0:
 #						debug_text += "      [color=#00ffcc]ID:[/color]           %d\n" % [f]
-	
+			183, 207, 208: # pyramid, small/large obelisk
+				debug_text += "    [color=#00ffcc]related1:[/color]     %d\n" % [building.get("pyramid_related1")]
+				debug_text += "    [color=#00ffcc]obelisk_rel:[/color]  %d\n" % [building.get("obelisk_related")]
+				debug_text += "    [color=#00ffcc]work_left:[/color]    %d\n" % [building.get("pyramid_section_work_remaining")]
+				debug_text += "    [color=#00ffcc]height:[/color]       %d\n" % [90 * building.get("pyramid_section_height")]
+				debug_text += "    [color=#00ffcc]anim_header:[/color]  %d\n" % [building.get("monument_anim_header_index")]
+				debug_text += "    [color=#00ffcc]??:[/color]           %d\n" % [building.get("monument_figure_something")]
+				debug_text += "    [color=#00ffcc]anim_tag:[/color]     %d\n" % [building.get("monument_anim_tag")]
+				debug_text += "    [color=#00ffcc]??:[/color]           %d\n" % [building.get("monument_something3")]
+				debug_text += "    [color=#00ffcc]anim_id:[/color]      %d\n" % [building.get("monument_anim_selector")]
+				debug_text += "    [color=#00ffcc]main_build:[/color]   %d\n" % [building.get("monument_main_building_id")]
+				debug_text += "    [color=#00ffcc]x:[/color]            %d\n" % [building.get("monument_x")]
+				debug_text += "    [color=#00ffcc]y:[/color]            %d\n" % [building.get("monument_y")]
+				debug_text += "    [color=#00ffcc]x2:[/color]           %d\n" % [building.get("monument_x2")]
+				debug_text += "    [color=#00ffcc]y2:[/color]           %d\n" % [building.get("monument_y2")]
+				debug_text += "    [color=#00ffcc]section:[/color]      %d\n" % [building.get("building_shift")]
+			_:
+				debug_text += "    [color=#00ffcc]house_level:[/color]  %d\n" % [building.get("building_shift")]
+				
+				pass
 	if $DEBUG_LABEL5.bbcode_text != debug_text:
 		$DEBUG_LABEL5.bbcode_text = debug_text
 	

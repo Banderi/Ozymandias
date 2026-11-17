@@ -72,9 +72,9 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		// ENEMY51_SPEAR = 51,
 		// ENEMY52_MOUNTED_ARCHER = 52,
 		// ENEMY53_AXE = 53,
-		// ENEMY54_GLADIATOR = 54,
-		// ENEMY_CAESAR_JAVELIN = 55,
-		// ENEMY_CAESAR_MOUNTED = 56,
+		INFANTRY_EGYPTIAN = 54,
+		ARCHER_EGYPTIAN = 55,
+		CHARIOT_EGYPTIAN = 56,
 		// ENEMY_CAESAR_LEGIONARY = 57,
 		// NATIVE_TRADER = 58,
 		ARROW = 59,
@@ -86,13 +86,13 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		FISH_GULLS = 65,
 		DELIVERY_BOY = 66,
 		SHIPWRECK = 67,
-		SEAGULLS = 68,
+		BIRDS = 68,
 		OSTRICH = 69,
 		ANTELOPE = 70,
 		SPEAR = 71,
 		// HIPPODROME_HORSES = 72,
 		HUNTER = 73,
-		// HUNTER_ARROW = 74,
+		HUNTER_SPEAR = 74,
 		LUMBERJACK = 75,
 		FERRY = 76,
 		TRANSPORT_SHIP = 77,
@@ -104,7 +104,7 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		HYENA = 83,
 		HIPPO = 84,
 		LABORER = 85,
-		// = 86
+		PULLED_STONE = 86,
 		WATER_CARRIER = 87,
 		POLICEMAN = 88,
 		MAGISTRATE = 89,
@@ -112,24 +112,24 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		FESTIVAL_PRIEST = 91,
 		WARSHIP_ENEMY = 92,
 		TRANSPORT_SHIP_ENEMY = 93,
-		// = 94
+		FUNERAL_WALKER = 94,
 		FISHING_SPOT = 95,
-		// LABORER_2 = 96,
-		// = 97
+		SONE_PULLER = 96,
+		SHOWMAN = 97,
 		PLAGUE_GUY = 98,
-		// MILITIA = 99,
+		BEDOUIN_INFANTRY = 99,
 		WARSHIP_EGYPTIAN = 100,
 		TRANSPORT_SHIP_EGYPTIAN = 101,
 		ASP = 102,
 		LION = 103,
-		// = 104
-		// = 105
-		// = 106
-		// = 107
-		// = 108
-		// = 109 // something dangerous
+		SCORPION = 104,
+		ZOOKEEPER = 105,
+		FROG = 106,
+		LOCUST = 107,
+		ARTISAN = 108,
+		__UNK_END = 109, // something dangerous
 		// HUNTER_2 = 110,
-		HUNTER_WITH_BIRDS = 111,
+		// HUNTER_WITH_BIRDS = 111,
 		// PRIEST_2 = 112,
 		// PRIEST_3 = 113,
 		// PRIEST_4 = 114,
@@ -466,7 +466,7 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		POLICE = 55,
 		// ARCH = 56,
 		FORT = 57, // this is the actual BUILDING
-		// GATEHOUSE = 58,
+		_UNUSED_GATEHOUSE = 58,
 		// TOWER = 59,
 		TEMPLE_OSIRIS = 60,
 		TEMPLE_RA = 61,
@@ -544,6 +544,7 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		//
 		WALL = 169,
 		//
+		_UNUSED_GATEHOUSE2 = 170,
 		GATEHOUSE = 171,
 		//
 		TOWER = 173,
@@ -562,14 +563,17 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		TOWN_PALACE = 188,
 		CITY_PALACE = 189,
 		//
+		_UNUSED_GRANARY = 191,
+		_UNUSED_DOCK = 192,
 		_UNUSED_STORAGE_YARD = 193,
 		CATTLE_RANCH = 194,
 		REED_GATHERERS = 195,
 		FARM_FIGS = 196,
 		//
 		WORK_CAMP = 199,
-		//
-		GATEHOUSE2 = 202,
+		_UNUSED_GATEHOUSE3 = 200,
+		_UNUSED_GATEHOUSE4 = 201,
+		_UNUSED_GATEHOUSE5 = 202,
 		WORKSHOP_PAPYRUS = 203,
 		WORKSHOP_BRICKS = 204,
 		WORKSHOP_CHARIOTS = 205,

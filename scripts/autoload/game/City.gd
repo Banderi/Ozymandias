@@ -475,8 +475,10 @@ func enscribe():
 	Scribe.skip(8)
 	Scribe.put(ScribeFormat.i32, "religion.venus_curse_active")
 	Scribe.put(ScribeFormat.i32, "unused.unused_44ec")
+	#
 	Scribe.put(ScribeFormat.i32, "religion.ra_150_export_profits_months_left")
 	Scribe.put(ScribeFormat.i32, "religion.seth_crush_enemy_troops")
+	#
 #	city_data.religion.osiris_double_farm_yield = false; # todo
 	Scribe.put(ScribeFormat.i32, "unused.unused_44f8")
 	Scribe.put(ScribeFormat.i32, "religion.angry_message_delay")
@@ -493,19 +495,19 @@ func enscribe():
 	Scribe.put(ScribeFormat.i32, "building.distribution_center_placed")
 #	for i in 11:
 #		Scribe.put(ScribeFormat.i32, "unused.unused_4524[i]")
-	Scribe.skip(44)
+	Scribe.skip(44) # <---------------- 12th int
 	Scribe.put(ScribeFormat.i32, "building.shipyard_boats_requested")
 	Scribe.put(ScribeFormat.i32, "figure.enemies")
-	Scribe.put(ScribeFormat.i32, "sentiment.wages")
+	Scribe.put(ScribeFormat.i32, "sentiment.wages") # unk_array_index_0x4634
 	Scribe.put(ScribeFormat.i32, "population.people_in_tents")
 	Scribe.put(ScribeFormat.i32, "population.people_in_large_insula_and_above")
 	Scribe.put(ScribeFormat.i32, "figure.imperial_soldiers")
-	Scribe.put(ScribeFormat.i32, "emperor.invasion.duration_day_countdown")
+	Scribe.put(ScribeFormat.i32, "emperor.invasion.duration_day_countdown") # int[2] <--- unk_array_0x4644
 	Scribe.put(ScribeFormat.i32, "emperor.invasion.warnings_given")
 	Scribe.put(ScribeFormat.i32, "emperor.invasion.days_until_invasion")
 	Scribe.put(ScribeFormat.i32, "emperor.invasion.retreat_message_shown")
 	Scribe.put(ScribeFormat.i32, "ratings.monument_destroyed_buildings")
-	Scribe.put(ScribeFormat.i32, "ratings.monument_years_of_monument")
+	Scribe.put(ScribeFormat.i32, "ratings.monument_years_of_monument") # times_savings_were_something
 	Scribe.put(ScribeFormat.u8, "distant_battle.city")
 	Scribe.put(ScribeFormat.u8, "distant_battle.enemy_strength")
 	Scribe.put(ScribeFormat.u8, "distant_battle.roman_strength")
@@ -560,15 +562,30 @@ func enscribe():
 	Scribe.put(ScribeFormat.i32, "mission.fired_message_shown")
 	Scribe.put(ScribeFormat.i32, "mission.victory_message_shown")
 	Scribe.put(ScribeFormat.i32, "mission.start_saved_game_written")
-	Scribe.put(ScribeFormat.i32, "mission.tutorial_fire_message_shown")
-	Scribe.put(ScribeFormat.i32, "mission.tutorial_disease_message_shown")
-	Scribe.put(ScribeFormat.i32, "figure.attacking_natives")
+	Scribe.put(ScribeFormat.i32, "mission.tutorial_fire_message_shown") # unk_0x4720
+	Scribe.put(ScribeFormat.i32, "mission.tutorial_disease_message_shown") # unk_0x4724
+	Scribe.put(ScribeFormat.i32, "figure.attacking_natives") # rating_1
 
+	# monuments / temple complexes
 	Scribe.put(ScribeFormat.i32, "building.temple_complex_id")
-	Scribe.skip(36)
+	Scribe.put(ScribeFormat.i32, "building.monument_1_placed")
+	Scribe.put(ScribeFormat.i32, "building.monument_2_placed")
+	Scribe.put(ScribeFormat.i32, "building.monument_3_placed")
+	Scribe.put(ScribeFormat.i32, "building.monument_1_id")
+	Scribe.put(ScribeFormat.i32, "building.monument_2_id")
+	Scribe.put(ScribeFormat.i32, "building.monument_3_id")
+	Scribe.put(ScribeFormat.i32, "building.monument_1_finished")
+	Scribe.put(ScribeFormat.i32, "building.monument_2_finished")
+	Scribe.put(ScribeFormat.i32, "building.monument_3_finished")
+	
+	# some finance, religion, buildings and stuff
 	Scribe.put(ScribeFormat.i32, "finance.last_year.expenses.requests_and_festivals")
 	Scribe.put(ScribeFormat.i32, "finance.this_year.expenses.requests_and_festivals")
-	Scribe.skip(64)
+	Scribe.skip(12)
+	Scribe.put(ScribeFormat.i32, "finance.tutorial_2_unk")
+	Scribe.skip(24)
+	Scribe.put(ScribeFormat.i32, "finance.removed_from_savings")
+	Scribe.skip(20)
 	Scribe.put(ScribeFormat.i32, "finance.estimated_tax_uncollected")
 	Scribe.put(ScribeFormat.i32, "building.festival_square.private_access(_X)")
 	Scribe.put(ScribeFormat.i32, "building.festival_square.private_access(_Y)")
