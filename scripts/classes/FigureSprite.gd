@@ -12,6 +12,11 @@ func _init(i, cs_ref):
 	FIGURE_CS = cs_ref
 	add_to_group("sprites")
 	repaint()
+	var c = ColorRect.new()
+	c.color = Color(0,1,0,1)
+	c.rect_size = Vector2(1, 250)
+#	c.rect_position = Vector2(0, -10)
+	add_child(c)
 
 const SGX_LOOKUP = [ # this is a temporary dirty thing while I work out on a better system. 
 	"Pharaoh_Unloaded",
@@ -27,7 +32,12 @@ const SGX_LOOKUP = [ # this is a temporary dirty thing while I work out on a bet
 	"Expansion", ]
 var TILE_GRID = null
 var TILE_PROGRESS = 0
+#var t = 0
+#var d = 0.0
 func repaint(force_repaint: bool = false): # TODO: move this to C#
+#	t += 0.1
+#	position.y = sin(t)
+#	d = sin(float(t)) * 100.0
 	if !force_repaint && !FIGURE_CS.needs_repaint:
 		return
 	
@@ -37,11 +47,13 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#
 	# update tile position
 	var tile_grid = sprite_props[6]
 	if tile_grid != TILE_GRID || force_repaint:
-		var grid_pos = GameTile.new(tile_grid, false).grid_Vector2
-		var world_pos = Map.map_to_world(Map.correct_orientation(grid_pos))
+		var grid_tile = GameTile.new(tile_grid, false).grid_Vector2
+		var world_tile = Map.correct_orientation(grid_tile)
+		var world_pos = Map.map_to_world(world_tile)
 		position = world_pos + Vector2(-1, 30)
-		z_index = world_pos.x + world_pos.y
+		z_index = world_tile.x + world_tile.y
 		TILE_GRID = tile_grid
+#		print("REPAINTED POSITION")
 	
 	# set sprite
 	var type = sprite_props[0]
@@ -99,4 +111,6 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#
 #			TILE_PROGRESS = (TILE_PROGRESS + 1) % 15
 #			TILE_PROGRESS = 0
 	
+#	offset.y += d # <--------------------- for debugging
+	get_child(0).rect_position = offset
 	FIGURE_CS.needs_repaint = false
