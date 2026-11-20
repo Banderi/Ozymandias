@@ -1,7 +1,7 @@
 extends Reference
 class_name GameTile
 
-const GRID_LENGTH = 228
+#const GRID_SIZE = 228
 var grid_x: int
 var grid_y: int
 var grid_cantor: int
@@ -13,11 +13,11 @@ var map_Vector2: Vector2
 
 # conversion ops
 func _cantor(x, y):
-	return x + (GRID_LENGTH * y)
+	return x + (Map.get_grid_size() * y)
 func _x(cantor):
-	return cantor % GRID_LENGTH
+	return cantor % Map.get_grid_size()
 func _y(cantor):
-	return cantor / GRID_LENGTH
+	return cantor / Map.get_grid_size()
 
 # constructors
 func _init_fill_commons(map_space: bool):

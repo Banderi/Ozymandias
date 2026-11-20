@@ -32,16 +32,20 @@ const SGX_LOOKUP = [ # this is a temporary dirty thing while I work out on a bet
 	"Expansion", ]
 var TILE_GRID = null
 var TILE_PROGRESS = 0
-#var t = 0
-#var d = 0.0
-func repaint(force_repaint: bool = false): # TODO: move this to C#
-#	t += 0.1
-#	position.y = sin(t)
-#	d = sin(float(t)) * 100.0
+var TILE_BAND_Z_INDEX = 0
+func repaint(force_repaint: bool = false): # TODO: move this to C#?
 	if !force_repaint && !FIGURE_CS.needs_repaint:
 		return
 	
 	var sprite_props = FIGURE_CS.sprite_poll()
+	
+##	if !is_visible_in_tree():
+##		return
+#	var camera_rect = Game.INGAME_ROOT.get_camera_rect() as Rect2
+##	var local_rect = get_viewport_rect()
+##	var is_in_view = local_rect.intersects(camera_rect, true)
+#	var is_in_view = camera_rect.has_point(position)
+##		return
 	
 
 	# update tile position
@@ -50,10 +54,10 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#
 		var grid_tile = GameTile.new(tile_grid, false).grid_Vector2
 		var world_tile = Map.correct_orientation(grid_tile)
 		var world_pos = Map.map_to_world(world_tile)
-		position = world_pos + Vector2(-1, 30)
-		z_index = world_tile.x + world_tile.y
+		TILE_BAND_Z_INDEX = world_tile.x + world_tile.y
 		TILE_GRID = tile_grid
-#		print("REPAINTED POSITION")
+		position = world_pos + Vector2(-1, 30)
+		z_index = TILE_BAND_Z_INDEX
 	
 	# set sprite
 	var type = sprite_props[0]
@@ -82,24 +86,28 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#
 		if tile_progress != TILE_PROGRESS || force_repaint || true:
 			
 			var progr_offset = Vector2()
-			match dir:
-				0:
-					progr_offset = Vector2(2, -1)
-				1:
-					progr_offset = Vector2(4, 0)
-				2:
-					progr_offset = Vector2(2, 1)
-				3:
-					progr_offset = Vector2(0, 2)
-				4:
-					progr_offset = Vector2(-2, 1)
-				5:
-					progr_offset = Vector2(-4, 0)
-				6:
-					progr_offset = Vector2(-2, -1)
-				7:
-					progr_offset = Vector2(0, -2)
-			offset = Vector2(0, -4) + progr_offset * tile_progress
+			if tile_progress != 0:
+				match dir:
+					0:
+						progr_offset = Vector2(2, -1) * tile_progress
+					1:
+						progr_offset = Vector2(4, 0) * tile_progress
+					2:
+						progr_offset = Vector2(2, 1) * tile_progress
+					3:
+						progr_offset = Vector2(0, 2) * tile_progress
+					4:
+						progr_offset = Vector2(-2, 1) * tile_progress
+					5:
+						progr_offset = Vector2(-4, 0) * tile_progress
+					6:
+						progr_offset = Vector2(-2, -1) * tile_progress
+					7:
+						progr_offset = Vector2(0, -2) * tile_progress
+			offset = Vector2(0, -4) + progr_offset
+			var tile_half_height = Map.get_grid_tile_size().y / 2
+			var tile_z_offset = ((progr_offset.y + tile_half_height) / tile_half_height) # the added tile_half_height (:8) is an arbitrary tweak here.
+			z_index = TILE_BAND_Z_INDEX + tile_z_offset
 			
 			# sprite offset
 			if "offsets" in frames.get_meta_list():
@@ -111,6 +119,5 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#
 #			TILE_PROGRESS = (TILE_PROGRESS + 1) % 15
 #			TILE_PROGRESS = 0
 	
-#	offset.y += d # <--------------------- for debugging
 	get_child(0).rect_position = offset
 	FIGURE_CS.needs_repaint = false

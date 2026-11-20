@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-public struct TextureInfo {
+public struct TextureDescriptor {
     public Texture texture;
     public RID textureRID;
     public int width;
@@ -20,15 +20,15 @@ public class Graphics_mono : Node // TODO: move to separate file
 
 
     
-    private Dictionary<int, TextureInfo> textureMap = new Dictionary<int, TextureInfo>();
+    private Dictionary<int, TextureDescriptor> textureMap = new Dictionary<int, TextureDescriptor>();
     public void RecordSprite(int img_id, Texture texture, int width, int height, bool isAtlas, Rect2 atlasRect) {
         // texture.
-        textureMap[img_id] = new TextureInfo() { texture = texture, textureRID = texture.GetRid(), width = width, height = height, isAtlas = isAtlas, atlasRect = atlasRect };
+        textureMap[img_id] = new TextureDescriptor() { texture = texture, textureRID = texture.GetRid(), width = width, height = height, isAtlas = isAtlas, atlasRect = atlasRect };
     }
     public bool HasSprite(int img_id) {
         return textureMap.ContainsKey(img_id);
     }
-    public TextureInfo? GetSprite(int img_id) {
+    public TextureDescriptor? GetSprite(int img_id) {
         if (textureMap.ContainsKey(img_id))
             return textureMap[img_id];
         else

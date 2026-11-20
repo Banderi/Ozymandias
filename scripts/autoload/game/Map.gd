@@ -4,7 +4,7 @@ extends Node
 const CONSTS = {
 	"Pharaoh": {
 		"GRID_SIZE": 228,
-		"GRID_LENGTH": 51984, # 228 * 228
+		"GRID_TOTAL": 51984, # 228 * 228
 		"TILE_W": 60,
 		"TILE_H": 30,
 	}
@@ -12,7 +12,7 @@ const CONSTS = {
 func get_grid_size():
 	return CONSTS[Assets.GAME_SET].GRID_SIZE
 func get_grid_cantor_length():
-	return CONSTS[Assets.GAME_SET].GRID_LENGTH
+	return CONSTS[Assets.GAME_SET].GRID_TOTAL
 func get_grid_center():
 	var s = floor(get_grid_size() * 0.5)
 	return Vector2(s, s)

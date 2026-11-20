@@ -27,56 +27,9 @@ func set_gameset(game): # TODO - for the future
 	GameSet.init_caches()
 	GridsMono.GRID_SIZE = Map.get_grid_size()
 	MapRendererMono.Init(Map.MAP_RENDER_ROOT.get_canvas_item(), Map.get_grid_size(), Map.get_grid_tile_size())
+	
 	Figures.init_figure_stack()
 	Buildings.init_building_stack()
-	
-	# this works!
-	var r = Map.MAP_RENDER_ROOT as Node2D
-	var parentItem = r.get_canvas_item()
-
-	# these work!
-#	var testTex = load("res://icon.png").get_rid()
-#	var testTex = load("res://assets/Pharaoh/Pharaoh_Unloaded/bigpeople/bigpeople_00002.png").get_rid()
-#	var testTex = load("res://assets/Pharaoh/Pharaoh_Unloaded/Load4_00001.png").get_rid()
-
-	# these work!
-#	var testItem = VisualServer.canvas_item_create()
-#	VisualServer.canvas_item_set_parent(testItem, parentItem)
-	
-#	VisualServer.canvas_item_add_set_transform(parentItem, Transform2D()) # this is not necessary
-
-#	VisualServer.canvas_item_add_texture_rect(testItem, Rect2(-500, 3200, 640, 480), testTex) # works!
-#	VisualServer.canvas_item_add_texture_rect(parentItem, Rect2(-500, 3200, 640, 480), testTex) # doesn't work.....?!?!?!?
-#	VisualServer.canvas_item_add_line(testItem, Vector2(-100, 3500), Vector2(0, 0), Color(0xff0000ff)) # works!
-	
-	
-#	MapRendererMono.Init(Map.MAP_RENDER_ROOT.get_canvas_item(), GridsMono.GRID_SIZE, load("res://icon.png").get_rid())
-#	MapRendererMono.Init(r.get_canvas_item(), 228, load("res://icon.png").get_rid())
-#	MapRendererMono.Init(parentItem, 228, testTex, testItem)
-#	MapRendererMono.Test(testItem)
-#	var a = MapRendererMono.Test(r)
-#	var a = MapRendererMono.Test(parentItem)
-#	VisualServer.canvas_item_add_line(a, Vector2(-100, 3500), Vector2(0, 0), Color(0xff0000ff))
-
-	pass
-#	var testItem = VisualServer.canvas_item_create();
-##	VisualServer.viewport_attach_canvas(testItem);
-##	yield(Engine.get_main_loop(), "idle_frame")
-##	yield(Engine.get_main_loop(), "idle_frame")
-##	yield(Engine.get_main_loop(), "idle_frame")
-##	yield(Engine.get_main_loop(), "idle_frame")
-##	yield(Engine.get_main_loop(), "idle_frame")
-##	yield(Engine.get_main_loop(), "idle_frame")
-#	var parentItem = r.get_canvas_item()
-##	print(testItem.get_id())
-##	print(parentItem.get_id())
-##	print(is_instance_valid(testItem))
-##	print(is_instance_valid(parentItem))
-##	VisualServer.canvas_item_add_set_transform(testItem, Transform2D());
-##	VisualServer.canvas_item_add_set_transform(parentItem, Transform2D());
-#	VisualServer.canvas_item_set_parent(testItem, parentItem);
-#	var testTex = load("res://icon.png").get_rid();
-#	VisualServer.canvas_item_add_texture_rect(testItem, Rect2(0, 0, 64, 64), testTex);
 
 # user / res & game data paths
 onready var INSTALL_PATH_SELECT_DIALOG = get_tree().root.get_node("Root/Menus/FileDialog") as FileDialog

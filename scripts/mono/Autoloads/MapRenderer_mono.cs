@@ -49,7 +49,7 @@ public class MapRenderer_mono : Node
         // public static RID TEST_TEXTURE_RID = GD.Load<Texture>("res://assets/Pharaoh/TILE_SHAPE.png").GetRid();
         public static Texture TEST_TEXTURE = GD.Load<Texture>("res://assets/Pharaoh/TEST_HUT.png");
         // public static RID TEST_TEXTURE_RID = GD.Load<Texture>("res://.import/TEST_HUT.png-58cf711fed88e72728a1c3a25f6a531e.stex").GetRid();
-        public static TextureInfo TEST_TEX_INFO = new TextureInfo() {
+        public static TextureDescriptor TEST_TEX_INFO = new TextureDescriptor() {
             textureRID = TEST_TEXTURE.GetRid(),
             width = 58,
             height = 40,
@@ -57,31 +57,26 @@ public class MapRenderer_mono : Node
         };
 
         // ----- tile image data -----
-        private Dictionary<int, (TextureInfo, Rect2, Color)> tiles = []; // n-ple dictionary (map)
-        public bool SetTileImage(int cell_x, int image_y_offset, int img_id, int tile_width, int tile_height) { // TODO
+        private Dictionary<int, (TextureDescriptor, Rect2, Color)> tiles = []; // n-ple dictionary (map) keyed by cell X coord (it's unique)
+        public bool SetTileImage(int cell_x, int draw_y_offset, int img_id, int tile_width, int tile_height) { // TODO
             
             // clear tiles
             if (img_id == -1)
-                if (tiles.ContainsKey(cell_x))
-                    return tiles.Remove(cell_x);
-                else
-                    return false;
+                return tiles.Remove(cell_x);
             
             // TODO: fetch texture info
             // TextureInfo? _tex_info = Globals.GraphicsMono.GetSprite(img_id.Value);
             // if (_tex_info == null)
             //     return false && tiles.Remove(cell_x);
             // TextureInfo tex_info = _tex_info.Value;
-            TextureInfo tex_info = TEST_TEX_INFO; // <----- temporary
+            TextureDescriptor tex_info = TEST_TEX_INFO; // <----- temporary
 
             // TODO: calculate y coords
             int x = (cell_x) * tile_width - tile_width / 2;
             int iso_size = (2 + tex_info.width) / tile_width; // 1x1, 2x2, 3x3 etc. --- NOTE: the image width here **MUST** be exact.
             int iso_height = iso_size * tile_height; // the height of the sprite if it was a flat iso footprint
             int y_runoff = tex_info.height - iso_height; // the "tall sprite" height bleeding we must account for
-            // int y = tex_info.height - (iso_size / 2) * span_width;
-            // Rect2 draw_rect = new Rect2(x, 0, tex_info.width, tex_info.height);
-            Rect2 draw_rect = new Rect2(x, -y_runoff, tex_info.width, tex_info.height);
+            Rect2 draw_rect = new Rect2(x, -y_runoff + draw_y_offset, tex_info.width, tex_info.height);
 
             // TODO: color mask
             Color color_mask = new Color(1,1,1,1);
@@ -114,7 +109,7 @@ public class MapRenderer_mono : Node
         public bool Redraw() {
             VisualServer.CanvasItemClear(_canvasItemRID);
             foreach (int tile_x in tiles.Keys) {
-                (TextureInfo tex_info, Rect2 draw_rect, Color mask) = tiles[tile_x];
+                (TextureDescriptor tex_info, Rect2 draw_rect, Color mask) = tiles[tile_x];
                     // **NOTE: need to EXPLICITLY pass "new RID(null)" to normalMap as null default arguments break RID resolution!**
                     // https://github.com/godotengine/godot/issues/35828#issuecomment-776904332
                     // VisualServer.CanvasItemAddTextureRectRegion(_canvasItemRID, draw_rect, tex_info.textureRID, tex_info.atlasRect, new Color(1,1,1,1), false, new RID(null), true);
