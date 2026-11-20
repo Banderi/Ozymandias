@@ -13,7 +13,7 @@ public class Grids_mono : Node
 
 	// Log.error(...)
 	protected void PrintError(string Message, int Err = 1) {
-		Globals.Log.Call("error", this, 1, Message);
+		Globals.Log.Call("error", this, Err, Message);
 	}
 	protected void PrintGeneric(string Message) {
 		Globals.Log.Call("generic", this, Message);
@@ -41,6 +41,8 @@ public class Grids_mono : Node
 	// update entire TileMap with grid data
 	public bool RedrawMap(TileMap map, GodotDictionary grids, Enums.Directions orientation) {
 
+		PrintGeneric("test2");
+
 		Grid<uint> grid_images = (Grid<uint>)((GridInterface)grids["images"]).grid;
 		Grid<sbyte> grid_edge = (Grid<sbyte>)((GridInterface)grids["edge"]).grid;
 
@@ -67,12 +69,14 @@ public class Grids_mono : Node
 				}
 				int image = (int)grid_images[x, y];
 				int edge = (int)grid_edge[x, y];
-				map.SetCell(cell_x, cell_y, image);
-				
+				// map.SetCell(cell_x, cell_y, image);
+				int image_y_offset = 0; // TODO
 				if (((Enums.EdgeFlags)edge & Enums.EdgeFlags.DRAW_TILE) == Enums.EdgeFlags.DRAW_TILE)
-					map.SetCell(cell_x, cell_y, image);
+					Globals.MapRendererMono.SetTileImage(cell_x, cell_y, image_y_offset, image);
+					// map.SetCell(cell_x, cell_y, image);
 				else
-					map.SetCell(cell_x, cell_y, -1);
+					Globals.MapRendererMono.SetTileImage(cell_x, cell_y, 0, -1);
+					// map.SetCell(cell_x, cell_y, -1);
 			}
 		}
 		return true;

@@ -20,14 +20,14 @@ public readonly struct GameTile {
 	public readonly int map_y;
 	public readonly int map_cantor;
 
-	public static int _cantor(int x, int y) {
-		return x + (Enums.GRID_LENGTH * y);
+	public static int _cantor(int x, int y, int grid_length = Enums.GRID_LENGTH) {
+		return x + (grid_length * y);
 	}
-	public static int _x(int cantor) {
-		return cantor % Enums.GRID_LENGTH;
+	public static int _x(int cantor, int grid_length = Enums.GRID_LENGTH) {
+		return cantor % grid_length;
 	}
-	public static int _y(int cantor) {
-		return cantor / Enums.GRID_LENGTH;
+	public static int _y(int cantor, int grid_length = Enums.GRID_LENGTH) {
+		return cantor / grid_length;
 	}
 
 	public GameTile(int x, int y, bool map_space) {

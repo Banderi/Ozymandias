@@ -804,8 +804,6 @@ func _ready():
 	yield(Debug.load_testing_save(), "completed")
 	DEBUG_ROOT.show()
 
-
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
 	last_fps = Engine.get_frames_per_second()

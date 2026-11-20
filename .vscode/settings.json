@@ -1,3 +1,7 @@
 {
-    "dotnet.autoInsert.enableAutoInsert": false
+    "dotnet.autoInsert.enableAutoInsert": false,
+    "files.readonlyInclude": {
+        "*/*.tscn": true,
+        "*/*.gd": true,
+    }
 }

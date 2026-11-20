@@ -36,7 +36,8 @@ func spawn_sprites():
 			create_sprite(i)
 	Stopwatch.stop(self, _t, "Figures.spawn_sprites")
 func create_sprite(i):
-	Map.TILEMAP_FLAT.add_child(FigureSprite.new(i, figures[i]))
+#	Map.TILEMAP_FLAT.add_child(FigureSprite.new(i, figures[i]))
+	Map.MAP_RENDER_ROOT.add_child(FigureSprite.new(i, figures[i]))
 #	var sprite = FigureSprite.new(i, figures[i])
 #	Map.TILEMAP_FLAT.add_child(sprite) # TODO....
 #	sprite.on_tick()

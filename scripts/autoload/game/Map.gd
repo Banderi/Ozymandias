@@ -5,7 +5,7 @@ const CONSTS = {
 	"Pharaoh": {
 		"GRID_SIZE": 228,
 		"GRID_LENGTH": 51984, # 228 * 228
-		"TILE_W": 58,
+		"TILE_W": 60,
 		"TILE_H": 30,
 	}
 }
@@ -16,9 +16,12 @@ func get_grid_cantor_length():
 func get_grid_center():
 	var s = floor(get_grid_size() * 0.5)
 	return Vector2(s, s)
+func get_grid_tile_size():
+	return Vector2(CONSTS[Assets.GAME_SET].TILE_W, CONSTS[Assets.GAME_SET].TILE_H)
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
+onready var MAP_RENDER_ROOT = INGAME_ROOT.get_node("MapRenderRoot")
 
 onready var TILEMAP_FLAT: TileMap = INGAME_ROOT.get_node("Map_Flat") as TileMap
 onready var TILEMAP_FEATURES: TileMap = INGAME_ROOT.get_node("Map_Features") as TileMap
@@ -140,10 +143,10 @@ func tilesets_load_scenario_specifics(): # TODO: anims?
 	
 	# parse various paks (TODO, for now it's just a few selected paks)
 	var success = true
-	if !Assets.add_pak_sprites_into_tileset(tileset, "Temple_bast", true): success = false
-	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk5x5a", true): success = false
-	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk3x3a", true): success = false
-	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk_extra", true): success = false
+#	if !Assets.add_pak_sprites_into_tileset(tileset, "Temple_bast", true): success = false
+#	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk5x5a", true): success = false
+#	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk3x3a", true): success = false
+#	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk_extra", true): success = false
 	
 	# MUST reach here even on errors, otherwise the tileset will disappear into the ether.
 	if tileset == null:

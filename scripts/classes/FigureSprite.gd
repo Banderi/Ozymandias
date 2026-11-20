@@ -6,6 +6,7 @@ var FIGURE_CS = null
 func _init(i, cs_ref):
 	name = str(i)
 	centered = false
+	z_as_relative = true
 #	offset = Vector2(0, -30)
 	FIGURE_ID = i
 	FIGURE_CS = cs_ref
@@ -39,6 +40,7 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#
 		var grid_pos = GameTile.new(tile_grid, false).grid_Vector2
 		var world_pos = Map.map_to_world(Map.correct_orientation(grid_pos))
 		position = world_pos + Vector2(-1, 30)
+		z_index = world_pos.x + world_pos.y
 		TILE_GRID = tile_grid
 	
 	# set sprite

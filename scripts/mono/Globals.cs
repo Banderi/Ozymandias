@@ -17,15 +17,17 @@ public class Globals : Node
 	public static Node Settings;
 	public static Node Keybinds;
 	
-	public static Node GridsMono;
+	public static Grids_mono GridsMono;
 //	public static Node PKWare;
-	public static Node PKWareMono;
-	public static Node SGImageMono;
+	public static PKWare_mono PKWareMono;
+	public static SGImage_mono SGImageMono;
 	public static Node Scribe;
-	public static Node ScribeMono;
+	public static Scribe_mono ScribeMono;
 	public static Node Assets;
 	public static Node Sounds;
 	public static Node Viewports;
+	public static Graphics_mono GraphicsMono;
+	public static MapRenderer_mono MapRendererMono;
 	
 	public static Node Game;
 	public static Node Family;
@@ -53,15 +55,17 @@ public class Globals : Node
 		Settings = GetNode("/root/Settings");
 		Keybinds = GetNode("/root/Keybinds");
 		
-		GridsMono = GetNode("/root/GridsMono");
+		GridsMono = GetNode<Grids_mono>("/root/GridsMono");
 //		PKWare = GetNode("/root/PKWare");
-		PKWareMono = GetNode("/root/PKWareMono");
-		SGImageMono = GetNode("/root/SGImageMono");
+		PKWareMono = GetNode<PKWare_mono>("/root/PKWareMono");
+		SGImageMono = GetNode<SGImage_mono>("/root/SGImageMono");
 		Scribe = GetNode("/root/Scribe");
-		ScribeMono = GetNode("/root/ScribeMono");
+		ScribeMono = GetNode<Scribe_mono>("/root/ScribeMono");
 		Assets = GetNode("/root/Assets");
 		Sounds = GetNode("/root/Sounds");
 		Viewports = GetNode("/root/Viewports");
+		GraphicsMono = GetNode<Graphics_mono>("/root/GraphicsMono");
+		MapRendererMono = GetNode<MapRenderer_mono>("/root/MapRendererMono");
 		
 		Game = GetNode("/root/Game");
 		Family = GetNode("/root/Family");
