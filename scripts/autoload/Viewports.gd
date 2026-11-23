@@ -1,5 +1,5 @@
 extends Node
-# ANTIMONY 'Viewports' by Banderi --- v1.0
+# ANTIMONY 'Viewports' by Banderi --- v1.1
 
 ### Code by aaronfranke & fbcosentino from https://github.com/godotengine/godot-proposals/issues/1302
 
@@ -90,13 +90,13 @@ func raycast_continuous(from, normal, max_hits = 100, exclude = [], mask = 0x7FF
 	return hits
 func mouse_position():
 	return get_viewport().get_mouse_position()
-func mousepick_vector(camera : Camera):
+func mousepick_vector(camera: Camera):
 	var mouse_position = mouse_position()
 	return {
 		"position": camera.project_ray_origin(mouse_position),
 		"normal": camera.project_ray_normal(mouse_position)
 	}
-func mousepick(camera : Camera, max_hits, exclude = [], mask = 0x7FFFFFFF, max_distance = 9999):
+func mousepick(camera: Camera, max_hits, exclude = [], mask = 0x7FFFFFFF, max_distance = 9999):
 	var mouse_vector = mousepick_vector(camera)
 	return raycast_continuous(mouse_vector.position, mouse_vector.normal, max_hits, exclude, mask, max_distance)
 
@@ -133,26 +133,52 @@ func angle_around_axis(vector, axis):
 		direction = 1
 
 	return angle * direction
-func match_camera_phi(vector : Vector3, camera : Camera):
+func match_camera_phi(vector: Vector3, camera: Camera):
 	return vector.rotated(Vector3.UP, camera.global_transform.basis.get_euler().y)
 
-func world2D_to_screen(canvas_transform : Transform2D, world : Vector2):
+func world2D_to_screen(canvas_transform: Transform2D, world: Vector2):
 	return canvas_transform * world
-func screen_to_world2D(canvas_transform : Transform2D, screen : Vector2):
+func screen_to_world2D(canvas_transform: Transform2D, screen: Vector2):
 	return canvas_transform.affine_inverse() * screen
-#func world3D_to_screen(camera : Camera, position : Vector3):
+#func world3D_to_screen(camera: Camera, position: Vector3):
 #	if camera.is_position_behind(position):
 #		return Vector2(-9999, -9999)
 #	return camera.unproject_position(position)
-#func screen_to_world3D(camera : Camera, position : Vector2, max_distance = 9999):
+#func screen_to_world3D(camera: Camera, position: Vector2, max_distance = 9999):
 #	pass # TODO: this isn't immediately trivial.
 
-#func to2D(v : Vector3):
+#func to2D(v: Vector3):
 #	return Vector2(v.x, v.y)
-#func to3D(v : Vector2, z):
+#func to3D(v: Vector2, z):
 #	return Vector3(v.x, v.y, z)
-#func stitch3D(v_2D : Vector2, v_3D : Vector3):
+#func stitch3D(v_2D: Vector2, v_3D: Vector3):
 #	return Vector3(v_2D.x, v_2D.y, v_3D.z)
 
-func rect_from_two_points(p1 : Vector2, p2 : Vector2):
+func rect_from_two_points(p1: Vector2, p2: Vector2):
 	return Rect2(min(p1.x, p2.x), min(p1.y, p2.y), abs(p2.x - p1.x), abs(p2.y - p1.y))
+
+var MAX_TEXTURE_SIZE_FOUND = null
+func get_max_texture_size() -> int:
+	if MAX_TEXTURE_SIZE_FOUND != null:
+		return MAX_TEXTURE_SIZE_FOUND
+	var size = 16384
+	while size > 128:
+		
+		# attempt creating an Image
+		var img = Image.new()
+		img.create(size, 1, false, Image.FORMAT_L8)
+		img.fill(Color(1, 1, 1)) # is this necessary..?
+		
+		# upload as Texture
+		var tex = ImageTexture.new()
+		tex.create_from_image(img, 0)
+		
+		# readback test
+		var back = tex.get_data()
+		if back == null || back.get_width() != size:
+			size = size / 2
+		else:
+			MAX_TEXTURE_SIZE_FOUND = size
+			return size
+	MAX_TEXTURE_SIZE_FOUND = -1
+	return -1

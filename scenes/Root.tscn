@@ -216,13 +216,6 @@ texture = ExtResource( 53 )
 centered = false
 offset = Vector2( -30, 0 )
 
-[node name="ReferenceRect" type="ReferenceRect" parent="InGame"]
-margin_left = -53.0
-margin_top = 237.0
-margin_right = 353.0
-margin_bottom = 428.0
-editor_only = false
-
 [node name="TEST_SPR_ATLAS" type="Node2D" parent="."]
 visible = false
 

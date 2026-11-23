@@ -3,7 +3,7 @@ extends Node
 # SG "Sierra Graphics" archives parsing and raw record ops
 # original SG format dissection resources:
 # https://github.com/bvschaik/julius/blob/master/src/core/image.c
-# https://github.com/lclarkmichalek/libsg/blob/master/c/sg_FILE_HANDLE.c
+# https://github.com/lclarkmichalek/libsg/blob/master/c/sgfile.c
 # https://github.com/bvschaik/citybuilding-tools/wiki/SG-file-format
 var _PAK_NAME = null
 var _PAK_PATH = null
@@ -58,7 +58,8 @@ func _parse_headers() -> bool:
 		"bmp": [],
 		"img": [],
 		"tag": [],
-		"textures": {}
+		#
+		"atlas": null
 	}
 
 	# header
@@ -258,7 +259,7 @@ func _image_from_raw_sg_data(raw_data: PoolByteArray, img: Dictionary, alpha_dat
 	if alpha_data != null:
 		SGImageMono.SetAlphaMask(extracted_image, img.width, alpha_data)
 	return extracted_image
-func _extract_img(i: int) -> Texture:
+func _extract_img(i: int) -> Image:
 	
 	var img = _DATA.img[i]
 	
@@ -277,30 +278,72 @@ func _extract_img(i: int) -> Texture:
 
 	# check if img data is valid
 	if !is_mirrored && img.data_length == 0:
-		return Log.error("SG._extract_img", FAILED, "img %d does not contain valid data (data_length=0)" % [i])
+		return Log.warning("SG._extract_img", "img %d does not contain valid data (data_length=0)" % [i])
 	
 	# convert raw pixel data
 	var raw_data_size = img.data_length
-	_FILE_HANDLE.seek(img.data_offset)
+	_FILE_HANDLE.seek(img.data_offset - (1 if img.is_external else 0))
 	var raw_data = _FILE_HANDLE.get_buffer(raw_data_size)
 	var alpha_data = _FILE_HANDLE.get_buffer(img.alpha_length) if img.alpha_length != 0 else null
 	var extracted_image = _image_from_raw_sg_data(raw_data, img, alpha_data)
 	if extracted_image == null:
-		return Log.error("SG._extract_img._image_from_raw_sg_data()", FAILED, "could not extract image %d from raw data" % [i])
+		return Log.error("SG._extract_img._image_from_raw_sg_data", FAILED, "could not extract image %d from raw data" % [i])
 	
-	# convert image to texture
-	var texture = ImageTexture.new()
+	# return image data
 	if is_mirrored:
 		extracted_image.flip_x()
-	texture.create_from_image(extracted_image, 0)
+	return extracted_image
+func _convert_to_texture(image_data: Image) -> ImageTexture:
+	var texture = ImageTexture.new()
+	texture.create_from_image(image_data, 0)
 	if texture == null:
-		return Log.error("SG._extract_img.create_from_image()", FAILED, "could not convert image %d's data into a texture" % [i])
+		return Log.error("SG._convert_to_texture", FAILED, "could not convert image data into a texture")
 	return texture
+func _construct_atlas(images: Dictionary, sizes: PoolVector2Array, indices: Dictionary):
+	if sizes.size() == 0:
+		return null
+	
+	# TODO: move this to C#? I have no way of checking for failures here.....
+	# sprites MUST not be larger than 4096 horizontally -- https://github.com/godotengine/godot/issues/93795
+	var atlas_desc = Geometry.make_atlas(sizes) # seems like make_atlas() has a fixed limit of 4096 internally..?
+	
+	var size_limit = Viewports.get_max_texture_size()
+	if atlas_desc.size.x > size_limit || atlas_desc.size.y > size_limit:
+		return Log.error("SG._construct_atlas", FAILED, "could not fit within GPU limits (size=%s, limit=%d)" % [atlas_desc.size, size_limit])
+
+	var atlas_rects = {}
+
+	# combine into a single Image
+	var atlas_image = Image.new()
+	atlas_image.create(atlas_desc.size.x, atlas_desc.size.y, false, Image.FORMAT_RGBA8)
+	for i in images:
+		var idx = indices[i]
+		var p = atlas_desc.points[idx]
+		var s = sizes[idx]
+		atlas_rects[i] = Rect2(p, s)
+		atlas_image.blit_rect(images[i], Rect2(Vector2(), s), p)
+	
+	# create ImageTexture
+	var atlas_texture = _convert_to_texture(atlas_image)
+	if atlas_texture == null:
+		return null
+	
+	return {
+		"texture": atlas_texture,
+		"rects": atlas_rects,
+		"images": images
+	}
+	
 func extract_single(img_idx: int) -> Texture:
 	var _t = Stopwatch.start()
 
 	# attempt extracting
-	var texture = _extract_img(img_idx)
+	var image = _extract_img(img_idx)
+	if image == null:
+		return null
+	
+	# convert image to texture
+	var texture = _convert_to_texture(image)
 	if texture == null:
 		return null
 	
@@ -312,11 +355,9 @@ func extract_single(img_idx: int) -> Texture:
 	])
 	_DATA.textures[img_idx] = texture
 	return texture
-func extract_all(skip_system_bmp: bool): # .555 pak / actual image data
+func extract_all(skip_system_bmp: bool) -> Texture: # .555 pak / actual image data
 	var _t = Stopwatch.start()
 	
-	var extracted_textures = {}
-
 	var has_system_bmp = _DATA.header.bmp_records > 0 && _DATA.bmp[0].name == "system.bmp"
 	
 	# image data
@@ -324,9 +365,9 @@ func extract_all(skip_system_bmp: bool): # .555 pak / actual image data
 	var images_extracted = 0
 	var images_failed = 0
 	var images_external = 0
-#	var i = -1
-#	for img_field in _DATA.img:
-#		i += 1
+	var extracted_images = {}
+	var extracted_img_sizes = PoolVector2Array()
+	var extracted_img_indices = {}
 	for i in range(_DATA.img.size()):
 		
 		# get img field
@@ -338,17 +379,26 @@ func extract_all(skip_system_bmp: bool): # .555 pak / actual image data
 			images_external += 1
 		
 		# attempt extracting
-		if i == 7827:
-			pass
-		var texture = _extract_img(i)
-		if texture == null:
+		var image = _extract_img(i)
+		if image == null:
 			images_failed += 1
 		else:
+			var img_size = image.get_size()
+			if img_size.x > 4096:
+				_file_close()
+				return Log.error("SG.extract_all", FAILED, "sprite %d exceeding 4096 (width=%d)" % [i, img_size.x])
+			if img_size.x < 1 || img_size.y < 1:
+				return Log.error("SG.extract_all", FAILED, "sprite %d was extracted, but has invalid size (%s)" % [i, img_size])
 			images_extracted += 1
-			extracted_textures[i] = texture
+			extracted_images[i] = image
+			extracted_img_indices[i] = extracted_img_sizes.size()
+			extracted_img_sizes.push_back(image.get_size())
 
 	# close final file handle
 	_file_close()
+	
+	# build texture atlas
+	_DATA.atlas = _construct_atlas(extracted_images, extracted_img_sizes, extracted_img_indices)
 	
 	Log.generic("SG.extract_all", "DONE (%d ms) -- %d extracted, %d skipped, %d failed" % [
 		Stopwatch.query(_t, Stopwatch.Milliseconds),
@@ -356,5 +406,5 @@ func extract_all(skip_system_bmp: bool): # .555 pak / actual image data
 		images_skipped,
 		images_failed
 	])
-	_DATA.textures.merge(extracted_textures)
-	return extracted_textures
+	
+	return _DATA.atlas.texture

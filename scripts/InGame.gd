@@ -20,7 +20,6 @@ func camera_move_to(coords):
 
 # camera inputs
 onready var CAMERA = $Camera2D
-#onready var CAMERA_RECT = $ReferenceRect
 onready var camera_position_target = CAMERA.position
 onready var camera_zoom_target = 1.0
 onready var camera_previous_game_coords = null
@@ -87,10 +86,6 @@ func _input(event):
 		camera_movements(event)
 
 func _process(delta):
-#	var camera_rect = get_camera_rect()
-#	CAMERA_RECT.rect_position = camera_rect.position
-#	CAMERA_RECT.rect_size = camera_rect.size
-	
 	
 #	mouse_worldpos = get_local_mouse_position()
 	if Game.STATE != Game.States.NoGameLoaded:

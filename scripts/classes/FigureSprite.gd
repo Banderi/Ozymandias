@@ -12,11 +12,6 @@ func _init(i, cs_ref):
 	FIGURE_CS = cs_ref
 	add_to_group("sprites")
 	repaint()
-	var c = ColorRect.new()
-	c.color = Color(0,1,0,1)
-	c.rect_size = Vector2(1, 250)
-#	c.rect_position = Vector2(0, -10)
-	add_child(c)
 
 const SGX_LOOKUP = [ # this is a temporary dirty thing while I work out on a better system. 
 	"Pharaoh_Unloaded",
@@ -39,15 +34,6 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#?
 	
 	var sprite_props = FIGURE_CS.sprite_poll()
 	
-##	if !is_visible_in_tree():
-##		return
-#	var camera_rect = Game.INGAME_ROOT.get_camera_rect() as Rect2
-##	var local_rect = get_viewport_rect()
-##	var is_in_view = local_rect.intersects(camera_rect, true)
-#	var is_in_view = camera_rect.has_point(position)
-##		return
-	
-
 	# update tile position
 	var tile_grid = sprite_props[6]
 	if tile_grid != TILE_GRID || force_repaint:
@@ -119,5 +105,4 @@ func repaint(force_repaint: bool = false): # TODO: move this to C#?
 #			TILE_PROGRESS = (TILE_PROGRESS + 1) % 15
 #			TILE_PROGRESS = 0
 	
-	get_child(0).rect_position = offset
 	FIGURE_CS.needs_repaint = false

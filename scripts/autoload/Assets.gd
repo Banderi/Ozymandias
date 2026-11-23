@@ -217,7 +217,8 @@ func extract_sgx(pak_name: String):
 		return false
 	if !SG.open(path): # open & parse pak
 		return false
-	if !SG.extract_all((true if pak_info[2] >= 201 else false)):
+	var sg_extracts = SG.extract_all((true if pak_info[2] >= 201 else false))
+	if sg_extracts == null:
 		return false
 	var sginfo = SG.get_data() # get full SG data dump from the reader
 	if !GameSet.set_SG_CACHE(pak_name, sginfo): # store in memory
@@ -225,11 +226,11 @@ func extract_sgx(pak_name: String):
 	IO.write(str(get_game_cache_path(), "/Data/" , pak_name, ".CACHED"), sginfo) # try to save to disk, ignoring errors
 	
 	# dump all extracted textures to disk cache
-	for i in sginfo.textures:
-		var texture = sginfo.textures[i]
-		if texture != null:
-			var path_cached = str(get_game_cache_path(), "/Data/", pak_name, "/", i, ".texture")
-			IO.write(path_cached, texture, true) # save to cache
+#	for i in sginfo.textures:
+#		var texture = sginfo.textures[i]
+#		if texture != null:
+#			var path_cached = str(get_game_cache_path(), "/Data/", pak_name, "/", i, ".texture")
+#			IO.write(path_cached, texture, true) # save to cache
 	return true
 func get_SG_data(pak_name: String): # return (ref) cached SG data
 	
@@ -273,22 +274,23 @@ func _sg_get_tag_record(pak_name: String, tag_idx: int):
 		return Log.error("_sg_get_img_record", ERR_DOES_NOT_EXIST, "pak '%s' does not contain any valid tag (group) at index %d" % [pak_name, tag_idx])
 	return sginfo.tag[tag_idx]
 
-func get_SG_texture(pak_name: String, img_idx: int, seek_cache_only: bool) -> Texture: # this uses the pak's own record indices -- it COUNTS SYSTEM.BMP AS WELL AS THE DUMMY RECORD.
+func get_SG_texture(pak_name: String, img_idx: int, seek_cache_only: bool) -> AtlasTexture: # this uses the pak's own record indices -- it COUNTS SYSTEM.BMP AS WELL AS THE DUMMY RECORD.
 	
 	#  OPTION 1: read cached raw texture streams -- around ~380 ms
-	var path_cached = str(get_game_cache_path(), "/Data/", pak_name, "/", img_idx, ".texture")
-	var texture = IO.read(path_cached, false, true)
-	if texture != null || seek_cache_only:
-		return texture
+#	var path_cached = str(get_game_cache_path(), "/Data/", pak_name, "/", img_idx, ".texture")
+#	var texture = IO.read(path_cached, false, true)
+#	if texture != null || seek_cache_only:
+#		return texture
 	
 	#  OPTION 2: extract from SG paks -- ?? ms
 	var sginfo = get_SG_data(pak_name)
 	if sginfo == null:
 		return null
-	texture = sginfo.textures.get(img_idx, null)
-	if texture != null:
-		IO.write(path_cached, texture, true) # save to cache
-		return texture
+	var texture = sginfo.atlas.images.get(img_idx, null)
+#	texture = sginfo.textures.get(img_idx, null)
+#	if texture != null:
+#		IO.write(path_cached, texture, true) # save to cache
+#		return texture
 	
 	# return results
 	if texture == null:
@@ -299,7 +301,7 @@ func get_tagged_SG_img_idx(pak_name: String, tag_idx: int, spr_offset: int):
 	if tag == null:
 		return null
 	return tag.img + spr_offset
-func get_tagged_SG_texture(pak_name: String, tag_idx: int, spr_offset: int, seek_cache_only: bool) -> Texture:
+func get_tagged_SG_texture(pak_name: String, tag_idx: int, spr_offset: int, seek_cache_only: bool) -> AtlasTexture:
 	var img_idx = get_tagged_SG_img_idx(pak_name, tag_idx, spr_offset)
 	if img_idx == null:
 		return null
@@ -319,7 +321,7 @@ func get_gameset_SG_img_idx(global_img_id: int): # this takes into account ONLY 
 				return [pak_name, global_img_id - start_img_id + skip_initial]
 		Log.error(self, ERR_DOES_NOT_EXIST, "image id '%s' could not be resolved" % [global_img_id])
 	return null
-func get_gameset_SG_texture(global_img_id: int, seek_cache_only: bool) -> Texture:
+func get_gameset_SG_texture(global_img_id: int, seek_cache_only: bool) -> AtlasTexture:
 	var r = get_gameset_SG_img_idx(global_img_id)
 	if r == null:
 		return null
@@ -545,15 +547,26 @@ func record_pak_textures(pak_name: String) -> bool: # TODO
 			skipped += 1
 			continue
 		
-		var texture = get_SG_texture(pak_name, i, true)
-		if texture == null:
+#		var texture = get_SG_texture(pak_name, i, true)
+#		if texture == null:
+#			skipped += 1
+#			continue
+		if sginfo.atlas == null:
+			return false
+		
+		var atlas_rect = sginfo.atlas.rects.get(i, null)
+		if atlas_rect == null:
 			skipped += 1
 			continue
+		var atlas_texture = sginfo.atlas.texture
+		if atlas_texture == null:
+			return false
 
 #		var rid = texture.get_rid()
 #		assert(rid != null)
 #		GraphicsMono.RecordSprite(img_id, texture.get_rid(), texture.get_width(), texture.get_height(), false, null) # <-- no atlas info for now
-		GraphicsMono.RecordSprite(img_id, texture, texture.get_width(), texture.get_height(), false, null) # <-- no atlas info for now
+#		GraphicsMono.RecordSprite(img_id, texture, texture.get_width(), texture.get_height(), false, null) # <-- no atlas info for now
+		GraphicsMono.RecordAtlasSprite(img_id, atlas_texture, atlas_rect)
 		
 		
 		
@@ -605,7 +618,7 @@ func load_locales() -> bool: # TODO: MM, check user settings, add different loca
 func load_sounds(ignore_cache: bool = false) -> bool: # TODO
 	return true
 func load_backdrops(ignore_cache: bool = false) -> bool: # this loads the SHARED terrain GameSet.TILESETS
-	return true;
+#	return true;
 	# load tileset from cache -- around 420~460 ms
 	var _t = Stopwatch.start()
 #	var path_cached_tileset = get_game_cache_path() + "/" + GAME_SET + "_shared.tileset"
@@ -736,45 +749,45 @@ func load_game_assets(game):
 	
 #	test_print_sgx()
 #	if !extract_sg_paks(): # <--- true to force all sprite re-extraction --- TODO: on first game load / data path set (or reset)
-#		return bail(FAILED, "load_sg_paks()")
+#		return bail(FAILED, "load_sg_paks")
 
 	# pass 'true' to any of the below to ignore cached tiles.
 
 	yield(Game.loading_screen(509, "...", false), "completed")
 	if !load_locales():
-		return bail(FAILED, "load_locales()")
+		return bail(FAILED, "load_locales")
 	
 	yield(Game.loading_screen(509, "TEXT_11_5"), "completed")
 	yield(Engine.get_main_loop(), "idle_frame")
 	if !load_sounds():
-		return bail(FAILED, "load_sounds()")
+		return bail(FAILED, "load_sounds")
 	
 	yield(Game.loading_screen(509, "TEXT_11_7"), "completed")
 	yield(Engine.get_main_loop(), "idle_frame")
 	if !load_backdrops():
-		return bail(FAILED, "load_backdrops()")
+		return bail(FAILED, "load_backdrops")
 	
 	yield(Game.loading_screen(509, "TEXT_11_8"), "completed")
 	yield(Engine.get_main_loop(), "idle_frame")
 	if !load_animations():
-		return bail(FAILED, "load_animations()")
+		return bail(FAILED, "load_animations")
 	yield(Engine.get_main_loop(), "idle_frame")
 	
 	yield(Game.loading_screen(509, "TEXT_11_9"), "completed")
 	yield(Engine.get_main_loop(), "idle_frame")
 	if !load_monuments():
-		return bail(FAILED, "load_monuments()")
+		return bail(FAILED, "load_monuments")
 	yield(Engine.get_main_loop(), "idle_frame")
 	
 	yield(Game.loading_screen(509, "TEXT_11_10"), "completed")
 	if !load_enemies():
-		return bail(FAILED, "load_enemies()")
+		return bail(FAILED, "load_enemies")
 	yield(Engine.get_main_loop(), "idle_frame")
 	
 	yield(Game.loading_screen(509, "TEXT_11_11"), "completed")
 	yield(Engine.get_main_loop(), "idle_frame")
 	if !load_settings():
-		return bail(FAILED, "load_settings()")
+		return bail(FAILED, "load_settings")
 
 func bail(err, msg) -> bool:
 	Log.error(self, err, msg)
