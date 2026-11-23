@@ -239,7 +239,7 @@ enum DebugDisplays {
 #	FIGURES = 2,
 #	BUILDINGS = 3,
 }
-var debug_display_mode = 1
+var debug_display_mode = 0
 func print_tile_debug():
 	var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position()
 	var raw_tileset_space = Map.TILEMAP_FLAT.world_to_map(mouse_pos)

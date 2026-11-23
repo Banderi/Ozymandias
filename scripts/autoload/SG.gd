@@ -294,6 +294,8 @@ func _extract_img(i: int) -> Image:
 		extracted_image.flip_x()
 	return extracted_image
 func _convert_to_texture(image_data: Image) -> ImageTexture:
+	if image_data == null:
+		return Log.error("SG._convert_to_texture", FAILED, "invalid image data (image_data=null)")
 	var texture = ImageTexture.new()
 	texture.create_from_image(image_data, 0)
 	if texture == null:

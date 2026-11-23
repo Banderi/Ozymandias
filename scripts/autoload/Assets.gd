@@ -274,23 +274,22 @@ func _sg_get_tag_record(pak_name: String, tag_idx: int):
 		return Log.error("_sg_get_img_record", ERR_DOES_NOT_EXIST, "pak '%s' does not contain any valid tag (group) at index %d" % [pak_name, tag_idx])
 	return sginfo.tag[tag_idx]
 
-func get_SG_texture(pak_name: String, img_idx: int, seek_cache_only: bool) -> AtlasTexture: # this uses the pak's own record indices -- it COUNTS SYSTEM.BMP AS WELL AS THE DUMMY RECORD.
+func get_SG_texture(pak_name: String, img_idx: int, seek_cache_only: bool) -> ImageTexture: # this uses the pak's own record indices -- it COUNTS SYSTEM.BMP AS WELL AS THE DUMMY RECORD.
 	
 	#  OPTION 1: read cached raw texture streams -- around ~380 ms
-#	var path_cached = str(get_game_cache_path(), "/Data/", pak_name, "/", img_idx, ".texture")
-#	var texture = IO.read(path_cached, false, true)
-#	if texture != null || seek_cache_only:
-#		return texture
+	var path_cached = str(get_game_cache_path(), "/Data/", pak_name, "/", img_idx, ".texture")
+	var texture = IO.read(path_cached, false, true)
+	if texture != null || seek_cache_only:
+		return texture
 	
 	#  OPTION 2: extract from SG paks -- ?? ms
 	var sginfo = get_SG_data(pak_name)
 	if sginfo == null:
 		return null
-	var texture = sginfo.atlas.images.get(img_idx, null)
-#	texture = sginfo.textures.get(img_idx, null)
-#	if texture != null:
-#		IO.write(path_cached, texture, true) # save to cache
-#		return texture
+	texture = SG._convert_to_texture(sginfo.atlas.images.get(img_idx, null))
+	if texture != null:
+		IO.write(path_cached, texture, true) # save to cache
+		return texture
 	
 	# return results
 	if texture == null:
@@ -301,7 +300,7 @@ func get_tagged_SG_img_idx(pak_name: String, tag_idx: int, spr_offset: int):
 	if tag == null:
 		return null
 	return tag.img + spr_offset
-func get_tagged_SG_texture(pak_name: String, tag_idx: int, spr_offset: int, seek_cache_only: bool) -> AtlasTexture:
+func get_tagged_SG_texture(pak_name: String, tag_idx: int, spr_offset: int, seek_cache_only: bool) -> ImageTexture:
 	var img_idx = get_tagged_SG_img_idx(pak_name, tag_idx, spr_offset)
 	if img_idx == null:
 		return null
@@ -321,7 +320,7 @@ func get_gameset_SG_img_idx(global_img_id: int): # this takes into account ONLY 
 				return [pak_name, global_img_id - start_img_id + skip_initial]
 		Log.error(self, ERR_DOES_NOT_EXIST, "image id '%s' could not be resolved" % [global_img_id])
 	return null
-func get_gameset_SG_texture(global_img_id: int, seek_cache_only: bool) -> AtlasTexture:
+func get_gameset_SG_texture(global_img_id: int, seek_cache_only: bool) -> ImageTexture:
 	var r = get_gameset_SG_img_idx(global_img_id)
 	if r == null:
 		return null
