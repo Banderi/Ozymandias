@@ -326,7 +326,7 @@ func get_gameset_SG_texture(global_img_id: int, seek_cache_only: bool) -> ImageT
 		return null
 	return get_SG_texture(r[0], r[1], seek_cache_only)
 
-# animated sprites: TODO
+# animated sprites: TODO!!!: use the atlases instead of re-converting the image data!!
 onready var NULL_SPRITE_ANIM = preload("res://assets/sprite_anim_null.tres")
 func build_animated_sprite(pak_name: String, sg_tags: Array): # WARNING-- this can ONLY build from a single pak (for now!) 
 	var offsets = {}
@@ -404,120 +404,7 @@ const TILE_HEIGHT_PIXELS = 30
 const HALF_TILE_WIDTH_PIXELS = 30
 const HALF_TILE_HEIGHT_PIXELS = 15
 const TILE_PROGRESS_TICK = Vector2(0, 0)
-var SHARED_TILESET = null
-var FULL_TILESET = null
-#func tileset_add_tile_from_texture(tileset: TileSet, texture: Texture, id: int): # constructs tile from texture and add to tileset
-##	if id == 850 + 14252:														 # for some reason, this shows [Null] in editor
-##		texture = get_SG_texture("Pharaoh_Terrain.sg3", 850)					 # upon applying certain textures. e.g.:
-#	var tile_size = (texture.get_size().x + 2) / TILE_WIDTH_PIXELS				 # - Pharaoh_Terrain @ 850 (SPR_B_DOCK_E)
-#	tileset.create_tile(id)
-#	tileset.tile_set_texture(id, texture)
-#	tileset.tile_set_texture_offset(id, Vector2(0, (15 * (tile_size + 1)) - texture.get_size().y))
-#func add_pak_sprites_into_tileset(tileset: TileSet, pak_name: String, canon_sequence: bool) -> bool: # DO NOT USE this on a tileset IN USE in a TileMap! DETACH it first!!
-#	var _t = Stopwatch.start()
-#	if tileset == null:
-#		Log.error("add_pak_sprites_into_tileset", ERR_INVALID_PARAMETER, "tileset parameter was passed null")
-#		return false
-#
-#	# find pak info in gameset records
-#	var pak_range_info = GameSet.get_SG_PAK(pak_name)
-#	if pak_range_info == null:
-#		Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [pak_name])
-#		return false
-#
-#	var global_start_img_id = pak_range_info[0]
-#	var global_end_img_id = pak_range_info[1]
-#	var skip_initial = pak_range_info[2]
-#
-#
-#	# get .sgx header data
-#	var sginfo = get_SG_data(pak_name)
-#	if sginfo == null:
-#		return false
-#
-#	# load images within the boundaries of the global ids of this pak
-#	var replaced = 0
-#	var skipped = 0
-#	var last_img_id = null
-#	for i in range(skip_initial, sginfo.header.img_records + 1): # img_records does NOT include the dummy image at #0
-#		var texture = get_SG_texture(pak_name, i, true)
-#		if texture == null:
-#			skipped += 1
-#			continue
-#		last_img_id = global_start_img_id + (i - skip_initial)
-#
-#		# remove tile if already present
-#		if tileset.get_tiles_ids().has(last_img_id):
-#			replaced += 1
-#			tileset.remove_tile(last_img_id)
-#		tileset_add_tile_from_texture(tileset, texture, last_img_id)
-#
-#	if last_img_id != global_end_img_id:
-#		Log.error("add_pak_sprites_into_tileset", ERR_BUG, "pak '%s' image ids do not add up as expected (%d != %d)" % [pak_name, last_img_id, global_end_img_id])
-#		return false
-#	Log.generic("add_pak_sprites_into_tileset", "'%s' (%d ms) -- tiles %d --> %d, %d replaced, %d skipped" % [
-#		pak_name,
-#		Stopwatch.query(_t, Stopwatch.Milliseconds),
-#		global_start_img_id,
-#		last_img_id,
-#		replaced,
-#		skipped
-#	])
-#	return true
-#func tileset_atlas_add_tile_from_texture():
-#	pass
-func add_pak_sprites_into_atlas(pak_name: String) -> bool: # TODO
-	var _t = Stopwatch.start()
-#	if tileset == null:
-#		Log.error("add_pak_sprites_into_tileset", ERR_INVALID_PARAMETER, "tileset parameter was passed null")
-#		return false
-
-	# find pak info in gameset records
-	var pak_range_info = GameSet.get_SG_PAK(pak_name)
-	if pak_range_info == null:
-		Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [pak_name])
-		return false
-
-	var global_start_img_id = pak_range_info[0]
-	var global_end_img_id = pak_range_info[1]
-	var skip_initial = pak_range_info[2]
-
-
-	# get .sgx header data
-	var sginfo = get_SG_data(pak_name)
-	if sginfo == null:
-		return false
-
-	# load images within the boundaries of the global ids of this pak
-	var replaced = 0
-	var skipped = 0
-	var last_img_id = null
-	for i in range(skip_initial, sginfo.header.img_records + 1): # img_records does NOT include the dummy image at #0
-		var texture = get_SG_texture(pak_name, i, true)
-		if texture == null:
-			skipped += 1
-			continue
-		last_img_id = global_start_img_id + (i - skip_initial)
-
-		# remove tile if already present
-#		if tileset.get_tiles_ids().has(last_img_id):
-#			replaced += 1
-#			tileset.remove_tile(last_img_id)
-#		tileset_add_tile_from_texture(tileset, texture, last_img_id)
-
-	if last_img_id != global_end_img_id:
-		Log.error("add_pak_sprites_into_tileset", ERR_BUG, "pak '%s' image ids do not add up as expected (%d != %d)" % [pak_name, last_img_id, global_end_img_id])
-		return false
-	Log.generic("add_pak_sprites_into_tileset", "'%s' (%d ms) -- tiles %d --> %d, %d replaced, %d skipped" % [
-		pak_name,
-		Stopwatch.query(_t, Stopwatch.Milliseconds),
-		global_start_img_id,
-		last_img_id,
-		replaced,
-		skipped
-	])
-	return true
-func record_pak_textures(pak_name: String) -> bool: # TODO
+func record_pak_textures(pak_name: String) -> bool: # uploads SG images (as AtlasTextures) into GraphicsMono
 	var _t = Stopwatch.start()
 
 	# find pak info in gameset records
@@ -525,7 +412,6 @@ func record_pak_textures(pak_name: String) -> bool: # TODO
 	if pak_range_info == null:
 		Log.error("add_pak_sprites_into_tileset", ERR_DOES_NOT_EXIST, "file '%s' not found in gameset pak records" % [pak_name])
 		return false
-
 	var global_start_img_id = pak_range_info[0]
 	var global_end_img_id = pak_range_info[1]
 	var skip_initial = pak_range_info[2]
@@ -542,17 +428,9 @@ func record_pak_textures(pak_name: String) -> bool: # TODO
 	for i in range(skip_initial, sginfo.header.img_records + 1): # img_records does NOT include the dummy image at #0
 		var img_id = global_start_img_id + (i - skip_initial)
 		
-		if GraphicsMono.HasSprite(img_id):
-			skipped += 1
-			continue
-		
-#		var texture = get_SG_texture(pak_name, i, true)
-#		if texture == null:
-#			skipped += 1
-#			continue
+		# fetch ImageTexture and atlas region data
 		if sginfo.atlas == null:
 			return false
-		
 		var atlas_rect = sginfo.atlas.rects.get(i, null)
 		if atlas_rect == null:
 			skipped += 1
@@ -560,14 +438,11 @@ func record_pak_textures(pak_name: String) -> bool: # TODO
 		var atlas_texture = sginfo.atlas.texture
 		if atlas_texture == null:
 			return false
-
-#		var rid = texture.get_rid()
-#		assert(rid != null)
-#		GraphicsMono.RecordSprite(img_id, texture.get_rid(), texture.get_width(), texture.get_height(), false, null) # <-- no atlas info for now
-#		GraphicsMono.RecordSprite(img_id, texture, texture.get_width(), texture.get_height(), false, null) # <-- no atlas info for now
+		
+		# upload to GraphicsMono (TODO: better names and C# system)
+		if GraphicsMono.HasSprite(img_id):
+			replaced += 1
 		GraphicsMono.RecordAtlasSprite(img_id, atlas_texture, atlas_rect)
-		
-		
 		
 		last_img_id = img_id
 
@@ -617,36 +492,22 @@ func load_locales() -> bool: # TODO: MM, check user settings, add different loca
 func load_sounds(ignore_cache: bool = false) -> bool: # TODO
 	return true
 func load_backdrops(ignore_cache: bool = false) -> bool: # this loads the SHARED terrain GameSet.TILESETS
-#	return true;
-	# load tileset from cache -- around 420~460 ms
 	var _t = Stopwatch.start()
-#	var path_cached_tileset = get_game_cache_path() + "/" + GAME_SET + "_shared.tileset"
-#	if !ignore_cache && IO.file_exists(path_cached_tileset):
-#		SHARED_TILESET = IO.read(path_cached_tileset)
-#		if SHARED_TILESET == null:
-#			return false
-#		Stopwatch.stop("load_common_tilesets", _t, "tileset textures loaded from cache")
-#	else:
-		# construct tileset from extracted sprites -- around 1500~1800 ms
-	if true:
-		SHARED_TILESET = TileSet.new()
-		var tileset_paks = GameSet.get_TILESETS("shared")
-		if tileset_paks == null:
+	
+	# load SG paks
+	var tileset_paks = GameSet.get_TILESETS("shared")
+	if tileset_paks == null:
+		return false
+	for pak_name in tileset_paks:
+		if !get_SG_data(pak_name):
 			return false
-		for pak_name in tileset_paks:
-#			if !add_pak_sprites_into_tileset(SHARED_TILESET, pak_name + ".sg3", true):
-#				return false
-#			if !add_pak_sprites_into_tileset_atlas(SHARED_TILESET, pak_name + ".sg3", true):
-#				return false
-			if !record_pak_textures(pak_name):
-				return false
-#			return false
-		Stopwatch.stop("load_common_tilesets", _t, "tileset textures generated and loaded")
-		
-		# save tileset as raw Variant disk file -- around ~1200 ms
-		_t = Stopwatch.start()
-#		IO.write(path_cached_tileset, SHARED_TILESET)
-		Stopwatch.stop("load_common_tilesets", _t, "tileset save to disk")
+	
+	# upload to GraphicsMono
+	for pak_name in tileset_paks:
+		if !record_pak_textures(pak_name):
+			return false
+	Stopwatch.stop("load_backdrops", _t, "tileset textures generated and loaded")
+	
 	return true
 func load_animations(ignore_cache: bool = false) -> bool: # TODO
 #	if get_SG_data("SprMain") == null:
@@ -672,28 +533,16 @@ func load_animations(ignore_cache: bool = false) -> bool: # TODO
 	return true
 func load_monuments(ignore_cache: bool = false) -> bool: # this loads the UNLOADED / OVERLAPPING paks into NON-CANON ORDER.
 	var _t = Stopwatch.start()
-	var path_cached_tileset = get_game_cache_path() + "/" + GAME_SET + "_unloaded.tileset"
-	if !ignore_cache && IO.file_exists(path_cached_tileset):
-		FULL_TILESET = IO.read(path_cached_tileset)
-		if FULL_TILESET == null:
+	
+	# load SG paks
+	var tileset_paks = GameSet.get_TILESETS("unloaded")
+	if tileset_paks == null:
+		return false
+	for pak_name in tileset_paks:
+		if !get_SG_data(pak_name):
 			return false
-		Stopwatch.stop("load_unloaded_tilesets", _t, "tileset textures loaded from cache")
-	else:
-		FULL_TILESET = SHARED_TILESET
-		var tileset_paks = GameSet.get_TILESETS("unloaded")
-		if tileset_paks == null:
-			return false
-#		for pak_name in tileset_paks:
-#			if !add_pak_sprites_into_tileset(FULL_TILESET, pak_name + ".sg3", false):
-#				return false
-#			if !add_pak_sprites_into_tileset_atlas(FULL_TILESET, pak_name + ".sg3", false):
-#				return false
-#			return false
-		Stopwatch.stop("load_unloaded_tilesets", _t, "tileset textures generated and loaded")
+	Stopwatch.stop("load_monuments", _t, "tileset textures generated and loaded")
 		
-		_t = Stopwatch.start()
-		IO.write(path_cached_tileset, FULL_TILESET)
-		Stopwatch.stop("load_unloaded_tilesets", _t, "tileset save to disk")
 	return true
 func load_enemies(ignore_cache: bool = false) -> bool: # TODO
 	return true

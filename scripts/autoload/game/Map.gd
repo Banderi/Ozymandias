@@ -23,37 +23,6 @@ onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
 onready var MAP_RENDER_ROOT = INGAME_ROOT.get_node("MapRenderRoot")
 
-onready var TILEMAP_FLAT: TileMap = INGAME_ROOT.get_node("Map_Flat") as TileMap
-onready var TILEMAP_FEATURES: TileMap = INGAME_ROOT.get_node("Map_Features") as TileMap
-onready var TILEMAP_TOP: TileMap = INGAME_ROOT.get_node("Map_Top") as TileMap
-onready var TILEMAP_ANIM: TileMap = INGAME_ROOT.get_node("Map_Anim") as TileMap
-
-var data = {}
-onready var GRID_CS = load("res://scripts/mono/GridInterface.cs")
-onready var grids = {
-	"images": GRID_CS.new(),
-	"edge": GRID_CS.new(),
-	"buildings": GRID_CS.new(),
-	"terrain": GRID_CS.new(),
-	"aqueduct": GRID_CS.new(),
-	"figures": GRID_CS.new(),
-	"bitfields": GRID_CS.new(),
-	"sprites": GRID_CS.new(),
-	"random": GRID_CS.new(),
-	"desirability": GRID_CS.new(),
-	
-	"elevation": GRID_CS.new(),
-	"building_dmg": GRID_CS.new(),
-	"aqueduct_bak": GRID_CS.new(),
-	"sprite_bak": GRID_CS.new(),
-	
-	"fertility": GRID_CS.new(),
-	"vegetation_growth": GRID_CS.new(),
-	"unk_grid03": GRID_CS.new(),
-	"unk_grid04": GRID_CS.new(),
-	"moisture": GRID_CS.new()
-}
-
 enum TerrainFlags {
 	TREE =				1,
 	ROCK =				2,
@@ -131,45 +100,24 @@ enum BitFlags {
 #    BIT_NO_SIZES = 240,
 }
 
-func set_tileset(flats: TileSet, anims: TileSet): # does this require node setup in tree..?
-	TILEMAP_FLAT.tile_set = flats
-	TILEMAP_TOP.tile_set = flats
-	TILEMAP_ANIM.tile_set = anims # TODO
 func tilesets_load_scenario_specifics(): # TODO: anims?
-#	var tileset = TILEMAP_FLAT.tile_set
-#	var tileset = Assets.SHARED_TILESET
-	var tileset = Assets.FULL_TILESET
-	TILEMAP_FLAT.tile_set = null
 	
 	# parse various paks (TODO, for now it's just a few selected paks)
 	var success = true
-#	if !Assets.add_pak_sprites_into_tileset(tileset, "Temple_bast", true): success = false
-#	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk5x5a", true): success = false
-#	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk3x3a", true): success = false
-#	if !Assets.add_pak_sprites_into_tileset(tileset, "obelisk_extra", true): success = false
+#	if !Assets.record_pak_textures("Temple_bast"): success = false
+#	if !Assets.record_pak_textures("obelisk5x5a"): success = false
+#	if !Assets.record_pak_textures("obelisk3x3a"): success = false
+#	if !Assets.record_pak_textures("obelisk_extra"): success = false
+	if !Assets.record_pak_textures("Pyramid"): success = false
 	
-	# MUST reach here even on errors, otherwise the tileset will disappear into the ether.
-	if tileset == null:
-		Log.error("tilesets_load_scenario_specifics", FAILED, "something went horribly wrong!")
-		success = false
-	TILEMAP_FLAT.tile_set = tileset
 	return success
 
-#func set_grid(grid_name, x, y, value): # TODO
-#	if !(grid_name in grids):
-#		return false
-#	grids[grid_name][y][x] = value
-#	return true
 func redraw():
-	# the BIGGEST time sink here is changing cells while Y-sorting is enabled.
-	# TODO: make y-sorting a shader
 	var _t = Stopwatch.start()
-#	TILEMAP_FLAT.cell_y_sort = false
-	if !GridsMono.RedrawMap(TILEMAP_FLAT, grids, city_orientation): # around ~360 ms (120 ms afterwards)
-		return Log.error(self, FAILED, "(GridsMono) could not set TileMap")
+	if !GridsMono.RedrawMap(city_orientation): # around ~360 ms (120 ms afterwards)
+		return Log.error(self, FAILED, "(GridsMono) could not redraw")
 	yield(get_tree(), "idle_frame")
 	Stopwatch.stop(self, _t, "GridsMono.RedrawMap")
-#	TILEMAP_FLAT.cell_y_sort = true
 
 var city_orientation = 0
 var city_view_camera_x = 0
@@ -205,8 +153,12 @@ func undo_orientation(tile: Vector2) -> Vector2:
 	return tile
 func normalize_direction(dir: int):
 	return (8 + dir - city_orientation) % 8
+
+onready var TILEMAP: TileMap = INGAME_ROOT.get_node("TILEMAP_HELPER") as TileMap
 func map_to_world(tile: Vector2) -> Vector2:
-	return TILEMAP_FLAT.map_to_world(tile)
+	return TILEMAP.map_to_world(tile)
+func world_to_map(tile: Vector2) -> Vector2:
+	return TILEMAP.world_to_map(tile)
 
 func map_world_center():
 	return map_to_world(get_grid_center())

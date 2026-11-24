@@ -197,13 +197,7 @@ func save_game(path) -> bool: # TODO
 		print("TODO: saving ------- ", path)
 		return true
 func clear_ingame() -> bool: # N.B. this DOES NOT free up the Figures and Buildings stacks!!! that is left up to the destructors, paused tick, and C#!
-	for n in Map.TILEMAP_FLAT.get_children():
-		n.free()
-	for n in Map.TILEMAP_FEATURES.get_children():
-		n.free()
-	for n in Map.TILEMAP_TOP.get_children():
-		n.free()
-	for n in Map.TILEMAP_ANIM.get_children():
+	for n in Map.MAP_RENDER_ROOT.get_children():
 		n.free()
 	return true
 

@@ -13,9 +13,9 @@ func _on_BtnTest2_pressed():
 	var _t = Stopwatch.start()
 #	print(_t)
 #	var lemhlkr = 3674
-	for x in 228:
-		for y in 228:
-			Map.TILEMAP_FLAT.set_cell(x, y, 14453 + rand_range(1,400))
+#	for x in 228:
+#		for y in 228:
+#			Map.set_grid(x, y, 14453 + rand_range(1,400))
 	for i in range(0, 51000):
 
 #		var a = Figures.figures[0].data.anim_frame
@@ -30,8 +30,8 @@ func _on_BtnTest2_pressed():
 #		var b = lemhlkr
 #		if a[1] < b:
 #			pass
-#		Map.TILEMAP_FLAT.set_cell(114, 114, 14453 + rand_range(1,400))
-#		Map.TILEMAP_FLAT.set_cell(114, 114, -1)
+#		Map.set_grid(114, 114, 14453 + rand_range(1,400))
+#		Map.set_grid(114, 114, -1)
 		pass
 	yield(get_tree(), "idle_frame")
 	Stopwatch.stop(self, _t, "", Stopwatch.Milliseconds)
@@ -41,13 +41,13 @@ func _on_BtnLoadAutosave_pressed():
 var prev_tile_test_value = 2
 func _on_BtnTestTerrainImages_value_changed(value):
 	var found = 0
-	for y in Map.get_grid_size():
-		for x in Map.get_grid_size():
-			if Map.TILEMAP_FLAT.get_cell(x, y) == 2:
-				Map.TILEMAP_FLAT.set_cell(x, y, prev_tile_test_value)
-			if Map.TILEMAP_FLAT.get_cell(x, y) == value:
-				Map.TILEMAP_FLAT.set_cell(x, y, 2)
-				found += 1
+#	for y in Map.get_grid_size():
+#		for x in Map.get_grid_size():
+#			if Map.TILEMAP_FLAT.get_cell(x, y) == 2:
+#				Map.TILEMAP_FLAT.set_cell(x, y, prev_tile_test_value)
+#			if Map.TILEMAP_FLAT.get_cell(x, y) == value:
+#				Map.TILEMAP_FLAT.set_cell(x, y, 2)
+#				found += 1
 	print("found: ", found, " cells")
 	prev_tile_test_value = value
 func _on_BtnRedrawMap_pressed():
@@ -242,10 +242,10 @@ enum DebugDisplays {
 var debug_display_mode = 0
 func print_tile_debug():
 	var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position()
-	var raw_tileset_space = Map.TILEMAP_FLAT.world_to_map(mouse_pos)
+	var raw_tileset_space = Map.world_to_map(mouse_pos)
 	raw_tileset_space.x = clamp(raw_tileset_space.x, 0, Map.get_grid_size() - 1)
 	raw_tileset_space.y = clamp(raw_tileset_space.y, 0, Map.get_grid_size() - 1)
-	CURSOR.position = Map.TILEMAP_FLAT.map_to_world(raw_tileset_space) # TODO: move do InGame / separate Cursor logic
+	CURSOR.position = Map.map_to_world(raw_tileset_space) # TODO: move do InGame / separate Cursor logic
 	
 	var tile = GameTile.new(Map.undo_orientation(raw_tileset_space), false)
 	
@@ -258,18 +258,18 @@ func print_tile_debug():
 		debug_text += "map: %s\n" % [tile.map_Vector2]
 		match debug_display_mode:
 			DebugDisplays.GRIDS:
-				debug_text += "[color=#ffcc00]image:[/color]      %d\n" % [Map.grids.images.Get(tile.grid_x, tile.grid_y)]
-				debug_text += "[color=#ffcc00]buildings:[/color]  %d\n" % [Map.grids.buildings.Get(tile.grid_x, tile.grid_y)]
+				debug_text += "[color=#ffcc00]image:[/color]      %d\n" % [GridsMono.grids["images"].Get(tile.grid_x, tile.grid_y)]
+				debug_text += "[color=#ffcc00]buildings:[/color]  %d\n" % [GridsMono.grids["buildings"].Get(tile.grid_x, tile.grid_y)]
 				
 				# terrain
-				var _terrain = Map.grids.terrain.Get(tile.grid_x, tile.grid_y)
+				var _terrain = GridsMono.grids["terrain"].Get(tile.grid_x, tile.grid_y)
 				debug_text += "[color=#ffcc00]terrain:[/color]    %d\n" % [_terrain]
 				for flag in Map.TerrainFlags:
 					if _terrain & Map.TerrainFlags[flag]:
 						debug_text += "  [color=#888888]%s[/color]\n" % [flag]
 						
 				# edge
-				var _edge = Map.grids.edge.Get(tile.grid_x, tile.grid_y)
+				var _edge = GridsMono.grids["edge"].Get(tile.grid_x, tile.grid_y)
 				debug_text += "[color=#ffcc00]edge:[/color]       %d\n" % [_edge]
 				if _terrain & Map.TerrainFlags.BUILDING == Map.TerrainFlags.BUILDING:
 					for i in 6:
@@ -286,7 +286,7 @@ func print_tile_debug():
 					debug_text += "  [color=#888888]NATIVE_LAND[/color]\n"
 						
 				# bitfields
-				var _bitfields = Map.grids.bitfields.Get(tile.grid_x, tile.grid_y)
+				var _bitfields = GridsMono.grids["bitfields"].Get(tile.grid_x, tile.grid_y)
 				debug_text += "[color=#ffcc00]bitfields:[/color]  %d\n" % [_bitfields]
 				if _terrain & Map.TerrainFlags.BUILDING == Map.TerrainFlags.BUILDING:
 					for i in 8:
@@ -296,13 +296,13 @@ func print_tile_debug():
 				for flag in Map.BitFlags:
 					if _bitfields & Map.BitFlags[flag] in [16, 32, 64, 128]:
 						debug_text += "  [color=#888888]%s[/color]\n" % [flag]
-			DebugDisplays.TILEMAPS:
-				debug_text += "[color=#ccff00]Map_Flat:[/color]       %d\n" % [Map.TILEMAP_FLAT.get_cell(tile.grid_x, tile.grid_y)]
-				debug_text += "[color=#ccff00]Map_Features:[/color]   %d\n" % [Map.TILEMAP_FEATURES.get_cell(tile.grid_x, tile.grid_y)]
-				debug_text += "[color=#ccff00]Map_Top:[/color]        %d\n" % [Map.TILEMAP_TOP.get_cell(tile.grid_x, tile.grid_y)]
-				debug_text += "[color=#ccff00]Map_Anim:[/color]       %d\n" % [Map.TILEMAP_ANIM.get_cell(tile.grid_x, tile.grid_y)]
+#			DebugDisplays.TILEMAPS:
+#				debug_text += "[color=#ccff00]Map_Flat:[/color]       %d\n" % [Map.TILEMAP_FLAT.get_cell(tile.grid_x, tile.grid_y)]
+#				debug_text += "[color=#ccff00]Map_Features:[/color]   %d\n" % [Map.TILEMAP_FEATURES.get_cell(tile.grid_x, tile.grid_y)]
+#				debug_text += "[color=#ccff00]Map_Top:[/color]        %d\n" % [Map.TILEMAP_TOP.get_cell(tile.grid_x, tile.grid_y)]
+#				debug_text += "[color=#ccff00]Map_Anim:[/color]       %d\n" % [Map.TILEMAP_ANIM.get_cell(tile.grid_x, tile.grid_y)]
 #			DebugDisplays.FIGURES:
-#				var figure_id_on_tile = Map.grids.figures[grid_coords.y][grid_coords.x]
+#				var figure_id_on_tile = GridsMono.grids["figures[grid_coords.y][grid_coords.x]
 #				if figure_id_on_tile != 0:
 #					debug_text += "[color=#ccff00]ID:[/color]           %d\n" % [figure_id_on_tile]
 #					var figure = Figures.figures[figure_id_on_tile]
@@ -313,7 +313,7 @@ func print_tile_debug():
 #					else:
 #						debug_text += "[color=#ccff00]Type:[/color]         [color=#dd0000]%d:??[/color]\n" % [type]
 #			DebugDisplays.BUILDINGS:
-#				var building_id_on_tile = Map.grids.buildings[grid_coords.y][grid_coords.x]
+#				var building_id_on_tile = GridsMono.grids["buildings[grid_coords.y][grid_coords.x]
 #				if building_id_on_tile != 0:
 #					debug_text += "[color=#ccff00]ID:[/color]           %d\n" % [building_id_on_tile]
 #					var building = Buildings.buildings[building_id_on_tile]
@@ -342,7 +342,7 @@ func print_tile_debug():
 
 	# figures
 	debug_text = "[color=#ffff00]Figures:   %4d/%d                           \n[/color]" % [Figures._in_use, Figures.MAX_FIGURES]
-	var figure_id_on_tile = Map.grids.figures.Get(tile.grid_x, tile.grid_y)
+	var figure_id_on_tile = GridsMono.grids["figures"].Get(tile.grid_x, tile.grid_y)
 	while figure_id_on_tile != 0:
 		debug_text += "  [color=#ffff00]ID:[/color]           %d\n" % [figure_id_on_tile]
 		var figure = Figures.figures[figure_id_on_tile]
@@ -352,7 +352,7 @@ func print_tile_debug():
 	
 	# buildings
 	debug_text += "[color=#00ffcc]Buildings: %4d/%d\n[/color]" % [Buildings._in_use, Buildings.MAX_BUILDINGS]
-	var building_id_on_tile = Map.grids.buildings.Get(tile.grid_x, tile.grid_y)
+	var building_id_on_tile = GridsMono.grids["buildings"].Get(tile.grid_x, tile.grid_y)
 	if building_id_on_tile != 0:
 		debug_text += "  [color=#00ffcc]ID:[/color]           %d\n" % [building_id_on_tile]
 		var building = Buildings.buildings[building_id_on_tile]

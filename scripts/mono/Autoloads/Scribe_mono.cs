@@ -230,7 +230,7 @@ public class Scribe_mono : Node
 			return false;
 
 		// call GridsMono.SetGridFromBytes() with a lot of pain
-		Godot.Collections.Dictionary ref_grids = (Godot.Collections.Dictionary)Globals.Map.Get("grids");
+		// Godot.Collections.Dictionary ref_grids = (Godot.Collections.Dictionary)Globals.Map.Get("grids");
 
 		// grid bytestream conversion
 		if (__file_flags == 1) { // reading
@@ -238,7 +238,6 @@ public class Scribe_mono : Node
 
 			int GRID_WIDTH = 228;
 			IGrid grid;
-			// GridInterface ref_grid = (GridInterface)ref_grids[grid_name];
 			switch (format){
 				case Enums.ScribeFormat.u8:
 					grid = new Grid<byte>(GRID_WIDTH, GRID_WIDTH);
@@ -261,23 +260,11 @@ public class Scribe_mono : Node
 				default:
 					return false;
 			}
-			// GridInterface ref_grid = (GridInterface)ref_grids[grid_name];
-			// ref_grid.grid = grid;
-			((GridInterface)ref_grids[grid_name]).grid = grid;
-			// Grid<format> ref_grid = (Grid)ref_grids[grid_name];
-			// ref_grids[grid_name] = grid;
+			// ((GridInterface)ref_grids[grid_name]).grid = grid;
+			Globals.GridsMono.grids[grid_name].grid = grid;
 			bool r = grid.Fill(raw_bytes);
 			if (!r)
 				return bail("FAILED", "(GridsMono) could not fill grid");
-
-
-			// object ref_grid = ref_grids[grid_name];
-			// bool r = (bool)Globals.GridsMono.Call("SetGridFromBytes", ref_grid, raw_bytes, grid_width, format);
-			// if (!r)
-			// 	return bail("FAILED", "(GridsMono) could not fill grid");
-			
-			// if (!(bool)Globals.GridsMono.Call("SetGridFromBytes", ((Godot.Collections.Dictionary)Globals.Map.Get("grids"))[grid_name], raw_bytes, grid_width, format))
-			// 	return bail("FAILED", "(GridsMono) could not fill grid");
 		} else { // writing
 			// TODO
 			// byte[] bytes = ((GridInterface)ref_grids[grid_name]).grid.Dump();
@@ -849,13 +836,3 @@ public class Scribe_mono : Node
 	// }
 }
 
-
-// [StructLayout(LayoutKind.Sequential, Pack = 1)]
-// // public class TestChunkClass : Reference
-// public class TestChunkClass
-// {
-// 	public byte map_index;
-// 	public byte campaign_index;
-// 	public sbyte prev_progress_pointer;
-// 	public sbyte mission_progress_pointer;
-// }

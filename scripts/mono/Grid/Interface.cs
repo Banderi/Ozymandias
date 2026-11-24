@@ -1,4 +1,5 @@
 using Godot;
+
 public class GridInterface : Reference { // this is pure torture
 	
 	public IGrid grid; // non-generic interface to type specific Grid<T> class

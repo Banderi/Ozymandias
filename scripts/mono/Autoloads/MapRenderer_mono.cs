@@ -1,7 +1,6 @@
 using Godot;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic; // Dictionary
+using System; // Dictionary
 
 // HOW GODOT WORKS:
 // - Image is CPU-side, Texture is GPU-side.
@@ -42,7 +41,7 @@ public class MapRenderer_mono : Node
 
         // ----- tile image data -----
         private Dictionary<int, (Texture, Rect2, Color)> tiles = []; // n-ple dictionary (map) keyed by cell X coord (it's unique)
-        public bool SetTileImage(int cell_x, int draw_y_offset, int img_id, int tile_width, int tile_height) { // TODO
+        public bool SetTileImage(int cell_x, int draw_y_offset, Int64 img_id, int tile_width, int tile_height) { // TODO
             
             // clear tiles
             if (img_id == -1)
@@ -60,7 +59,7 @@ public class MapRenderer_mono : Node
             int iso_size = (2 + width) / tile_width; // 1x1, 2x2, 3x3 etc. --- NOTE: the image width here **MUST** be exact.
             int iso_height = (iso_size + 1) * (tile_height / 2); // the height of the sprite if it was a flat iso footprint
             int y_runoff = height - iso_height; // the "tall sprite" height bleeding we must account for
-            Rect2 draw_rect = new Rect2(x, -y_runoff + draw_y_offset, width, height);
+            Rect2 draw_rect = new Rect2(x, -(y_runoff + draw_y_offset), width, height);
 
             // TODO: color mask
             Color color_mask = new Color(1,1,1,1);
@@ -156,7 +155,7 @@ public class MapRenderer_mono : Node
 
     // this is done BEFORE rendering, for any tiles that requires visual updates
     private List<int> dirty_bands = new List<int>(); // private int[] _dirtyBands;
-    public void SetTileImage(int cell_x, int cell_y, int image_y_offset, int img_id) {
+    public void SetTileImage(int cell_x, int cell_y, int image_y_offset, Int64 img_id) {
         int band_index = cell_x + cell_y;
         if (band_index >= 0 && band_index < map_bands.Length) {
             map_bands[band_index].SetTileImage(cell_x, image_y_offset, img_id, TILE_WIDTH, TILE_HEIGHT);

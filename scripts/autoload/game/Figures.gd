@@ -36,18 +36,7 @@ func spawn_sprites():
 			create_sprite(i)
 	Stopwatch.stop(self, _t, "Figures.spawn_sprites")
 func create_sprite(i):
-#	Map.TILEMAP_FLAT.add_child(FigureSprite.new(i, figures[i]))
 	Map.MAP_RENDER_ROOT.add_child(FigureSprite.new(i, figures[i]))
-#	var sprite = FigureSprite.new(i, figures[i])
-#	Map.TILEMAP_FLAT.add_child(sprite) # TODO....
-#	sprite.on_tick()
-	
-#	var n = figure_sprite_TSCN.instance()
-#	n.set_figure(i)
-#	Map.TILEMAP_FLAT.add_child(n) # TODO....
-##	Map.TILEMAP_ANIM.add_child(n)
-#	figures[i].FigureSprite = n
-	pass
 
 # figure C# objects
 var FIGURE_CS = null

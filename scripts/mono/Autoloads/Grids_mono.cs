@@ -1,17 +1,15 @@
 using Godot;
-using System;
-using System.IO;
 using GodotArray = Godot.Collections.Array;
 using GodotDictionary = Godot.Collections.Dictionary;
+using System.Collections.Generic; // Dictionary
+using System; // String
 
 public class Grids_mono : Node
 {
-	// Member variables here, example:
+	// Antimony Mono Commons
 	public override void _Ready() {
 		GD.Print("*** MONO: GridsMono loaded: " + this);
 	}
-
-	// Log.error(...)
 	protected void PrintError(string Message, int Err = 1) {
 		Globals.Log.Call("error", this, Err, Message);
 	}
@@ -19,37 +17,64 @@ public class Grids_mono : Node
 		Globals.Log.Call("generic", this, Message);
 	}
 
+	// ----- grid / map size & helpers -----
 	public int GRID_SIZE;
 	public int MAP_WIDTH; // these are from the game's Scenario settings --- they are DOUBLE the rectangle size!!
 	public int MAP_HEIGHT;
-	
-	public bool TileIsInsideMap(int x, int y) {
-		// Tile-center offset from the grid center, doubled to stay integer.
+	public bool TileIsInsideMap(int x, int y) { // checks if tile is inside the rotated map rectangle (OG diamond, this is generalized)
+		// for a general case in which the GRID has different side lengths...
 		// int dx2 = 2 * x + 1 - GRID_X;
 		// int dy2 = 2 * y + 1 - GRID_Y;
-		int dx2 = 2 * x + 1 - GRID_SIZE;
-		int dy2 = 2 * y + 1 - GRID_SIZE;
+		// return Math.Abs(dx2 - dy2) <= MAP_WIDTH && Math.Abs(dx2 + dy2) <= MAP_HEIGHT;
 
-		// Top-left/bottom-right sides run along (1,-1), so the extent across
-		// them is measured by dx - dy. Top-right/bottom-left sides run along
-		// (1,1), so their extent is measured by dx + dy.
-		// |dx - dy| <= cellsX  <=>  |dx2 - dy2| <= 2*cellsX   (likewise for Y)
-		return Math.Abs(dx2 - dy2) <= 2 * MAP_WIDTH / 2
-			&& Math.Abs(dx2 + dy2) <= 2 * MAP_HEIGHT / 2;
+		// for a same-size GRID...
+		return Math.Abs(2 * (x - y)) <= MAP_WIDTH && Math.Abs(2 * (x + y + 1 - GRID_SIZE)) <= MAP_HEIGHT;
 	}
+	public bool TileIsInsideGreaterDiamond(int x, int y) { // checks inside the greater of the two map sizes (still OG diamond...)
+		int half_largest = MAP_WIDTH / 2;
+		if (MAP_HEIGHT > MAP_WIDTH)
+			half_largest = MAP_HEIGHT / 2;
+		return Math.Abs(x - y) <= half_largest && Math.Abs(x + y + 1 - GRID_SIZE) <= half_largest;
+	}
+
+	// TODO: make this work for other GameSets...?
+	public Dictionary<String, GridInterface> grids = new Dictionary<String, GridInterface> {
+			{ "images", new GridInterface() },
+			{ "edge", new GridInterface() },
+			{ "buildings", new GridInterface() },
+			{ "terrain", new GridInterface() },
+			{ "aqueduct", new GridInterface() },
+			{ "figures", new GridInterface() },
+			{ "bitfields", new GridInterface() },
+			{ "sprites", new GridInterface() },
+			{ "random", new GridInterface() },
+			{ "desirability", new GridInterface() },
+			
+			{ "elevation", new GridInterface() },
+			{ "building_dmg", new GridInterface() },
+			{ "aqueduct_bak", new GridInterface() },
+			{ "sprite_bak", new GridInterface() },
+			
+			{ "fertility", new GridInterface() },
+			{ "vegetation_growth", new GridInterface() },
+			{ "unk_grid03", new GridInterface() },
+			{ "unk_grid04", new GridInterface() },
+			{ "moisture", new GridInterface() }
+	};
 	
-	// update entire TileMap with grid data
-	public bool RedrawMap(TileMap map, GodotDictionary grids, Enums.Directions orientation) {
+	public bool RedrawMap(Enums.Directions orientation) { // update entire map (via MapRendererMono) with image data
 
-		PrintGeneric("test2");
+		Grid<uint> grid_images = (Grid<uint>)(grids["images"]).grid;
+		Grid<sbyte> grid_edge = (Grid<sbyte>)(grids["edge"]).grid;
+		Grid<short> grid_buildings = (Grid<short>)(grids["buildings"]).grid;
 
-		Grid<uint> grid_images = (Grid<uint>)((GridInterface)grids["images"]).grid;
-		Grid<sbyte> grid_edge = (Grid<sbyte>)((GridInterface)grids["edge"]).grid;
+		for (int y = 0; y < GRID_SIZE; y++) {
+			for (int x = 0; x < GRID_SIZE; x++) {
 
-		for (int y = 0; y < GRID_SIZE; y++)
-		{
-			for (int x = 0; x < GRID_SIZE; x++)
-			{
+				// skip outside map
+				if (!TileIsInsideGreaterDiamond(x, y))
+					continue;
+				
 				int cell_x = x;
 				int cell_y = y;
 				switch (orientation) {
@@ -63,20 +88,21 @@ public class Grids_mono : Node
 						cell_x = GRID_SIZE - y - 1; cell_y = x;
 						break;
 				}
-
-				if (!TileIsInsideMap(x, y)) {
+				
+				// skip non-DRAW_TILE tiles (i.e. tiles with 2+ size graphics only render on leftmost center tile)
+				if (((Enums.EdgeFlags)grid_edge[x, y] & Enums.EdgeFlags.DRAW_TILE) != Enums.EdgeFlags.DRAW_TILE) {
+					Globals.MapRendererMono.SetTileImage(cell_x, cell_y, 0, -1);
 					continue;
 				}
-				int image = (int)grid_images[x, y];
-				int edge = (int)grid_edge[x, y];
-				// map.SetCell(cell_x, cell_y, image);
-				int image_y_offset = 0; // TODO
-				if (((Enums.EdgeFlags)edge & Enums.EdgeFlags.DRAW_TILE) == Enums.EdgeFlags.DRAW_TILE)
-					Globals.MapRendererMono.SetTileImage(cell_x, cell_y, image_y_offset, image);
-					// map.SetCell(cell_x, cell_y, image);
-				else
-					Globals.MapRendererMono.SetTileImage(cell_x, cell_y, 0, -1);
-					// map.SetCell(cell_x, cell_y, -1);
+
+				// get image offset (e.g. Pyramid section height)
+				int image_y_offset = 0;
+				Building b = GameInterfaces.GetBuilding(grid_buildings[x, y]);
+				if (b != null)
+					image_y_offset += b.data.pyramid_section_height * 90;
+				
+				// draw!
+				Globals.MapRendererMono.SetTileImage(cell_x, cell_y, image_y_offset, grid_images[x, y]);
 			}
 		}
 		return true;

@@ -1,9 +1,13 @@
-using Godot;
-using System;
-using System.IO;
-using System.Linq;
-using GodotArray = Godot.Collections.Array;
-using GodotDictionary = Godot.Collections.Dictionary;
+using System; // Buffer
+
+public interface IGrid {
+	int Width { get; }
+    int Height { get; }
+    bool Fill(byte[] bytes);
+    byte[] Dump();
+    object GetValue(int x, int y);
+    bool SetValue(int x, int y, object value);
+}
 
 public class Grid<T> : IGrid where T : unmanaged {
 	private T[] _raw_data;
