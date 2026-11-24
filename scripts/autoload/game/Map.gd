@@ -114,8 +114,7 @@ func tilesets_load_scenario_specifics(): # TODO: anims?
 
 func redraw():
 	var _t = Stopwatch.start()
-	if !GridsMono.RedrawMap(city_orientation): # around ~360 ms (120 ms afterwards)
-		return Log.error(self, FAILED, "(GridsMono) could not redraw")
+	GridsMono.RedrawMap(city_orientation)
 	yield(get_tree(), "idle_frame")
 	Stopwatch.stop(self, _t, "GridsMono.RedrawMap")
 

@@ -394,7 +394,7 @@ func extract_all(skip_system_bmp: bool) -> Texture: # .555 pak / actual image da
 			images_extracted += 1
 			extracted_images[i] = image
 			extracted_img_indices[i] = extracted_img_sizes.size()
-			extracted_img_sizes.push_back(image.get_size())
+			extracted_img_sizes.push_back(image.get_size() + Vector2(1, 1))
 
 	# close final file handle
 	_file_close()

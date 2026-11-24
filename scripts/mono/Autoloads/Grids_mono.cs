@@ -37,6 +37,42 @@ public class Grids_mono : Node
 		return Math.Abs(x - y) <= half_largest && Math.Abs(x + y + 1 - GRID_SIZE) <= half_largest;
 	}
 
+	// draw tile, edge & bit fields etc.
+	public int GetTileDrawSize(Enums.BitFlags bits) {
+		return (int)(bits & Enums.BitFlags.MASK_SIZE);
+	}
+	public int GetTileDrawColumn(Enums.EdgeFlags edge) {
+		return (int)(edge & Enums.EdgeFlags.MASK_COLUMN);
+	}
+	public int GetTileDrawRow(Enums.EdgeFlags edge) {
+		return (int)(edge & Enums.EdgeFlags.MASK_ROW) / 8;
+	}
+	public (int, int) GetDrawTile(int x, int y) {
+		Enums.EdgeFlags edge = (Enums.EdgeFlags)((sbyte)grids["edge"].Get(x, y));
+		if ((edge & Enums.EdgeFlags.DRAW_TILE) != Enums.EdgeFlags.DRAW_TILE) {
+			Enums.BitFlags bits = (Enums.BitFlags)((byte)grids["bitfields"].Get(x, y));
+			int size = GetTileDrawSize(bits);
+			int row = GetTileDrawRow(edge);
+			int column = GetTileDrawColumn(edge);
+
+			x = x - column;
+			y = y - row + size;
+			switch (map_orientation) {
+				case Enums.Directions.CITY_90_DEG:
+					y -= size;
+					break;
+				case Enums.Directions.CITY_180_DEG:
+					x += size;
+					y -= size;
+					break;
+				case Enums.Directions.CITY_270:
+					x += size;
+					break;
+			}
+		}
+		return (x, y);
+	}
+
 	// TODO: make this work for other GameSets...?
 	public Dictionary<String, GridInterface> grids = new Dictionary<String, GridInterface> {
 			{ "images", new GridInterface() },
@@ -61,8 +97,13 @@ public class Grids_mono : Node
 			{ "unk_grid04", new GridInterface() },
 			{ "moisture", new GridInterface() }
 	};
+
+	public static Color COLOR_MASK_NONE = new Color(1, 1, 1, 1);
 	
-	public bool RedrawMap(Enums.Directions orientation) { // update entire map (via MapRendererMono) with image data
+	private Enums.Directions map_orientation;
+	public void RedrawMap(Enums.Directions orientation) { // update entire map (via MapRendererMono) with image data
+		
+		map_orientation = orientation;
 
 		Grid<uint> grid_images = (Grid<uint>)(grids["images"]).grid;
 		Grid<sbyte> grid_edge = (Grid<sbyte>)(grids["edge"]).grid;
@@ -91,20 +132,58 @@ public class Grids_mono : Node
 				
 				// skip non-DRAW_TILE tiles (i.e. tiles with 2+ size graphics only render on leftmost center tile)
 				if (((Enums.EdgeFlags)grid_edge[x, y] & Enums.EdgeFlags.DRAW_TILE) != Enums.EdgeFlags.DRAW_TILE) {
-					Globals.MapRendererMono.SetTileImage(cell_x, cell_y, 0, -1);
+				// if (((Enums.EdgeFlags)((sbyte)grids["edge"].Get(x, y)) & Enums.EdgeFlags.DRAW_TILE) != Enums.EdgeFlags.DRAW_TILE) {
+					Globals.MapRendererMono.SetCell(cell_x, cell_y, 0, -1, COLOR_MASK_NONE);
 					continue;
 				}
 
 				// get image offset (e.g. Pyramid section height)
 				int image_y_offset = 0;
 				Building b = GameInterfaces.GetBuilding(grid_buildings[x, y]);
-				if (b != null)
+				// Building b = GameInterfaces.GetBuilding((short)grids["buildings"].Get(x, y));
+				if (b != null && b.data.type == Enums.BuildingTypes.PYRAMID)
 					image_y_offset += b.data.pyramid_section_height * 90;
 				
 				// draw!
-				Globals.MapRendererMono.SetTileImage(cell_x, cell_y, image_y_offset, grid_images[x, y]);
+				Globals.MapRendererMono.SetCell(cell_x, cell_y, image_y_offset, grid_images[x, y], COLOR_MASK_NONE);
+				// Globals.MapRendererMono.SetCell(cell_x, cell_y, image_y_offset, (uint)grids["images"].Get(x, y), COLOR_MASK_NONE);
 			}
 		}
-		return true;
+	}
+
+	private Dictionary<(int, int), Color> tinted_tiles = new Dictionary<(int, int), Color>();
+	public void TintTile(int x, int y, Color color_mask) {
+		if (!TileIsInsideMap(x, y))
+			return;
+		
+		// Enums.EdgeFlags edge = (Enums.EdgeFlags)((sbyte)grids["edge"].Get(x, y));
+		// if ((edge & Enums.EdgeFlags.DRAW_TILE) != Enums.EdgeFlags.DRAW_TILE) {
+
+		// }
+		(x, y) = GetDrawTile(x, y);
+		if (!TileIsInsideMap(x, y))
+			return;
+
+
+		int cell_x = x;
+		int cell_y = y;
+		switch (map_orientation) {
+			case Enums.Directions.CITY_90_DEG:
+				cell_x = y; cell_y = GRID_SIZE - x - 1;
+				break;
+			case Enums.Directions.CITY_180_DEG:
+				cell_x = GRID_SIZE - x - 1; cell_y = GRID_SIZE - y - 1;
+				break;
+			case Enums.Directions.CITY_270:
+				cell_x = GRID_SIZE - y - 1; cell_y = x;
+				break;
+		}
+		tinted_tiles[(cell_x, cell_y)] = color_mask; // record tintetd tile
+		Globals.MapRendererMono.SetCellTint(cell_x, cell_y, color_mask);
+	}
+	public void ClearTintedTiles() {
+		foreach ((int, int) cell_coords in tinted_tiles.Keys)
+			Globals.MapRendererMono.SetCellTint(cell_coords.Item1, cell_coords.Item2, COLOR_MASK_NONE);
+        tinted_tiles.Clear();
 	}
 }

@@ -370,6 +370,8 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		COLUMN_3 = 3,
 		COLUMN_4 = 4,
 		COLUMN_5 = 5,
+		COLUMN_6 = 6,
+		COLUMN_7 = 7,
 		//
 		MASK_ROW = 56,
 		ROW_0 = 0,
@@ -377,13 +379,15 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		ROW_2 = 16,
 		ROW_3 = 24,
 		ROW_4 = 32,
-		ROW_5 = 56,
+		ROW_5 = 40,
+		ROW_6 = 48,
+		ROW_7 = 56,
 		//
 		DRAW_TILE = 64,
 		NATIVE_LAND = 128
 	}
 	public enum BitFlags : byte {
-		MASK_SIZE = 15,
+		MASK_SIZE = 7,
 		SIZE_1 = 0,
 		SIZE_2 = 1,
 		SIZE_3 = 2,
@@ -392,7 +396,6 @@ public partial class Enums : Node // todo: move game-specifics to Pharaoh
 		SIZE_6 = 5,
 		SIZE_7 = 6,
 		SIZE_8 = 7,
-		SIZE_9 = 8,
 		//
 		CONSTRUCTION = 16,
 		ALTERNATE_TERRAIN = 32,

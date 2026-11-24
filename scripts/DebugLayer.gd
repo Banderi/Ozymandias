@@ -248,11 +248,15 @@ func print_tile_debug():
 	CURSOR.position = Map.map_to_world(raw_tileset_space) # TODO: move do InGame / separate Cursor logic
 	
 	var tile = GameTile.new(Map.undo_orientation(raw_tileset_space), false)
-	
+	CURSOR.hide()
 	var debug_text = ""
 	if Rect2(0, 0, Map.get_grid_size(), Map.get_grid_size()).has_point(tile.grid_Vector2):
-		CURSOR.show()
+#		CURSOR.show()
 		$DEBUG_LABEL3.show()
+#		var grid_image = GridsMono.grids["images"].Get(tile.grid_x, tile.grid_y)
+		GridsMono.TintTile(tile.grid_x, tile.grid_y, Color(1,0,1,1))
+		
+		
 		
 		debug_text += "grid: %s\n" % [tile.grid_Vector2]
 		debug_text += "map: %s\n" % [tile.map_Vector2]
@@ -437,6 +441,8 @@ func print_friendly(thing, padding = ""):
 		return "{%s\n%s}" % [content, padding]
 	return "%s" % [thing]
 func _process(delta):
+	if !visible:
+		return
 	
 	if Game.STATE == Game.States.NoGameLoaded:
 		$DEBUG_LABEL.hide()
