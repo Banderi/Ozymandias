@@ -4,7 +4,8 @@ const INDUSTRY_RESOURCES = 36
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
-onready var INGAME_HUD = ROOT_NODE.get_node("HUD")
+onready var INGAME_HUD = ROOT_NODE.get_node("HUD/HUD")
+onready var INGAME_FIELD = ROOT_NODE.get_node("HUD/INGAME_FIELD")
 onready var MENUS_ROOT = ROOT_NODE.get_node("Menus")
 onready var DEBUG_ROOT = ROOT_NODE.get_node("Debug")
 
@@ -19,10 +20,11 @@ func is_valid_objref(node):
 	return false
 
 # MENUS
-# I'm not doing a menu stack for now, just a straight up "open menu" or "popup menu" (i.e. the exact same, but without closing all other menus)
-var debug_last_menu = null # this is JUST FOR DEBUGGING.
+var menu_stack = []
+func last_menu():
+	return null if menu_stack.empty() else menu_stack.back()
 func go_to_menu(menu_name, data = null):
-	if debug_last_menu == menu_name:
+	if last_menu() == menu_name:
 		return
 	var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
 	if menu_node == null:
@@ -31,10 +33,10 @@ func go_to_menu(menu_name, data = null):
 	close_all_menus()
 	if menu_node.has_method("_on_menu_open"):
 		menu_node._on_menu_open(data)
-	debug_last_menu = menu_name
+	menu_stack.push_back(menu_name)
 	menu_node.show()
 func popup_menu(menu_name, data = null):
-	if debug_last_menu == menu_name:
+	if last_menu() == menu_name:
 		return
 	var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
 	if menu_node == null:
@@ -42,19 +44,22 @@ func popup_menu(menu_name, data = null):
 		return
 	if menu_node.has_method("_on_menu_open"):
 		menu_node._on_menu_open(data)
-	debug_last_menu = menu_name
+	menu_stack.push_back(menu_name)
 	menu_node.show()
-func close_menu(menu_name):
+func close_menu(assert_menu_name):
+	if assert_menu_name != last_menu():
+		return false
+	var menu_name = menu_stack.pop_back()
 	var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
 	if menu_node == null:
 		Log.error(self, ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
-		return
+		return false
 	menu_node.hide()
-	debug_last_menu = null
+	return true
 func close_all_menus():
 	for m in MENUS_ROOT.get_children():
 		m.hide()
-	debug_last_menu = null
+	menu_stack = []
 
 func loading_screen(backdrop_img_idx, loading_text = null, is_localized_key: bool = true):
 	go_to_menu("Loading")
@@ -201,6 +206,8 @@ func clear_ingame() -> bool: # N.B. this DOES NOT free up the Figures and Buildi
 	for n in Map.MAP_RENDER_ROOT.get_children():
 		n.free()
 	return true
+
+var mouse_over_ingame_area = false
 
 var debug_schema = { # default schema used
 	"file_version": 160,
@@ -747,7 +754,7 @@ var last_fps = 60
 var t = 0
 func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup if performance drops the ticks' compute time over the impositions?
 	t += delta
-	if STATE == States.Ingame:
+	if STATE == States.Ingame && last_menu() == null:
 		var needs_repaint = false
 		ticks_to_do += ticks_per_frame
 		if speed > 0:
@@ -807,9 +814,16 @@ func _process(delta):
 	if game_loop(delta):
 		Figures.repaint_sprites()
 		
-
+func is_in_game_controls():
+	if STATE == States.NoGameLoaded:
+		return false
+	if last_menu() == null:
+		return true
+	if last_menu() == "Paused":
+		return true
+	return false
 func _input(event):
-	if STATE == States.Ingame || STATE == States.Paused:
+	if is_in_game_controls():
 		# game speed
 		if Input.is_action_pressed("speed_dec"):
 			speed -= 10
@@ -817,8 +831,8 @@ func _input(event):
 			speed += 10
 		speed = clamp(speed, 0, 5000)
 		speed_tps = 18 * float(speed) / 100.0
-		DEBUG_ROOT.get_node("DEBUG_LABEL/SpinBoxSpeed").value = speed
-		DEBUG_ROOT.get_node("DEBUG_LABEL/HSliderSpeed").value = speed
+		DEBUG_ROOT.get_node("DEBUG_LABEL/Control/SpinBoxSpeed").value = speed
+		DEBUG_ROOT.get_node("DEBUG_LABEL/Control/HSliderSpeed").value = speed
 		
 		# pause game
 		if Input.is_action_just_pressed("pause_game"):
@@ -826,6 +840,6 @@ func _input(event):
 				popup_menu("Paused")
 				STATE = States.Paused
 			elif STATE == States.Paused:
-				close_menu("Paused")
-				STATE = States.Ingame # unpause game
+				if close_menu("Paused"):
+					STATE = States.Ingame # unpause game
 			

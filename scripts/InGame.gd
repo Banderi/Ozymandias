@@ -66,9 +66,9 @@ func update_mouse_press_coords(button_id):
 	if Input.is_mouse_button_pressed(button_id):
 		coords = get_local_mouse_position()
 		mousepos = get_viewport().get_mouse_position()
-		if last_click_game_coords[i] == null:
+		if last_click_game_coords[i] == null && Game.mouse_over_ingame_area:
 			last_click_game_coords[i] = coords
-		if last_click_mousepos[i] == null:
+		if last_click_mousepos[i] == null && Game.mouse_over_ingame_area:
 			last_click_mousepos[i] = mousepos
 	else:
 		last_click_game_coords[i] = null
@@ -77,7 +77,7 @@ func update_mouse_press_coords(button_id):
 	current_click_mousepos[i] = mousepos
 
 func _input(event):
-	if Game.STATE != Game.States.NoGameLoaded:
+	if Game.is_in_game_controls():
 		
 		update_mouse_press_coords(BUTTON_LEFT)
 		update_mouse_press_coords(BUTTON_RIGHT)
@@ -88,7 +88,7 @@ func _input(event):
 func _process(delta):
 	
 #	mouse_worldpos = get_local_mouse_position()
-	if Game.STATE != Game.States.NoGameLoaded:
+	if Game.is_in_game_controls():
 		var fps_coeff = delta * 60.0
 		mouse_worldpos = get_local_mouse_position()
 		
@@ -103,11 +103,13 @@ func _process(delta):
 			var MOUSE_DRAG_SIMPLE = BUTTON_MIDDLE
 			
 			if Input.is_mouse_button_pressed(MOUSE_DRAG_CONT):
-				var delta_pos = current_click_mousepos[MOUSE_DRAG_CONT-1] - last_click_mousepos[MOUSE_DRAG_CONT-1]
-				camera_position_target += delta_pos * camera_zoom_target * 0.25 * fps_coeff
+				if last_click_mousepos[MOUSE_DRAG_CONT-1] != null && current_click_mousepos[MOUSE_DRAG_CONT-1] != null:
+					var delta_pos = current_click_mousepos[MOUSE_DRAG_CONT-1] - last_click_mousepos[MOUSE_DRAG_CONT-1]
+					camera_position_target += delta_pos * camera_zoom_target * 0.25 * fps_coeff
 			elif Input.is_mouse_button_pressed(MOUSE_DRAG_SIMPLE):
-				var delta_pos = current_click_mousepos[MOUSE_DRAG_SIMPLE-1] - last_click_mousepos[MOUSE_DRAG_SIMPLE-1]
-				camera_position_target = camera_previous_game_coords - delta_pos * camera_zoom_target
+				if last_click_mousepos[MOUSE_DRAG_SIMPLE-1] != null && current_click_mousepos[MOUSE_DRAG_SIMPLE-1] != null:
+					var delta_pos = current_click_mousepos[MOUSE_DRAG_SIMPLE-1] - last_click_mousepos[MOUSE_DRAG_SIMPLE-1]
+					camera_position_target = camera_previous_game_coords - delta_pos * camera_zoom_target
 		
 		# panning by keyboard
 		var camera_pan_keyboard_delta = Vector2()
@@ -130,3 +132,13 @@ func _process(delta):
 	
 	else:
 		mouse_worldpos = null
+
+
+func _on_INGAME_FIELD_mouse_entered():
+	Game.mouse_over_ingame_area = true
+func _on_INGAME_FIELD_mouse_exited():
+	Game.mouse_over_ingame_area = false
+func _on_INGAME_FIELD_gui_input(event):
+#	if Game.mouse_over_ingame_area && event is InputEventMouseButton:
+#		Game.INGAME_FIELD.grab_focus()
+	pass

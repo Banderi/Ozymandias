@@ -157,6 +157,7 @@ axis_stretch_vertical = 1
 [node name="HUD" type="Control"]
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 script = ExtResource( 2 )
 __meta__ = {
 "_edit_lock_": true
@@ -166,6 +167,8 @@ __meta__ = {
 visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
+focus_mode = 1
+mouse_filter = 2
 __meta__ = {
 "_edit_lock_": true
 }
@@ -360,6 +363,7 @@ stretch_mode = 2
 [node name="MenuBar" type="Control" parent="."]
 anchor_right = 1.0
 margin_bottom = 1024.0
+focus_mode = 1
 mouse_filter = 2
 __meta__ = {
 "_edit_group_": true,
@@ -398,6 +402,8 @@ texture = ExtResource( 3 )
 [node name="MenuExpanded" type="Control" parent="."]
 anchor_right = 1.0
 anchor_bottom = 1.0
+focus_mode = 1
+mouse_filter = 2
 __meta__ = {
 "_edit_lock_": true
 }

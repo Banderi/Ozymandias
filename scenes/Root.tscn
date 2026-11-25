@@ -1,4 +1,4 @@
-[gd_scene load_steps=73 format=2]
+[gd_scene load_steps=74 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -50,6 +50,7 @@
 [ext_resource path="res://scripts/classes/ConfirmationDialogEx.gd" type="Script" id=48]
 [ext_resource path="res://assets/Pharaoh/Tileset_Test.tres" type="TileSet" id=49]
 [ext_resource path="res://scenes/UI/HUD_Pharaoh.tscn" type="PackedScene" id=50]
+[ext_resource path="res://scripts/menus/Menu_Overseers.gd" type="Script" id=51]
 [ext_resource path="res://assets/Pharaoh/TILE_SHAPE.png" type="Texture" id=53]
 [ext_resource path="res://assets/fonts/basis33_thick_outline.tres" type="DynamicFont" id=54]
 [ext_resource path="res://scripts/classes/RichTextLabelEx.gd" type="Script" id=56]
@@ -220,6 +221,11 @@ __meta__ = {
 }
 
 [node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="INGAME_FIELD" type="Control" parent="HUD"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+focus_mode = 1
 
 [node name="HUD" parent="HUD" instance=ExtResource( 50 )]
 
@@ -1533,6 +1539,7 @@ localized_key = "TEXT_11_0"
 visible = false
 anchor_right = 1.0
 anchor_bottom = 1.0
+mouse_filter = 2
 __meta__ = {
 "_edit_lock_": true
 }
@@ -1558,15 +1565,44 @@ valign = 1
 script = ExtResource( 14 )
 localized_key = "TEXT_13_2"
 
+[node name="Overseers" type="TextureRect" parent="Menus"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+focus_mode = 1
+texture = ExtResource( 1 )
+expand = true
+stretch_mode = 6
+script = ExtResource( 51 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="LabelEx" type="Label" parent="Menus/Overseers"]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -600.0
+margin_top = -106.0
+margin_right = 600.0
+margin_bottom = -90.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_fonts/font = ExtResource( 3 )
+text = "Click to Start"
+align = 1
+script = ExtResource( 14 )
+localized_key = "TEXT_13_7"
+
 [node name="Debug" type="CanvasLayer" parent="."]
 layer = 2
 script = ExtResource( 46 )
 
 [node name="DEBUG_LABEL" type="RichTextLabel" parent="Debug"]
 margin_left = 10.0
-margin_top = 28.0
+margin_top = 60.0
 margin_right = 545.0
-margin_bottom = 271.0
+margin_bottom = 303.0
 mouse_filter = 2
 custom_colors/font_color_shadow = Color( 0, 0, 0, 0.54902 )
 custom_constants/shadow_offset_y = 1
@@ -1581,18 +1617,26 @@ scroll_active = false
 script = ExtResource( 56 )
 AutoResize = true
 
-[node name="SpinBoxSpeed" type="SpinBox" parent="Debug/DEBUG_LABEL"]
+[node name="Control" type="Control" parent="Debug/DEBUG_LABEL"]
 margin_left = 169.0
-margin_top = 194.0
-margin_right = 267.0
-margin_bottom = 218.0
+margin_top = 220.0
+margin_right = 273.0
+margin_bottom = 278.0
+mouse_filter = 2
+__meta__ = {
+"_edit_group_": true
+}
+
+[node name="SpinBoxSpeed" type="SpinBox" parent="Debug/DEBUG_LABEL/Control"]
+margin_right = 98.0
+margin_bottom = 24.0
 max_value = 1000.0
 
-[node name="HSliderSpeed" type="HSlider" parent="Debug/DEBUG_LABEL"]
-margin_left = 170.0
-margin_top = 226.0
-margin_right = 258.0
-margin_bottom = 242.0
+[node name="HSliderSpeed" type="HSlider" parent="Debug/DEBUG_LABEL/Control"]
+margin_left = 1.0
+margin_top = 32.0
+margin_right = 89.0
+margin_bottom = 48.0
 max_value = 1000.0
 
 [node name="DEBUG_LABEL2" type="RichTextLabel" parent="Debug"]
@@ -1688,7 +1732,6 @@ margin_bottom = -8.0
 text = "reset"
 
 [node name="DEBUG_LABEL5" type="RichTextLabel" parent="Debug"]
-visible = false
 anchor_left = 1.0
 anchor_right = 1.0
 margin_left = -269.0
@@ -1732,13 +1775,12 @@ text = "60 FPS"
 align = 2
 
 [node name="DEBUG_BTNS" type="HBoxContainer" parent="Debug"]
-visible = false
 anchor_right = 1.0
-margin_bottom = 20.0
-mouse_filter = 0
+margin_top = 32.0
+margin_bottom = 56.0
+mouse_filter = 2
 __meta__ = {
-"_edit_group_": true,
-"_edit_lock_": true
+"_edit_group_": true
 }
 
 [node name="BtnPKWareTest" type="Button" parent="Debug/DEBUG_BTNS"]
@@ -1830,6 +1872,9 @@ color = Color( 0.733333, 0.733333, 0.733333, 1 )
 [node name="AnimatedSprite" type="AnimatedSprite" parent="Debug/TextureRect"]
 playing = true
 
+[connection signal="gui_input" from="HUD/INGAME_FIELD" to="InGame" method="_on_INGAME_FIELD_gui_input"]
+[connection signal="mouse_entered" from="HUD/INGAME_FIELD" to="InGame" method="_on_INGAME_FIELD_mouse_entered"]
+[connection signal="mouse_exited" from="HUD/INGAME_FIELD" to="InGame" method="_on_INGAME_FIELD_mouse_exited"]
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnPlay" to="Menus/Main" method="_on_BtnPlay_pressed"]
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnWebsite" to="Menus/Main" method="_on_BtnWebsite_pressed"]
 [connection signal="pressed" from="Menus/Main/VBoxContainer/BtnEditor" to="Menus/Main" method="_on_BtnEditor_pressed"]
@@ -1857,8 +1902,8 @@ playing = true
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnYes" to="Menus/QuitGameConfirm" method="_on_BtnYes_pressed"]
 [connection signal="pressed" from="Menus/QuitGameConfirm/Panel/BtnNo" to="Menus/QuitGameConfirm" method="_on_BtnNo_pressed"]
 [connection signal="focus_entered" from="Menus/Splash" to="Menus/Splash" method="_on_Splash_focus_entered"]
-[connection signal="value_changed" from="Debug/DEBUG_LABEL/SpinBoxSpeed" to="Debug" method="_on_SpinBoxSpeed_value_changed"]
-[connection signal="value_changed" from="Debug/DEBUG_LABEL/HSliderSpeed" to="Debug" method="_on_HSliderSpeed_value_changed"]
+[connection signal="value_changed" from="Debug/DEBUG_LABEL/Control/SpinBoxSpeed" to="Debug" method="_on_SpinBoxSpeed_value_changed"]
+[connection signal="value_changed" from="Debug/DEBUG_LABEL/Control/HSliderSpeed" to="Debug" method="_on_HSliderSpeed_value_changed"]
 [connection signal="toggled" from="Debug/DEBUG_LABEL4/BtnTestScribe" to="Debug" method="_on_BtnTestScribe_toggled"]
 [connection signal="pressed" from="Debug/DEBUG_LABEL4/BtnTestScribe2" to="Debug" method="_on_BtnTestScribe2_pressed"]
 [connection signal="pressed" from="Debug/DEBUG_BTNS/BtnPKWareTest" to="Debug" method="_on_BtnPKWareTest_pressed"]

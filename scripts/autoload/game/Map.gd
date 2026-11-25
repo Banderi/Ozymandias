@@ -178,7 +178,8 @@ func rotate_right():
 	Figures.repaint_sprites(true)
 	Game.INGAME_ROOT.camera_move_to(map_center + Vector2(-2.0 * camera_delta.y, 0.5 * camera_delta.x))
 func _input(event):
-	if Input.is_action_just_pressed("map_rotate_left"):
-		rotate_left()
-	if Input.is_action_just_pressed("map_rotate_right"):
-		rotate_right()
+	if Game.is_in_game_controls():
+		if Input.is_action_just_pressed("map_rotate_left"):
+			rotate_left()
+		if Input.is_action_just_pressed("map_rotate_right"):
+			rotate_right()

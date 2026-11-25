@@ -2,10 +2,10 @@ extends CanvasLayer
 	
 func _on_SpinBoxSpeed_value_changed(value):
 	Game.speed = value
-	$DEBUG_LABEL/HSliderSpeed.value = value
+	$DEBUG_LABEL/Control/HSliderSpeed.value = value
 func _on_HSliderSpeed_value_changed(value):
 	Game.speed = value
-	$DEBUG_LABEL/SpinBoxSpeed.value = value
+	$DEBUG_LABEL/Control/SpinBoxSpeed.value = value
 
 func _on_BtnPKWareTest_pressed():
 	Game.do_PKWare_tests()
@@ -241,6 +241,9 @@ enum DebugDisplays {
 }
 var debug_display_mode = 0
 func print_tile_debug():
+	if !Game.mouse_over_ingame_area:
+		DEBUG_LABEL3.hide()
+		return
 	var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position() # this for some reason has a small latency during zoom and the cursor jitters!
 	var raw_tileset_space = Map.world_to_map(mouse_pos)
 	raw_tileset_space.x = clamp(raw_tileset_space.x, 0, Map.get_grid_size() - 1)
@@ -401,7 +404,7 @@ func print_tile_debug():
 		$DEBUG_LABEL5.bbcode_text = debug_text
 	
 var ingame_camera_has_moved = false
-var IS_VISIBLE = true
+var IS_VISIBLE = false
 func _input(event):
 	
 	if Input.is_action_just_pressed("ui_accept"):
@@ -462,7 +465,8 @@ func _process(delta):
 	var debug_text = col1 + "Ozymandias Godot3.6 v0.2[/color]\n"
 	debug_text += col1 + "debug_display_mode:[/color]  %d:%s\n" % [debug_display_mode, Log.get_enum_string(DebugDisplays, debug_display_mode)]
 	debug_text += col1 + "game_state:[/color]          %s\n" % [Log.get_enum_string(Game.States, Game.STATE)]
-	debug_text += col1 + "last_menu:[/color]           %s\n" % [Game.debug_last_menu]
+	debug_text += col1 + "last_menu:[/color]           %s\n" % [Game.last_menu()]
+	debug_text += col1 + "mouse_over_game:[/color]     %s\n" % [Game.mouse_over_ingame_area]
 	debug_text += col1 + "current_family:[/color]      %s\n" % [Family.current_family]
 	debug_text += col1 + "families:[/color]            %s\n\n" % [Family.data.size()]
 	#
@@ -505,6 +509,7 @@ func _process(delta):
 	print_tile_debug()
 
 func _ready():
+	show()
 	$DEBUG_LABEL3.bbcode_text = ""
 
 

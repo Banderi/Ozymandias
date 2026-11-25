@@ -21,8 +21,8 @@ func set_open(o):
 	
 	if open:
 		TWEEN.interpolate_property(MENU_EXPANDED, "modulate",
-				Color(1,1,1,0), Color(1,1,1,1), 0.1025,
-				Tween.TRANS_SINE, Tween.EASE_IN_OUT)
+				Color(1,1,1,0), Color(1,1,1,1), 0.1,
+				Tween.TRANS_SINE, Tween.EASE_IN)
 	TWEEN.interpolate_property(MENU_BAR_TILING, "rect_size",
 			MENU_BAR_TILING.rect_size, target_size, 0.25,
 			Tween.TRANS_SINE, Tween.EASE_IN_OUT)
@@ -32,7 +32,7 @@ func set_open(o):
 	TWEEN.start()
 	if !open:
 		TWEEN.interpolate_property(MENU_EXPANDED, "modulate",
-				Color(1,1,1,1), Color(1,1,1,0), 0.45,
+				Color(1,1,1,1), Color(1,1,1,0), 0.5,
 				Tween.TRANS_BACK, Tween.EASE_IN_OUT)
 	yield(TWEEN, "tween_completed")
 	
@@ -58,7 +58,7 @@ func set_open(o):
 #		get_node("MenuMinimized").show()
 
 func _process(delta):
-	visible = Game.STATE == Game.States.Ingame # TODO: signals?
+	visible = Game.STATE != Game.States.NoGameLoaded # TODO: signals?
 func _ready():
 	MENU_EXPANDED.show()
 #	MENU_MINIMIZED.hide()
@@ -94,7 +94,7 @@ func _on_BtnMilitary_pressed():
 	pass # Replace with function body.
 
 func _on_BtnOverseers_pressed():
-	pass # Replace with function body.
+	Game.popup_menu("Overseers")
 func _on_BtnMap_pressed():
 	pass # Replace with function body.
 
