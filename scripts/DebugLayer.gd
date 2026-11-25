@@ -235,13 +235,13 @@ onready var FONT_BASIS33 = load("res://assets/fonts/basis33_thick_outline.tres")
 onready var CURSOR = Game.INGAME_ROOT.get_node("CURSOR")
 enum DebugDisplays {
 	GRIDS = 0,
-	TILEMAPS = 1,
+#	TILEMAPS = 1,
 #	FIGURES = 2,
 #	BUILDINGS = 3,
 }
 var debug_display_mode = 0
 func print_tile_debug():
-	var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position()
+	var mouse_pos = Game.INGAME_ROOT.get_local_mouse_position() # this for some reason has a small latency during zoom and the cursor jitters!
 	var raw_tileset_space = Map.world_to_map(mouse_pos)
 	raw_tileset_space.x = clamp(raw_tileset_space.x, 0, Map.get_grid_size() - 1)
 	raw_tileset_space.y = clamp(raw_tileset_space.y, 0, Map.get_grid_size() - 1)
@@ -252,7 +252,7 @@ func print_tile_debug():
 	var debug_text = ""
 	if Rect2(0, 0, Map.get_grid_size(), Map.get_grid_size()).has_point(tile.grid_Vector2):
 #		CURSOR.show()
-		$DEBUG_LABEL3.show()
+		DEBUG_LABEL3.show()
 #		var grid_image = GridsMono.grids["images"].Get(tile.grid_x, tile.grid_y)
 		GridsMono.TintTile(tile.grid_x, tile.grid_y, Color(1,0,1,1))
 		
@@ -401,6 +401,7 @@ func print_tile_debug():
 		$DEBUG_LABEL5.bbcode_text = debug_text
 	
 var ingame_camera_has_moved = false
+var IS_VISIBLE = true
 func _input(event):
 	
 	if Input.is_action_just_pressed("ui_accept"):
@@ -415,10 +416,10 @@ func _input(event):
 	
 	# extra debugging
 	if Input.is_action_just_pressed("debug_toggle"):
-		visible = !visible
-		CURSOR.visible = visible
+		IS_VISIBLE = !IS_VISIBLE
+#		CURSOR.visible = IS_VISIBLE
 	if Input.is_action_just_pressed("debug_cycle"):
-		if visible:
+		if IS_VISIBLE:
 			if Input.is_key_pressed(KEY_SHIFT):
 				debug_display_mode = (debug_display_mode - 1) % DebugDisplays.keys().size()
 			else:
@@ -441,23 +442,20 @@ func print_friendly(thing, padding = ""):
 		return "{%s\n%s}" % [content, padding]
 	return "%s" % [thing]
 func _process(delta):
-	if !visible:
-		return
 	
-	if Game.STATE == Game.States.NoGameLoaded:
-		$DEBUG_LABEL.hide()
-		$DEBUG_LABEL3.hide()
-		$DEBUG_LABEL5.hide()
+	# ..... I have NO idea, why the debugger lags like hell.......when INVISIBLE.
+	# I just have no idea. specifically the big RichTextLabels like DEBUG_LABEL are very bad. only when invisible,
+	# both individually and through the CanvasLayer, and even by using modulate.a it still lags.
+	# Setting the scale to zero to solve this issue is not a thing I ever would have thought of needing to do.
+	if !IS_VISIBLE || Game.STATE == Game.States.NoGameLoaded:
+		scale = Vector2()
 		return
 	else:
-		$DEBUG_LABEL.show()
-		$DEBUG_LABEL3.show()
-		$DEBUG_LABEL5.show()
+		scale = Vector2(1, 1)
 	
 	if test_scribe_enabled:
 		test_scribe()
-	
-	
+#
 	# debug prints
 #	var col1 = "[color=#888888]"
 	var col1 = "[color=#a8a8a8]"
@@ -490,19 +488,20 @@ func _process(delta):
 	debug_text += col1 + "day:[/color]          %d\n" % [Game.day]
 	debug_text += col1 + "month:[/color]        %d\n" % [Game.month]
 	debug_text += col1 + "year:[/color]         %d\n\n" % [Game.year]
-	
+
 	debug_text += col1 + "Population:[/color]   %d\n" % [City.population]
 	debug_text += col1 + "Pop (max):[/color]    %d\n\n" % [City.pop_total_capacity]
-	
+
 	debug_text += col1 + "random.IV1:[/color]   %d\n" % [Random.IV1]
 	debug_text += col1 + "random.IV2:[/color]   %d\n\n" % [Random.IV2]
 	#
-	
-	if DEBUG_LABEL.bbcode_text != debug_text:
-		DEBUG_LABEL.bbcode_text = debug_text
-	
+
+	if IS_VISIBLE:
+		if DEBUG_LABEL.bbcode_text != debug_text:
+			DEBUG_LABEL.bbcode_text = debug_text
+
 	DEBUG_FPS.text = str(Game.last_fps, " FPS")
-	
+
 	print_tile_debug()
 
 func _ready():

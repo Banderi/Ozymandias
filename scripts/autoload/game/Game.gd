@@ -4,6 +4,7 @@ const INDUSTRY_RESOURCES = 36
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
 onready var INGAME_ROOT = ROOT_NODE.get_node("InGame")
+onready var INGAME_HUD = ROOT_NODE.get_node("HUD")
 onready var MENUS_ROOT = ROOT_NODE.get_node("Menus")
 onready var DEBUG_ROOT = ROOT_NODE.get_node("Debug")
 
