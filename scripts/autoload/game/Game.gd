@@ -107,7 +107,7 @@ func loading_screen(backdrop_img_idx, loading_text = null, is_localized_key: boo
 	yield(get_tree(), "idle_frame") # idea why, but we need TWO empty frames here...... >:(
 
 func right_click_pressed(relevant_node, event): # TODO: capture right click when over ANY element of the currently open menu
-	if event is InputEventMouseButton && event.button_index == BUTTON_RIGHT:
+	if event is InputEventMouseButton && event.button_index == BUTTON_RIGHT && event.pressed == false:
 		return true
 	return false
 
@@ -796,6 +796,11 @@ func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup
 				ticks_to_do -= 1.0
 				t = 0
 		return needs_repaint
+func game_set_speed(s):
+	speed = clamp(s, 0, 5000)
+	speed_tps = 18 * float(speed) / 100.0
+	DEBUG_ROOT.get_node("DEBUG_LABEL/Control/SpinBoxSpeed").value = speed
+	DEBUG_ROOT.get_node("DEBUG_LABEL/Control/HSliderSpeed").value = speed
 
 #############
 
@@ -807,6 +812,8 @@ func _ready():
 	MENUS_ROOT.show()
 	INGAME_ROOT.hide() # not really necessary, but maybe?
 	DEBUG_ROOT.hide()
+	
+	game_set_speed(speed)
 
 	# TODO:
 	# select different gamesets
@@ -837,7 +844,7 @@ func _ready():
 #	Family.DAT_save("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep2.dat", "Banhutep")
 
 	# auto-load testing savegame
-#	yield(Debug.load_testing_save(), "completed")
+	yield(Debug.load_testing_save(), "completed")
 	DEBUG_ROOT.show()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -860,13 +867,9 @@ func _input(event):
 	if is_in_game_controls():
 		# game speed
 		if Input.is_action_pressed("speed_dec"):
-			speed -= 10
+			game_set_speed(speed - 10)
 		if Input.is_action_pressed("speed_inc"):
-			speed += 10
-		speed = clamp(speed, 0, 5000)
-		speed_tps = 18 * float(speed) / 100.0
-		DEBUG_ROOT.get_node("DEBUG_LABEL/Control/SpinBoxSpeed").value = speed
-		DEBUG_ROOT.get_node("DEBUG_LABEL/Control/HSliderSpeed").value = speed
+			game_set_speed(speed + 10)
 		
 		# pause game
 		if Input.is_action_just_pressed("pause_game"):

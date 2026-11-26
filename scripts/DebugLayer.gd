@@ -404,7 +404,7 @@ func print_tile_debug():
 		$DEBUG_LABEL5.bbcode_text = debug_text
 	
 var ingame_camera_has_moved = false
-var IS_VISIBLE = false
+var IS_VISIBLE = true
 func _input(event):
 	
 	if Input.is_action_just_pressed("ui_accept"):
