@@ -451,7 +451,7 @@ func _process(delta):
 	# both individually and through the CanvasLayer, and even by using modulate.a it still lags.
 	# Setting the scale to zero to solve this issue is not a thing I ever would have thought of needing to do.
 	if !IS_VISIBLE || Game.STATE == Game.States.NoGameLoaded:
-		scale = Vector2()
+		scale = Vector2(0.00001, 0.00001) # not *actually* zero or the engine will scream like crazy.
 		return
 	else:
 		scale = Vector2(1, 1)

@@ -55,7 +55,7 @@ func scroll_delta(delta):
 	update_scrollbar_from_value(value + delta * step_size)
 
 func _process(delta):
-	if (Engine.editor_hint):
+	if Engine.editor_hint:
 		return
 	
 	if btn_timer == 0.0 || btn_timer >= 0.25:

@@ -138,7 +138,5 @@ func _on_INGAME_FIELD_mouse_entered():
 	Game.mouse_over_ingame_area = true
 func _on_INGAME_FIELD_mouse_exited():
 	Game.mouse_over_ingame_area = false
-func _on_INGAME_FIELD_gui_input(event):
-#	if Game.mouse_over_ingame_area && event is InputEventMouseButton:
-#		Game.INGAME_FIELD.grab_focus()
+func _on_INGAME_FIELD_gui_input(event): # unused?
 	pass

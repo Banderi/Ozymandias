@@ -63,7 +63,7 @@ func set_texture_button_id(button_id):
 	button_texture_id = button_id
 	if button_texture_id == -1 || button_texture_path == "":
 		return
-	var path = str("res://assets/Pharaoh/", button_texture_path, "/")
+	var path = str("res://assets/Pharaoh/", button_texture_path, "/") # TODO: move this file to Ozy or move this to Gamesets
 	var def_texture = texture_stylebox("%s%05d.png" % [path, button_id])
 	rect_size = def_texture.texture.get_size()
 	rect_min_size = rect_size
@@ -80,9 +80,11 @@ func texture_stylebox(path) -> StyleBoxTexture:
 		stylebox.texture = image
 		return stylebox
 	return null
-func set_texture_button_disabled_opacity(opacity):
+func set_texture_button_disabled_opacity(opacity): # TODO: double-check race condition here
 	button_texture_disabled_opacity = opacity
-	get("custom_styles/disabled").modulate_color.a = button_texture_disabled_opacity
+	var style_disabled = get("custom_styles/disabled")
+	if style_disabled != null:
+		style_disabled.modulate_color.a = button_texture_disabled_opacity
 
 func _input(event):
 	if asks_update:

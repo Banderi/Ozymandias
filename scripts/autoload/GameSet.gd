@@ -465,17 +465,42 @@ func set_SPRITES_CACHE(anim_name, value) -> bool:
 const TILESETS = {
 	"Pharaoh": {
 		# these are the STATIC paks that are common to all combinations of enemy, theater, monument era etc.
-		# --- so it's "shared" as in shared to all of the above, NOT as in those that use SHARED ID SPACES. 
+		# --- so it's "shared" as in shared to all of the above, NOT as in those that use SHARED ID SPACES.
 		"shared": ["Pharaoh_General", "Pharaoh_Terrain", "Expansion"],
-		"unloaded": [
+		# these, on the other hand, are the DYNAMIC paks that share the same ID SPACES.
+		# they are loaded on demand on mission load, and override each other!
+		"overlaps": [
 			"Pyramid"
 		]
 	} }
 func get_TILESETS(category: String):
 	return _get_table_element(TILESETS, Assets.GAME_SET, category)
 
+const INTERFACE = {
+	"Pharaoh": {
+#		"paneling": "Pharaoh_General",
+		"backdrops": "Pharaoh_Unloaded",
+	}
+}
+func get_BACKDROP_PAK():
+	return _get_table_element(INTERFACE, Assets.GAME_SET, "backdrops")
 
-
-
+const MENUS = {
+	"Pharaoh": [
+		"Paused",
+		"Overseers",
+		"Main",
+		"NewFamily",
+		"FamilyEgyptianName",
+		"FamilySelection",
+		"GameSelection",
+		"SavegameSelection",
+		"NoMissionWonYet",
+		"Splash",
+		"QuitGameConfirm"
+	]
+}
+func get_MENUS():
+	return _get_table_element(MENUS, Assets.GAME_SET)
 
 

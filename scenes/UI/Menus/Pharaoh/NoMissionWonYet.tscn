@@ -1,0 +1,108 @@
+[gd_scene load_steps=12 format=2]
+
+[ext_resource path="res://scripts/menus/Popup_NoMissionWonYet.gd" type="Script" id=6]
+[ext_resource path="res://assets/fonts/texture_fonts/large_on_black.tres" type="BitmapFont" id=7]
+[ext_resource path="res://assets/fonts/texture_fonts/small_black_on_white.tres" type="BitmapFont" id=8]
+[ext_resource path="res://scripts/classes/LabelEx.gd" type="Script" id=9]
+[ext_resource path="res://scenes/UI/Panel2.tscn" type="PackedScene" id=10]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel2.png" type="Texture" id=11]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel1.png" type="Texture" id=12]
+[ext_resource path="res://scenes/UI/Panel1.tscn" type="PackedScene" id=13]
+[ext_resource path="res://scenes/UI/Button2.tscn" type="PackedScene" id=14]
+
+[sub_resource type="StyleBoxTexture" id=1]
+texture = ExtResource( 12 )
+region_rect = Rect2( 0, 0, 192, 192 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id=2]
+texture = ExtResource( 11 )
+region_rect = Rect2( 0, 0, 112, 112 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="NoMissionWonYet" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 6 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="." instance=ExtResource( 13 )]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -320.0
+margin_top = -56.0
+margin_right = 320.0
+margin_bottom = 56.0
+custom_styles/panel = SubResource( 1 )
+
+[node name="Panel" parent="Panel" instance=ExtResource( 10 )]
+anchor_right = 1.0
+margin_left = 8.0
+margin_top = 8.0
+margin_right = -8.0
+margin_bottom = 40.0
+custom_styles/panel = SubResource( 2 )
+
+[node name="Label" type="Label" parent="Panel/Panel"]
+anchor_right = 1.0
+margin_bottom = 28.0
+custom_fonts/font = ExtResource( 7 )
+text = "No Missions Won By Family"
+align = 1
+valign = 1
+script = ExtResource( 9 )
+localized_key = "TEXT_5_141"
+
+[node name="Label2" type="Label" parent="Panel"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -303.0
+margin_top = -14.0
+margin_right = 303.0
+margin_bottom = 14.0
+custom_fonts/font = ExtResource( 8 )
+text = "Please 'Begin Family History' if you are new to Pharaoh.  Continue to choose mission?"
+align = 1
+valign = 1
+script = ExtResource( 9 )
+localized_key = "TEXT_5_142"
+
+[node name="BtnYes" parent="Panel" instance=ExtResource( 14 )]
+margin_left = 104.0
+margin_top = 69.0
+margin_right = 324.0
+margin_bottom = 95.0
+text = "TEXT_18_1"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_18_1"
+
+[node name="BtnNo" parent="Panel" instance=ExtResource( 14 )]
+margin_left = 324.0
+margin_top = 69.0
+margin_right = 544.0
+margin_bottom = 95.0
+text = "TEXT_18_0"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_18_0"
+
+[connection signal="clicked_outside" from="Panel" to="." method="_on_Panel_clicked_outside"]
+[connection signal="pressed" from="Panel/BtnYes" to="." method="_on_BtnYes_pressed"]
+[connection signal="pressed" from="Panel/BtnNo" to="." method="_on_BtnNo_pressed"]

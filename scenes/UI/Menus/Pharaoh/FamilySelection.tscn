@@ -1,0 +1,144 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://scripts/menus/Menu_FamilySelection.gd" type="Script" id=7]
+[ext_resource path="res://assets/fonts/texture_fonts/large_on_white.tres" type="BitmapFont" id=8]
+[ext_resource path="res://scripts/classes/LabelEx.gd" type="Script" id=10]
+[ext_resource path="res://scenes/UI/Panel2.tscn" type="PackedScene" id=11]
+[ext_resource path="res://scenes/UI/OzyScrollContainer.tscn" type="PackedScene" id=12]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Load4_00001.png" type="Texture" id=13]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel2.png" type="Texture" id=14]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel1.png" type="Texture" id=15]
+[ext_resource path="res://scenes/UI/Panel1.tscn" type="PackedScene" id=16]
+[ext_resource path="res://scenes/UI/Button2.tscn" type="PackedScene" id=17]
+
+[sub_resource type="StyleBoxTexture" id=1]
+texture = ExtResource( 15 )
+region_rect = Rect2( 0, 0, 192, 192 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxTexture" id=2]
+texture = ExtResource( 14 )
+region_rect = Rect2( 0, 0, 112, 112 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="FamilySelection" type="TextureRect"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 13 )
+expand = true
+stretch_mode = 6
+script = ExtResource( 7 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="." instance=ExtResource( 16 )]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -184.0
+margin_top = -176.0
+margin_right = 184.0
+margin_bottom = 176.0
+custom_styles/panel = SubResource( 1 )
+
+[node name="Label" type="Label" parent="Panel"]
+anchor_right = 1.0
+margin_top = 8.0
+margin_bottom = 50.0
+custom_fonts/font = ExtResource( 8 )
+text = "Family Registry"
+align = 1
+valign = 1
+script = ExtResource( 10 )
+localized_key = "TEXT_292_3"
+
+[node name="Panel" parent="Panel" instance=ExtResource( 11 )]
+margin_left = 16.0
+margin_top = 77.0
+margin_right = 320.0
+margin_bottom = 269.0
+custom_styles/panel = SubResource( 2 )
+
+[node name="OzyScrollContainer" parent="Panel/Panel" instance=ExtResource( 12 )]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_right = 37.0
+margin_bottom = 0.0
+__meta__ = {
+"_edit_lock_": true
+}
+scroll_node_path = NodePath("Control/VBoxContainer")
+
+[node name="Control" type="Control" parent="Panel/Panel/OzyScrollContainer"]
+margin_left = 6.0
+margin_top = 5.0
+margin_right = 298.0
+margin_bottom = 187.0
+rect_clip_content = true
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/Panel/OzyScrollContainer/Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_bottom = -150.0
+custom_constants/separation = 0
+
+[node name="BtnCreateFamily" parent="Panel" instance=ExtResource( 17 )]
+margin_left = 15.0
+margin_top = 274.0
+margin_right = 141.0
+margin_bottom = 300.0
+text = "TEXT_292_0"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_292_0"
+
+[node name="BtnDeleteFamily" parent="Panel" instance=ExtResource( 17 )]
+margin_left = 147.0
+margin_top = 274.0
+margin_right = 272.0
+margin_bottom = 300.0
+text = "TEXT_292_1"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_292_1"
+
+[node name="BtnProceed" parent="Panel" instance=ExtResource( 17 )]
+margin_left = 278.0
+margin_top = 274.0
+margin_right = 352.0
+margin_bottom = 300.0
+disabled = true
+text = "TEXT_292_2"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_292_2"
+
+[node name="BtnBack" parent="Panel" instance=ExtResource( 17 )]
+margin_left = 67.0
+margin_top = 305.0
+margin_right = 298.0
+margin_bottom = 331.0
+text = "TEXT_292_4"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_292_4"
+
+[connection signal="pressed" from="Panel/BtnCreateFamily" to="." method="_on_BtnCreateFamily_pressed"]
+[connection signal="pressed" from="Panel/BtnDeleteFamily" to="." method="_on_BtnDeleteFamily_pressed"]
+[connection signal="pressed" from="Panel/BtnProceed" to="." method="_on_BtnProceed_pressed"]
+[connection signal="pressed" from="Panel/BtnBack" to="." method="_on_BtnBack_pressed"]

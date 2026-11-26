@@ -10,7 +10,7 @@ onready var MENUS_ROOT = ROOT_NODE.get_node("Menus")
 onready var DEBUG_ROOT = ROOT_NODE.get_node("Debug")
 
 onready var TEST_SPR_ATLAS = ROOT_NODE.get_node("TEST_SPR_ATLAS")
-onready var LOADING_BACKDROP = MENUS_ROOT.get_node("Loading") as TextureRect
+onready var LOADING_MENU = MENUS_ROOT.get_node("Loading") as TextureRect
 onready var LOADING_TEXT = MENUS_ROOT.get_node("Loading/LabelEx") as LabelEx
 
 # generics
@@ -23,30 +23,32 @@ func is_valid_objref(node):
 var menu_stack = []
 func last_menu():
 	return null if menu_stack.empty() else menu_stack.back()
-func go_to_menu(menu_name, data = null):
+func go_to_menu(menu_name, data = null) -> bool:
 	if last_menu() == menu_name:
-		return
+		return false
 	var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
 	if menu_node == null:
 		Log.error(self, ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
-		return
+		return false
 	close_all_menus()
 	if menu_node.has_method("_on_menu_open"):
 		menu_node._on_menu_open(data)
 	menu_stack.push_back(menu_name)
 	menu_node.show()
-func popup_menu(menu_name, data = null):
+	return true
+func popup_menu(menu_name, data = null) -> bool:
 	if last_menu() == menu_name:
-		return
+		return false
 	var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
 	if menu_node == null:
 		Log.error(self, ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
-		return
+		return false
 	if menu_node.has_method("_on_menu_open"):
 		menu_node._on_menu_open(data)
 	menu_stack.push_back(menu_name)
 	menu_node.show()
-func close_menu(base_menu_name):
+	return true
+func close_menu(base_menu_name) -> bool:
 	if !(base_menu_name in menu_stack):
 		Log.error(self, ERR_INVALID_PARAMETER, "menu '%s' was never open" % [base_menu_name])
 		return false
@@ -64,11 +66,38 @@ func close_all_menus():
 		m.hide()
 	menu_stack = []
 
+func init_menus(gameset) -> bool:
+	
+	# release all menus (except commons)
+	for c in MENUS_ROOT.get_children():
+		match c.name:
+			"Loading":
+#				continue # this doesn't work in Godot 3........
+				pass
+			_:
+				c.queue_free()
+	yield(Engine.get_main_loop(), "idle_frame")
+	
+	# load gameset-specific menus
+	for menu_name in GameSet.get_MENUS():
+		print(menu_name)
+		var tscn = load("res://scenes/UI/Menus/%s/%s.tscn" % [gameset, menu_name])
+		if tscn == null:
+			return false
+		var n = tscn.instance()
+		if tscn == null:
+			return false # TODO: print errors
+		MENUS_ROOT.add_child(n)
+		n.hide()
+	
+	# reorder common menus
+	MENUS_ROOT.move_child(LOADING_MENU, MENUS_ROOT.get_child_count())
+	return true
+
 func loading_screen(backdrop_img_idx, loading_text = null, is_localized_key: bool = true):
 	go_to_menu("Loading")
 	if backdrop_img_idx != null:
-#		LOADING_BACKDROP.texture = Assets.get_gameset_sg_texture(backdrop_img_idx, false)
-		LOADING_BACKDROP.texture = Assets.get_SG_texture("Pharaoh_Unloaded", backdrop_img_idx, false) # TODO: make gameset-specific
+		LOADING_MENU.texture = Assets.get_SG_texture(GameSet.get_BACKDROP_PAK(), backdrop_img_idx, false)
 	if loading_text != null:
 		if !is_localized_key:
 			LOADING_TEXT.text = loading_text
@@ -82,7 +111,7 @@ func right_click_pressed(relevant_node, event): # TODO: capture right click when
 		return true
 	return false
 
-func debug_tools_enabled():
+func debug_tools_enabled(): # TODO
 	return true
 
 # PKWare inflate / deflate tests
@@ -770,6 +799,9 @@ func game_loop(delta): # NOTE/TOFIX MAYBE: there might be risk of runaway lockup
 
 #############
 
+func quit():
+	get_tree().quit()
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	MENUS_ROOT.show()
@@ -779,8 +811,7 @@ func _ready():
 	# TODO:
 	# select different gamesets
 	
-	# loading:
-	yield(loading_screen(null, "", true), "completed")
+	# init game assets (loading)
 	yield(Assets.load_game_assets("Pharaoh"), "completed")
 	
 	# TODO...?
@@ -806,7 +837,7 @@ func _ready():
 #	Family.DAT_save("D:/SteamLibrary/steamapps/common/Pharaoh + Cleopatra/Save/Banhutep2.dat", "Banhutep")
 
 	# auto-load testing savegame
-	yield(Debug.load_testing_save(), "completed")
+#	yield(Debug.load_testing_save(), "completed")
 	DEBUG_ROOT.show()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

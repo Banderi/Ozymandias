@@ -1,0 +1,686 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://scripts/menus/Popup_FamilyEgyptianName.gd" type="Script" id=6]
+[ext_resource path="res://assets/fonts/texture_fonts/small_black_on_white.tres" type="BitmapFont" id=8]
+[ext_resource path="res://scripts/classes/LabelEx.gd" type="Script" id=9]
+[ext_resource path="res://scenes/UI/Button3.tscn" type="PackedScene" id=10]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel1.png" type="Texture" id=11]
+[ext_resource path="res://scenes/UI/Panel1.tscn" type="PackedScene" id=12]
+[ext_resource path="res://scenes/UI/Button2.tscn" type="PackedScene" id=13]
+
+[sub_resource type="StyleBoxTexture" id=1]
+texture = ExtResource( 11 )
+region_rect = Rect2( 0, 0, 192, 192 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[sub_resource type="StyleBoxEmpty" id=2]
+content_margin_left = 10.0
+
+[node name="FamilyEgyptianName" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource( 6 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="." instance=ExtResource( 12 )]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -200.0
+margin_top = -231.0
+margin_right = 200.0
+margin_bottom = 217.0
+custom_styles/panel = SubResource( 1 )
+
+[node name="BtnOk" parent="Panel" instance=ExtResource( 13 )]
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+margin_left = -87.0
+margin_top = -38.0
+margin_right = -19.0
+margin_bottom = -16.0
+rect_min_size = Vector2( 25, 10 )
+text = "OK"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_18_3"
+
+[node name="MaleNames" type="Label" parent="Panel"]
+margin_left = 32.0
+margin_top = 14.0
+margin_right = 133.0
+margin_bottom = 30.0
+custom_fonts/font = ExtResource( 8 )
+text = "Male Names"
+script = ExtResource( 9 )
+localized_key = "TEXT_197_0"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MaleNames"]
+margin_left = -4.0
+margin_top = 20.0
+margin_right = 119.0
+margin_bottom = 416.0
+
+[node name="Button3" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_right = 123.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Akunosh"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_1"
+
+[node name="Button4" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 20.0
+margin_right = 123.0
+margin_bottom = 36.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Benermerut"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_2"
+
+[node name="Button5" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 40.0
+margin_right = 123.0
+margin_bottom = 56.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Genubath"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_3"
+
+[node name="Button6" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 60.0
+margin_right = 123.0
+margin_bottom = 76.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Hemaka"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_4"
+
+[node name="Button7" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 80.0
+margin_right = 123.0
+margin_bottom = 96.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Inarus"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_5"
+
+[node name="Button8" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 100.0
+margin_right = 123.0
+margin_bottom = 116.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Khensthoth"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_6"
+
+[node name="Button9" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 120.0
+margin_right = 123.0
+margin_bottom = 136.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Mentuemhat"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_7"
+
+[node name="Button10" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 140.0
+margin_right = 123.0
+margin_bottom = 156.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Minnakht"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_8"
+
+[node name="Button11" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 160.0
+margin_right = 123.0
+margin_bottom = 176.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Nebhotep"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_9"
+
+[node name="Button12" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 180.0
+margin_right = 123.0
+margin_bottom = 196.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Nefermenu"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_10"
+
+[node name="Button13" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 200.0
+margin_right = 123.0
+margin_bottom = 216.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Neshi"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_11"
+
+[node name="Button14" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 220.0
+margin_right = 123.0
+margin_bottom = 236.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Nimlot"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_12"
+
+[node name="Button15" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 240.0
+margin_right = 123.0
+margin_bottom = 256.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Osorkon"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_13"
+
+[node name="Button16" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 260.0
+margin_right = 123.0
+margin_bottom = 276.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Pashedu"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_14"
+
+[node name="Button17" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 280.0
+margin_right = 123.0
+margin_bottom = 296.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Ptahshepses"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_15"
+
+[node name="Button18" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 300.0
+margin_right = 123.0
+margin_bottom = 316.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Sennedjem"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_16"
+
+[node name="Button19" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 320.0
+margin_right = 123.0
+margin_bottom = 336.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Tahrqa"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_17"
+
+[node name="Button20" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 340.0
+margin_right = 123.0
+margin_bottom = 356.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Wepawetmose"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_18"
+
+[node name="Button21" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 360.0
+margin_right = 123.0
+margin_bottom = 376.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Yanhamu"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_19"
+
+[node name="Button22" parent="Panel/MaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 380.0
+margin_right = 123.0
+margin_bottom = 396.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Zazamoukh"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_20"
+
+[node name="FemaleNames" type="Label" parent="Panel"]
+margin_left = 192.0
+margin_top = 14.0
+margin_right = 293.0
+margin_bottom = 30.0
+custom_fonts/font = ExtResource( 8 )
+text = "Female Names"
+script = ExtResource( 9 )
+localized_key = "TEXT_197_21"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/FemaleNames"]
+margin_left = -4.0
+margin_top = 20.0
+margin_right = 119.0
+margin_bottom = 416.0
+
+[node name="Button3" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_right = 123.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Abana"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_22"
+
+[node name="Button4" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 20.0
+margin_right = 123.0
+margin_bottom = 36.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Baktwerel"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_23"
+
+[node name="Button5" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 40.0
+margin_right = 123.0
+margin_bottom = 56.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Duathor"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_24"
+
+[node name="Button6" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 60.0
+margin_right = 123.0
+margin_bottom = 76.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Enehy"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_25"
+
+[node name="Button7" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 80.0
+margin_right = 123.0
+margin_bottom = 96.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Herneith"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_26"
+
+[node name="Button8" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 100.0
+margin_right = 123.0
+margin_bottom = 116.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Hetephenebti"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_27"
+
+[node name="Button9" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 120.0
+margin_right = 123.0
+margin_bottom = 136.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Iras"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_28"
+
+[node name="Button10" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 140.0
+margin_right = 123.0
+margin_bottom = 156.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Isetemkheb"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_29"
+
+[node name="Button11" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 160.0
+margin_right = 123.0
+margin_bottom = 176.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Khamaat"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_30"
+
+[node name="Button12" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 180.0
+margin_right = 123.0
+margin_bottom = 196.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Kiya"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_31"
+
+[node name="Button13" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 200.0
+margin_right = 123.0
+margin_bottom = 216.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Meretseger"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_32"
+
+[node name="Button14" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 220.0
+margin_right = 123.0
+margin_bottom = 236.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Mutnodjmet"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_33"
+
+[node name="Button15" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 240.0
+margin_right = 123.0
+margin_bottom = 256.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Neferura"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_34"
+
+[node name="Button16" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 260.0
+margin_right = 123.0
+margin_bottom = 276.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Nofertiri"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_35"
+
+[node name="Button17" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 280.0
+margin_right = 123.0
+margin_bottom = 296.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Peshet"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_36"
+
+[node name="Button18" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 300.0
+margin_right = 123.0
+margin_bottom = 316.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Reddjedet"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_37"
+
+[node name="Button19" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 320.0
+margin_right = 123.0
+margin_bottom = 336.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Sutailja"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_38"
+
+[node name="Button20" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 340.0
+margin_right = 123.0
+margin_bottom = 356.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Tetisheri"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_39"
+
+[node name="Button21" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 360.0
+margin_right = 123.0
+margin_bottom = 376.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Ubastet"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_40"
+
+[node name="Button22" parent="Panel/FemaleNames/VBoxContainer" instance=ExtResource( 10 )]
+margin_top = 380.0
+margin_right = 123.0
+margin_bottom = 396.0
+custom_fonts/font = ExtResource( 8 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 2 )
+custom_styles/focus = SubResource( 2 )
+custom_styles/normal = SubResource( 2 )
+toggle_mode = true
+text = "Wepwawet"
+toggled_list_item = true
+font_normal = ExtResource( 8 )
+localized_key = "TEXT_197_41"
+
+[connection signal="pressed" from="Panel/BtnOk" to="." method="_on_BtnOk_pressed"]

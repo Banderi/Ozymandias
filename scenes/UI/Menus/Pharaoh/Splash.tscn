@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=2]
+
+[ext_resource path="res://scripts/menus/Menu_SplashScreen.gd" type="Script" id=1]
+[ext_resource path="res://assets/fonts/texture_fonts/small_blue.tres" type="BitmapFont" id=2]
+[ext_resource path="res://scripts/classes/LabelEx.gd" type="Script" id=3]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=4]
+
+[node name="Splash" type="TextureRect"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+focus_mode = 1
+texture = ExtResource( 4 )
+expand = true
+stretch_mode = 6
+script = ExtResource( 1 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="LabelEx" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -600.0
+margin_top = -106.0
+margin_right = 600.0
+margin_bottom = -90.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_fonts/font = ExtResource( 2 )
+text = "Click to Start"
+align = 1
+script = ExtResource( 3 )
+localized_key = "TEXT_13_7"
+
+[connection signal="focus_entered" from="." to="." method="_on_Splash_focus_entered"]

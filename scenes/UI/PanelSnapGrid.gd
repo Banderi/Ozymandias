@@ -13,5 +13,10 @@ func _input(event):
 		if event is InputEventMouseButton && event.pressed:
 			emit_signal("clicked_outside", self)
 
-func _on_OzyLineEdit_clicked_outside(panel):
-	release_focus()
+func _notification(what):
+	if Engine.editor_hint:
+		return
+	match what:					# this fixes the engine screaming about duplicate signal connections due to PackedScene loading
+		NOTIFICATION_INSTANCED: # (https://github.com/godotengine/godot/issues/42161)
+			if is_connected("resized", self, "_on_TextureRect_resized"):
+				disconnect("resized", self, "_on_TextureRect_resized")

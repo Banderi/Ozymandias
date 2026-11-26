@@ -2,7 +2,7 @@ extends Node
 
 
 onready var ROOT_NODE = get_tree().root.get_node("Root")
-onready var OVERSEERS_ROOT = ROOT_NODE.get_node("Menus/Overseers")
+#onready var OVERSEERS_ROOT = ROOT_NODE.get_node("Menus/Overseers")
 
 func open():
 	Game.popup_menu("Overseers")

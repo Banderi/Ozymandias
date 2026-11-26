@@ -56,4 +56,3 @@ func _on_menu_open(mode):
 func _gui_input(event):
 	if Game.right_click_pressed(self, event):
 		hide()
-

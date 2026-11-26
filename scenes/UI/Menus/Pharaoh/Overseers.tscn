@@ -1,0 +1,303 @@
+[gd_scene load_steps=66 format=2]
+
+[ext_resource path="res://scripts/UI/OxyQuickBtnTexturesLoad.gd" type="Script" id=2]
+[ext_resource path="res://scripts/menus/Menu_Overseers.gd" type="Script" id=3]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00211.png" type="Texture" id=4]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00212.png" type="Texture" id=5]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00213.png" type="Texture" id=6]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00210.png" type="Texture" id=7]
+[ext_resource path="res://assets/fonts/texture_fonts/small_blue.tres" type="BitmapFont" id=8]
+[ext_resource path="res://scripts/classes/LabelEx.gd" type="Script" id=9]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=10]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel1.png" type="Texture" id=11]
+[ext_resource path="res://scenes/UI/Panel1.tscn" type="PackedScene" id=12]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00209.png" type="Texture" id=13]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00165.png" type="Texture" id=14]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00214.png" type="Texture" id=15]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00163.png" type="Texture" id=16]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00168.png" type="Texture" id=17]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00181.png" type="Texture" id=18]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00161.png" type="Texture" id=19]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00182.png" type="Texture" id=20]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00183.png" type="Texture" id=21]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00186.png" type="Texture" id=22]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00215.png" type="Texture" id=23]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00177.png" type="Texture" id=24]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00185.png" type="Texture" id=25]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00187.png" type="Texture" id=26]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00216.png" type="Texture" id=27]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00217.png" type="Texture" id=28]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00166.png" type="Texture" id=29]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00175.png" type="Texture" id=30]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00171.png" type="Texture" id=31]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00184.png" type="Texture" id=32]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00179.png" type="Texture" id=33]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00167.png" type="Texture" id=34]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00162.png" type="Texture" id=35]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00164.png" type="Texture" id=36]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00170.png" type="Texture" id=37]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00172.png" type="Texture" id=38]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00169.png" type="Texture" id=39]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00173.png" type="Texture" id=40]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00174.png" type="Texture" id=41]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00176.png" type="Texture" id=42]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00178.png" type="Texture" id=43]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00180.png" type="Texture" id=44]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00194.png" type="Texture" id=45]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00206.png" type="Texture" id=46]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00203.png" type="Texture" id=47]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00204.png" type="Texture" id=48]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00192.png" type="Texture" id=49]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00193.png" type="Texture" id=50]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00205.png" type="Texture" id=51]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00197.png" type="Texture" id=52]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00195.png" type="Texture" id=53]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00189.png" type="Texture" id=54]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00196.png" type="Texture" id=55]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00208.png" type="Texture" id=56]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00190.png" type="Texture" id=57]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00207.png" type="Texture" id=58]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00188.png" type="Texture" id=59]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00191.png" type="Texture" id=60]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00199.png" type="Texture" id=61]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00198.png" type="Texture" id=62]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00200.png" type="Texture" id=63]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00201.png" type="Texture" id=64]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00202.png" type="Texture" id=65]
+
+[sub_resource type="StyleBoxTexture" id=1]
+texture = ExtResource( 11 )
+region_rect = Rect2( 0, 0, 192, 192 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="Overseers" type="ColorRect"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 1 )
+script = ExtResource( 3 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Backdrop" type="TextureRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+focus_mode = 1
+texture = ExtResource( 10 )
+expand = true
+stretch_mode = 6
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="." instance=ExtResource( 12 )]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -320.0
+margin_top = -232.0
+margin_right = 320.0
+margin_bottom = 200.0
+mouse_filter = 2
+custom_styles/panel = SubResource( 1 )
+
+[node name="Footer" type="TextureRect" parent="Panel"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -320.0
+margin_top = 432.0
+margin_right = 320.0
+margin_bottom = 481.0
+focus_mode = 1
+texture = ExtResource( 19 )
+
+[node name="BtnLabor" type="TextureButton" parent="Panel/Footer"]
+margin_left = 12.0
+margin_top = 9.0
+margin_right = 12.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 35 )
+texture_pressed = ExtResource( 36 )
+texture_hover = ExtResource( 16 )
+texture_disabled = ExtResource( 14 )
+script = ExtResource( 2 )
+tex_id = 162
+
+[node name="BtnMilitary" type="TextureButton" parent="Panel/Footer"]
+margin_left = 52.0
+margin_top = 9.0
+margin_right = 52.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 29 )
+texture_pressed = ExtResource( 17 )
+texture_hover = ExtResource( 34 )
+texture_disabled = ExtResource( 39 )
+script = ExtResource( 2 )
+tex_id = 166
+
+[node name="BtnPolitical" type="TextureButton" parent="Panel/Footer"]
+margin_left = 96.0
+margin_top = 9.0
+margin_right = 96.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 37 )
+texture_pressed = ExtResource( 38 )
+texture_hover = ExtResource( 31 )
+texture_disabled = ExtResource( 40 )
+script = ExtResource( 2 )
+tex_id = 170
+
+[node name="BtnRatings" type="TextureButton" parent="Panel/Footer"]
+margin_left = 135.0
+margin_top = 9.0
+margin_right = 135.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 41 )
+texture_pressed = ExtResource( 42 )
+texture_hover = ExtResource( 30 )
+texture_disabled = ExtResource( 24 )
+script = ExtResource( 2 )
+tex_id = 174
+
+[node name="BtnCommerce" type="TextureButton" parent="Panel/Footer"]
+margin_left = 178.0
+margin_top = 9.0
+margin_right = 178.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 43 )
+texture_pressed = ExtResource( 44 )
+texture_hover = ExtResource( 33 )
+texture_disabled = ExtResource( 18 )
+script = ExtResource( 2 )
+tex_id = 178
+
+[node name="BtnGranaries" type="TextureButton" parent="Panel/Footer"]
+margin_left = 229.0
+margin_top = 9.0
+margin_right = 229.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 20 )
+texture_pressed = ExtResource( 32 )
+texture_hover = ExtResource( 21 )
+texture_disabled = ExtResource( 25 )
+script = ExtResource( 2 )
+tex_id = 182
+
+[node name="BtnHealth" type="TextureButton" parent="Panel/Footer"]
+margin_left = 282.0
+margin_top = 9.0
+margin_right = 282.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 22 )
+texture_pressed = ExtResource( 59 )
+texture_hover = ExtResource( 26 )
+texture_disabled = ExtResource( 54 )
+script = ExtResource( 2 )
+tex_id = 186
+
+[node name="BtnCulture" type="TextureButton" parent="Panel/Footer"]
+margin_left = 322.0
+margin_top = 9.0
+margin_right = 322.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 57 )
+texture_pressed = ExtResource( 49 )
+texture_hover = ExtResource( 60 )
+texture_disabled = ExtResource( 50 )
+script = ExtResource( 2 )
+tex_id = 190
+
+[node name="BtnEntertainment" type="TextureButton" parent="Panel/Footer"]
+margin_left = 363.0
+margin_top = 9.0
+margin_right = 363.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 45 )
+texture_pressed = ExtResource( 55 )
+texture_hover = ExtResource( 53 )
+texture_disabled = ExtResource( 52 )
+script = ExtResource( 2 )
+tex_id = 194
+
+[node name="BtnReligion" type="TextureButton" parent="Panel/Footer"]
+margin_left = 406.0
+margin_top = 9.0
+margin_right = 406.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 62 )
+texture_pressed = ExtResource( 63 )
+texture_hover = ExtResource( 61 )
+texture_disabled = ExtResource( 64 )
+script = ExtResource( 2 )
+tex_id = 198
+
+[node name="BtnTreasury" type="TextureButton" parent="Panel/Footer"]
+margin_left = 445.0
+margin_top = 9.0
+margin_right = 445.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 65 )
+texture_pressed = ExtResource( 48 )
+texture_hover = ExtResource( 47 )
+texture_disabled = ExtResource( 51 )
+script = ExtResource( 2 )
+tex_id = 202
+
+[node name="BtnChief" type="TextureButton" parent="Panel/Footer"]
+margin_left = 490.0
+margin_top = 9.0
+margin_right = 490.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 46 )
+texture_pressed = ExtResource( 56 )
+texture_hover = ExtResource( 58 )
+texture_disabled = ExtResource( 13 )
+script = ExtResource( 2 )
+tex_id = 206
+
+[node name="BtnMonuments" type="TextureButton" parent="Panel/Footer"]
+margin_left = 542.0
+margin_top = 9.0
+margin_right = 542.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 7 )
+texture_pressed = ExtResource( 5 )
+texture_hover = ExtResource( 4 )
+texture_disabled = ExtResource( 6 )
+script = ExtResource( 2 )
+tex_id = 210
+
+[node name="BtnBack" type="TextureButton" parent="Panel/Footer"]
+margin_left = 588.0
+margin_top = 9.0
+margin_right = 588.0
+margin_bottom = 9.0
+texture_normal = ExtResource( 15 )
+texture_pressed = ExtResource( 27 )
+texture_hover = ExtResource( 23 )
+texture_disabled = ExtResource( 28 )
+script = ExtResource( 2 )
+tex_id = 214
+
+[node name="LabelEx" type="Label" parent="."]
+visible = false
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -600.0
+margin_top = -106.0
+margin_right = 600.0
+margin_bottom = -90.0
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_fonts/font = ExtResource( 8 )
+text = "Click to Start"
+align = 1
+script = ExtResource( 9 )
+localized_key = "TEXT_13_7"

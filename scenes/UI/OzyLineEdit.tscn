@@ -23,5 +23,3 @@ custom_styles/read_only = SubResource( 1 )
 custom_styles/focus = SubResource( 1 )
 custom_styles/normal = SubResource( 1 )
 caret_blink = true
-
-[connection signal="clicked_outside" from="." to="." method="_on_OzyLineEdit_clicked_outside"]

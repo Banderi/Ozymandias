@@ -32,7 +32,7 @@ func set_gameset(game): # TODO - for the future
 	Buildings.init_building_stack()
 
 # user / res & game data paths
-onready var INSTALL_PATH_SELECT_DIALOG = get_tree().root.get_node("Root/Menus/FileDialog") as FileDialog
+onready var INSTALL_PATH_SELECT_DIALOG = get_tree().root.get_node("Root/NonGameDialogs/FileDialog") as FileDialog
 const USER_ASSETS_PATH = "user://assets_cache"
 var SAVES_PATH = null
 var GAME_FILES = {} # this is the actual cache list of game files paths, when (if) found
@@ -535,7 +535,7 @@ func load_monuments(ignore_cache: bool = false) -> bool: # this loads the UNLOAD
 	var _t = Stopwatch.start()
 	
 	# load SG paks
-	var tileset_paks = GameSet.get_TILESETS("unloaded")
+	var tileset_paks = GameSet.get_TILESETS("overlaps")
 	if tileset_paks == null:
 		return false
 	for pak_name in tileset_paks:
@@ -590,10 +590,18 @@ func test_print_sgx():
 			])
 
 
-func load_game_assets(game):
-	set_gameset(game)
+func load_game_assets(gameset):
+	yield(Game.loading_screen(null, "", true), "completed") # empty loading screen
+	
+	set_gameset(gameset)
 	yield(ASYNC_set_game_install_paths(false, "Install Path"), "completed")
+	if !yield(Game.init_menus(gameset), "completed"):
+		return bail(FAILED, "Game.init_menus")
 	yield(Engine.get_main_loop(), "idle_frame")
+	
+	
+	
+	
 	
 #	test_print_sgx()
 #	if !extract_sg_paks(): # <--- true to force all sprite re-extraction --- TODO: on first game load / data path set (or reset)

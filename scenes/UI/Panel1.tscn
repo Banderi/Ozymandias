@@ -16,6 +16,7 @@ axis_stretch_vertical = 1
 [node name="Panel" type="Panel"]
 margin_right = 192.0
 margin_bottom = 192.0
+focus_mode = 1
 custom_styles/panel = SubResource( 1 )
 script = ExtResource( 14 )
 

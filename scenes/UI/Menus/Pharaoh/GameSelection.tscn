@@ -1,0 +1,120 @@
+[gd_scene load_steps=9 format=2]
+
+[ext_resource path="res://scripts/menus/Menu_GameSelection.gd" type="Script" id=6]
+[ext_resource path="res://assets/fonts/texture_fonts/large_on_white.tres" type="BitmapFont" id=7]
+[ext_resource path="res://scripts/classes/LabelEx.gd" type="Script" id=9]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/FE_ChooseGame_00001.png" type="Texture" id=10]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/panel1.png" type="Texture" id=11]
+[ext_resource path="res://scenes/UI/Panel1.tscn" type="PackedScene" id=12]
+[ext_resource path="res://scenes/UI/Button2.tscn" type="PackedScene" id=13]
+
+[sub_resource type="StyleBoxTexture" id=1]
+texture = ExtResource( 11 )
+region_rect = Rect2( 0, 0, 192, 192 )
+margin_left = 16.0
+margin_right = 16.0
+margin_top = 16.0
+margin_bottom = 16.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+
+[node name="GameSelection" type="TextureRect"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource( 10 )
+expand = true
+stretch_mode = 6
+script = ExtResource( 6 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Panel" parent="." instance=ExtResource( 12 )]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -200.0
+margin_top = -208.0
+margin_right = 200.0
+margin_bottom = 144.0
+custom_styles/panel = SubResource( 1 )
+
+[node name="FamilyName" type="Label" parent="Panel"]
+anchor_right = 1.0
+margin_top = 13.0
+margin_bottom = 42.0
+custom_fonts/font = ExtResource( 7 )
+text = "[player_name] family"
+align = 1
+script = ExtResource( 9 )
+localized_key = "TEXT_293_5"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -114.0
+margin_top = -60.0
+margin_right = 116.0
+margin_bottom = 129.0
+custom_constants/separation = 16
+
+[node name="BtnResume" parent="Panel/VBoxContainer" instance=ExtResource( 13 )]
+visible = false
+margin_right = 230.0
+text = "Resume Family History"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_293_0"
+
+[node name="BtnBegin" parent="Panel/VBoxContainer" instance=ExtResource( 13 )]
+margin_right = 230.0
+text = "Begin Family History"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_293_7"
+
+[node name="BtnChooseMission" parent="Panel/VBoxContainer" instance=ExtResource( 13 )]
+margin_top = 41.0
+margin_right = 230.0
+margin_bottom = 66.0
+text = "Choose a Mission"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_293_1"
+
+[node name="BtnSaveGames" parent="Panel/VBoxContainer" instance=ExtResource( 13 )]
+margin_top = 82.0
+margin_right = 230.0
+margin_bottom = 107.0
+text = "Load Saved Game"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_293_2"
+
+[node name="BtnCustomMissions" parent="Panel/VBoxContainer" instance=ExtResource( 13 )]
+margin_top = 123.0
+margin_right = 230.0
+margin_bottom = 148.0
+text = "Custom Missions"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_293_3"
+
+[node name="BtnBack" parent="Panel/VBoxContainer" instance=ExtResource( 13 )]
+margin_top = 164.0
+margin_right = 230.0
+margin_bottom = 189.0
+text = "Return to Family Registry"
+button_texture_path = ""
+button_texture_id = 0
+localized_key = "TEXT_293_4"
+
+[connection signal="pressed" from="Panel/VBoxContainer/BtnResume" to="." method="_on_BtnResume_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BtnBegin" to="." method="_on_BtnBegin_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BtnChooseMission" to="." method="_on_BtnChooseMission_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BtnSaveGames" to="." method="_on_BtnSaveGames_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BtnCustomMissions" to="." method="_on_BtnCustomMissions_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BtnBack" to="." method="_on_BtnBack_pressed"]
