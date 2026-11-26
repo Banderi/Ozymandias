@@ -94,7 +94,7 @@ func _on_BtnMilitary_pressed():
 	pass # Replace with function body.
 
 func _on_BtnOverseers_pressed():
-	Game.popup_menu("Overseers")
+	Overseers.open()
 func _on_BtnMap_pressed():
 	pass # Replace with function body.
 

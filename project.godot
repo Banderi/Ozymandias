@@ -141,6 +141,7 @@ Gods="*res://scripts/autoload/game/Gods.gd"
 Random="*res://scripts/autoload/game/Random.gd"
 Military="*res://scripts/autoload/game/Military.gd"
 Monuments="*res://scripts/autoload/game/Monuments.gd"
+Overseers="*res://scripts/autoload/game/Overseers.gd"
 
 [debug]
 

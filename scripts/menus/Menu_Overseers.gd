@@ -1,18 +1,13 @@
-extends TextureRect
+extends ColorRect
 
-#func _on_BtnChooseEgyptian_pressed():
-#	Game.popup_menu("FamilyEgyptianName")
-#func _on_BtnContinue_pressed():
-#	Game.go_to_menu("FamilySelection", $Panel/LineEditFamilyName/LineEdit.text)
+#func _on_menu_open(data):
+#	pass
 
 func _gui_input(event):
 	if Game.right_click_pressed(self, event):
-		Game.close_menu("Overseers")
-#		Game.close_all_menus()
-#		Game.STATE = Game.States.Ingame
-
-#func _on_menu_open(data):
-#	if data != null:
-#		$Panel/LineEditFamilyName/LineEdit.text = data
-#	$Panel/LineEditFamilyName/LineEdit.grab_focus()
-#	$Panel/LineEditFamilyName/LineEdit.caret_position = $Panel/LineEditFamilyName/LineEdit.text.length()
+		Overseers.close()
+func _input(event):
+	if !visible:
+		return
+	if Input.is_action_just_pressed("ui_cancel"):
+		Overseers.close()

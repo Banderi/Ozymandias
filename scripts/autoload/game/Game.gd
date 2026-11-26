@@ -46,16 +46,19 @@ func popup_menu(menu_name, data = null):
 		menu_node._on_menu_open(data)
 	menu_stack.push_back(menu_name)
 	menu_node.show()
-func close_menu(assert_menu_name):
-	if assert_menu_name != last_menu():
+func close_menu(base_menu_name):
+	if !(base_menu_name in menu_stack):
+		Log.error(self, ERR_INVALID_PARAMETER, "menu '%s' was never open" % [base_menu_name])
 		return false
-	var menu_name = menu_stack.pop_back()
-	var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
-	if menu_node == null:
-		Log.error(self, ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
-		return false
-	menu_node.hide()
-	return true
+	while true: # this MUST halt since the above checks for bounds!
+		var menu_name = menu_stack.pop_back()
+		var menu_node = MENUS_ROOT.get_node_or_null(menu_name)
+		if menu_node == null:
+			Log.error(self, ERR_DOES_NOT_EXIST, "menu '%s' is invalid" % [menu_name])
+		menu_node.hide()
+		if menu_name == base_menu_name: # halt!
+			return true
+	return false
 func close_all_menus():
 	for m in MENUS_ROOT.get_children():
 		m.hide()

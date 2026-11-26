@@ -1,4 +1,4 @@
-[gd_scene load_steps=74 format=2]
+[gd_scene load_steps=132 format=2]
 
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/Senate_00001.png" type="Texture" id=1]
 [ext_resource path="res://assets/Pharaoh/Pharaoh_Unloaded/C3title_00001.png" type="Texture" id=2]
@@ -51,10 +51,68 @@
 [ext_resource path="res://assets/Pharaoh/Tileset_Test.tres" type="TileSet" id=49]
 [ext_resource path="res://scenes/UI/HUD_Pharaoh.tscn" type="PackedScene" id=50]
 [ext_resource path="res://scripts/menus/Menu_Overseers.gd" type="Script" id=51]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00161.png" type="Texture" id=52]
 [ext_resource path="res://assets/Pharaoh/TILE_SHAPE.png" type="Texture" id=53]
 [ext_resource path="res://assets/fonts/basis33_thick_outline.tres" type="DynamicFont" id=54]
+[ext_resource path="res://scripts/UI/OxyQuickBtnTexturesLoad.gd" type="Script" id=55]
 [ext_resource path="res://scripts/classes/RichTextLabelEx.gd" type="Script" id=56]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00214.png" type="Texture" id=57]
 [ext_resource path="res://assets/fonts/texture_fonts/small_white.tres" type="BitmapFont" id=58]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00215.png" type="Texture" id=59]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00216.png" type="Texture" id=60]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00217.png" type="Texture" id=61]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00165.png" type="Texture" id=62]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00163.png" type="Texture" id=63]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00162.png" type="Texture" id=64]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00164.png" type="Texture" id=65]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00168.png" type="Texture" id=66]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00166.png" type="Texture" id=67]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00167.png" type="Texture" id=68]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00169.png" type="Texture" id=69]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00171.png" type="Texture" id=70]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00170.png" type="Texture" id=71]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00172.png" type="Texture" id=72]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00173.png" type="Texture" id=73]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00177.png" type="Texture" id=74]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00175.png" type="Texture" id=75]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00174.png" type="Texture" id=76]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00176.png" type="Texture" id=77]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00211.png" type="Texture" id=78]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00212.png" type="Texture" id=79]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00213.png" type="Texture" id=80]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00210.png" type="Texture" id=81]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00209.png" type="Texture" id=82]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00181.png" type="Texture" id=83]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00182.png" type="Texture" id=84]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00183.png" type="Texture" id=85]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00186.png" type="Texture" id=86]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00185.png" type="Texture" id=87]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00187.png" type="Texture" id=88]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00184.png" type="Texture" id=89]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00179.png" type="Texture" id=90]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00178.png" type="Texture" id=91]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00180.png" type="Texture" id=92]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00194.png" type="Texture" id=93]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00206.png" type="Texture" id=94]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00203.png" type="Texture" id=95]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00204.png" type="Texture" id=96]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00192.png" type="Texture" id=97]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00193.png" type="Texture" id=98]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00205.png" type="Texture" id=99]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00197.png" type="Texture" id=100]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00195.png" type="Texture" id=101]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00189.png" type="Texture" id=102]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00196.png" type="Texture" id=103]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00208.png" type="Texture" id=104]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00190.png" type="Texture" id=105]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00207.png" type="Texture" id=106]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00188.png" type="Texture" id=107]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00191.png" type="Texture" id=108]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00199.png" type="Texture" id=109]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00198.png" type="Texture" id=110]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00200.png" type="Texture" id=111]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00201.png" type="Texture" id=112]
+[ext_resource path="res://assets/Pharaoh/Pharaoh_General/interface/00202.png" type="Texture" id=113]
 
 [sub_resource type="ShaderMaterial" id=31]
 shader = ExtResource( 44 )
@@ -226,6 +284,9 @@ __meta__ = {
 anchor_right = 1.0
 anchor_bottom = 1.0
 focus_mode = 1
+__meta__ = {
+"_edit_lock_": true
+}
 
 [node name="HUD" parent="HUD" instance=ExtResource( 50 )]
 
@@ -1565,17 +1626,214 @@ valign = 1
 script = ExtResource( 14 )
 localized_key = "TEXT_13_2"
 
-[node name="Overseers" type="TextureRect" parent="Menus"]
+[node name="Overseers" type="ColorRect" parent="Menus"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color( 0, 0, 0, 1 )
+script = ExtResource( 51 )
+__meta__ = {
+"_edit_lock_": true
+}
+
+[node name="Backdrop" type="TextureRect" parent="Menus/Overseers"]
 anchor_right = 1.0
 anchor_bottom = 1.0
 focus_mode = 1
 texture = ExtResource( 1 )
 expand = true
 stretch_mode = 6
-script = ExtResource( 51 )
 __meta__ = {
 "_edit_lock_": true
 }
+
+[node name="Panel" parent="Menus/Overseers" instance=ExtResource( 6 )]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -320.0
+margin_top = -232.0
+margin_right = 320.0
+margin_bottom = 200.0
+mouse_filter = 2
+
+[node name="Footer" type="TextureRect" parent="Menus/Overseers/Panel"]
+anchor_left = 0.5
+anchor_right = 0.5
+margin_left = -320.0
+margin_top = 432.0
+margin_right = 320.0
+margin_bottom = 481.0
+focus_mode = 1
+texture = ExtResource( 52 )
+
+[node name="BtnLabor" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 12.0
+margin_top = 9.0
+margin_right = 45.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 64 )
+texture_pressed = ExtResource( 65 )
+texture_hover = ExtResource( 63 )
+texture_disabled = ExtResource( 62 )
+script = ExtResource( 55 )
+tex_id = 162
+
+[node name="BtnMilitary" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 52.0
+margin_top = 9.0
+margin_right = 91.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 67 )
+texture_pressed = ExtResource( 66 )
+texture_hover = ExtResource( 68 )
+texture_disabled = ExtResource( 69 )
+script = ExtResource( 55 )
+tex_id = 166
+
+[node name="BtnPolitical" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 96.0
+margin_top = 9.0
+margin_right = 130.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 71 )
+texture_pressed = ExtResource( 72 )
+texture_hover = ExtResource( 70 )
+texture_disabled = ExtResource( 73 )
+script = ExtResource( 55 )
+tex_id = 170
+
+[node name="BtnRatings" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 135.0
+margin_top = 9.0
+margin_right = 173.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 76 )
+texture_pressed = ExtResource( 77 )
+texture_hover = ExtResource( 75 )
+texture_disabled = ExtResource( 74 )
+script = ExtResource( 55 )
+tex_id = 174
+
+[node name="BtnCommerce" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 178.0
+margin_top = 9.0
+margin_right = 224.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 91 )
+texture_pressed = ExtResource( 92 )
+texture_hover = ExtResource( 90 )
+texture_disabled = ExtResource( 83 )
+script = ExtResource( 55 )
+tex_id = 178
+
+[node name="BtnGranaries" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 229.0
+margin_top = 9.0
+margin_right = 277.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 84 )
+texture_pressed = ExtResource( 89 )
+texture_hover = ExtResource( 85 )
+texture_disabled = ExtResource( 87 )
+script = ExtResource( 55 )
+tex_id = 182
+
+[node name="BtnHealth" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 282.0
+margin_top = 9.0
+margin_right = 317.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 86 )
+texture_pressed = ExtResource( 107 )
+texture_hover = ExtResource( 88 )
+texture_disabled = ExtResource( 102 )
+script = ExtResource( 55 )
+tex_id = 186
+
+[node name="BtnCulture" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 322.0
+margin_top = 9.0
+margin_right = 360.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 105 )
+texture_pressed = ExtResource( 97 )
+texture_hover = ExtResource( 108 )
+texture_disabled = ExtResource( 98 )
+script = ExtResource( 55 )
+tex_id = 190
+
+[node name="BtnEntertainment" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 363.0
+margin_top = 9.0
+margin_right = 402.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 93 )
+texture_pressed = ExtResource( 103 )
+texture_hover = ExtResource( 101 )
+texture_disabled = ExtResource( 100 )
+script = ExtResource( 55 )
+tex_id = 194
+
+[node name="BtnReligion" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 406.0
+margin_top = 9.0
+margin_right = 441.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 110 )
+texture_pressed = ExtResource( 111 )
+texture_hover = ExtResource( 109 )
+texture_disabled = ExtResource( 112 )
+script = ExtResource( 55 )
+tex_id = 198
+
+[node name="BtnTreasury" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 445.0
+margin_top = 9.0
+margin_right = 485.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 113 )
+texture_pressed = ExtResource( 96 )
+texture_hover = ExtResource( 95 )
+texture_disabled = ExtResource( 99 )
+script = ExtResource( 55 )
+tex_id = 202
+
+[node name="BtnChief" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 490.0
+margin_top = 9.0
+margin_right = 536.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 94 )
+texture_pressed = ExtResource( 104 )
+texture_hover = ExtResource( 106 )
+texture_disabled = ExtResource( 82 )
+script = ExtResource( 55 )
+tex_id = 206
+
+[node name="BtnMonuments" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 542.0
+margin_top = 9.0
+margin_right = 582.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 81 )
+texture_pressed = ExtResource( 79 )
+texture_hover = ExtResource( 78 )
+texture_disabled = ExtResource( 80 )
+script = ExtResource( 55 )
+tex_id = 210
+
+[node name="BtnBack" type="TextureButton" parent="Menus/Overseers/Panel/Footer"]
+margin_left = 588.0
+margin_top = 9.0
+margin_right = 630.0
+margin_bottom = 41.0
+texture_normal = ExtResource( 57 )
+texture_pressed = ExtResource( 60 )
+texture_hover = ExtResource( 59 )
+texture_disabled = ExtResource( 61 )
+script = ExtResource( 55 )
+tex_id = 214
 
 [node name="LabelEx" type="Label" parent="Menus/Overseers"]
 visible = false
@@ -1596,6 +1854,7 @@ localized_key = "TEXT_13_7"
 
 [node name="Debug" type="CanvasLayer" parent="."]
 layer = 2
+visible = false
 script = ExtResource( 46 )
 
 [node name="DEBUG_LABEL" type="RichTextLabel" parent="Debug"]
