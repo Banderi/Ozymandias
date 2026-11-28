@@ -146,7 +146,7 @@ func load_text(path: String, locale: String):
 		var line_i = 0
 		
 		while file.get_position() < file.get_len() - 1 && (group_file_offset_next == -1 || file.get_position() < group_file_offset_next):
-			var line_text = file.get_null_terminated_string()
+			var line_text = file.get_null_terminated_utf8()
 			var line_key = "TEXT_%d_%d" % [i, line_i]
 			tr.add_message(line_key, line_text)
 			line_i += 1
